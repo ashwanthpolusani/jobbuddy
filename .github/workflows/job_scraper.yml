@@ -1,0 +1,40 @@
+name: Playwright Job Scraper
+
+on:
+  schedule:
+    # Runs at 08:00 UTC every day
+    - cron: '0 8 * * *'
+  workflow_dispatch: # Allows manual run
+
+jobs:
+  scrape-and-store:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        cd scraper
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Install Playwright Browsers
+      run: |
+        cd scraper
+        playwright install chromium
+
+    - name: Run Scraper Script
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      run: |
+        cd scraper
+        python main.py

@@ -1,0 +1,150 @@
+import os
+import json
+import time
+from dotenv import load_dotenv
+from pymongo import MongoClient
+import google.generativeai as genai
+from playwright.sync_api import sync_playwright
+from pypdf import PdfReader
+
+load_dotenv()
+
+# Configuration
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+MONGODB_URI = os.getenv("MONGODB_URI")
+RESUME_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ashwanth polusani.pdf")
+URLS_FILE = os.path.join(os.path.dirname(__file__), "urls.txt")
+
+def get_target_urls():
+    if not os.path.exists(URLS_FILE):
+        return []
+    with open(URLS_FILE, 'r') as f:
+        urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+    return urls
+
+def get_resume_text():
+    try:
+        reader = PdfReader(RESUME_PATH)
+        return "".join(page.extract_text() for page in reader.pages)
+    except Exception as e:
+        print(f"Error reading resume: {e}")
+        return ""
+
+def fetch_html_with_playwright(url):
+    """Uses Playwright to open a browser, render JS, and get the raw HTML."""
+    print(f"Fetching {url} with Playwright...")
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(url, wait_until="networkidle", timeout=30000)
+            time.sleep(3)
+            html = page.content()
+            browser.close()
+            return html
+    except Exception as e:
+        print(f"Error fetching {url}: {e}")
+        return ""
+
+def extract_jobs_with_gemini(raw_html, resume_text):
+    """Uses Gemini to extract structured job data from HTML and evaluate it against resume."""
+    print("Extracting and evaluating jobs with Gemini...")
+    if not GEMINI_API_KEY or not raw_html:
+        print("Missing GEMINI_API_KEY or HTML content is empty.")
+        return []
+
+    genai.configure(api_key=GEMINI_API_KEY)
+    
+    try:
+        model = genai.GenerativeModel(
+            'gemini-3.5-flash-lite',
+            generation_config={"response_mime_type": "application/json"}
+        )
+        
+        prompt = f"""
+        You are an expert tech recruiter. Your task is to extract job listings from the provided HTML AND evaluate them against the candidate's resume and constraints.
+        
+        CANDIDATE CONSTRAINTS:
+        - Fresher, 0 years experience, 0 formal internships.
+        - Indian citizen from Hyderabad.
+        - Willing to relocate anywhere in India.
+        - Willing to relocate abroad ONLY IF the company explicitly sponsors visas.
+        
+        CANDIDATE RESUME:
+        {resume_text}
+        
+        Extract all job listings from the HTML. Return ONLY a JSON array of objects. 
+        Each object must have the following keys:
+        - "title" (string)
+        - "location" (string)
+        - "requirements" (string)
+        - "link" (string)
+        - "is_match" (boolean): true if the candidate meets the constraints (e.g. it doesn't strictly require X years of experience, and it fits the visa constraints).
+        - "match_reason" (string): A short 1-2 sentence explanation of why this job is or isn't a fit based on the resume.
+
+        If you cannot find a specific field, leave it as an empty string. Ensure links are absolute URLs.
+        
+        HTML to process:
+        {raw_html}
+        """
+        
+        response = model.generate_content(prompt)
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"Gemini API Error: {e}")
+        return []
+
+def save_to_mongodb(jobs):
+    """Saves the extracted jobs to MongoDB."""
+    print(f"Saving {len(jobs)} jobs to MongoDB...")
+    if not MONGODB_URI:
+        print("MongoDB URI not found. Skipping DB insert.")
+        return
+    
+    client = None
+    try:
+        client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+        db = client.job_aggregator
+        collection = db.jobs
+        
+        if jobs:
+            result = collection.insert_many(jobs)
+            print(f"Successfully saved {len(result.inserted_ids)} jobs.")
+    except Exception as e:
+        print(f"Error saving to MongoDB: {e}")
+    finally:
+        if client:
+            client.close()
+
+def main():
+    print("Starting Playwright Job Scraper with Resume Personalization...")
+    resume_text = get_resume_text()
+    if not resume_text:
+        print("Warning: Could not extract resume text.")
+    
+    urls = get_target_urls()
+    print(f"Loaded {len(urls)} target URLs.")
+    
+    for url in urls:
+        html_content = fetch_html_with_playwright(url)
+        if html_content:
+            jobs = extract_jobs_with_gemini(html_content, resume_text)
+            if jobs:
+                # Keep only jobs where is_match is true
+                matching_jobs = [job for job in jobs if str(job.get('is_match')).lower() == 'true']
+                
+                # Make sure to convert 'is_match' to a strict boolean for MongoDB
+                for job in matching_jobs:
+                    job['is_match'] = True
+                    
+                print(f"Found {len(matching_jobs)} matching jobs out of {len(jobs)} total scraped.")
+                if matching_jobs:
+                    save_to_mongodb(matching_jobs)
+        
+        # Adding a slightly longer sleep to ensure we stay well under Gemini rate limits
+        time.sleep(10)
+            
+    print("Scraping run complete.")
+
+if __name__ == "__main__":
+    main()

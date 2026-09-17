@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScrapperBuddy - Job Board</title>
+    <!-- Basic styling for a clean look without external CSS frameworks -->
+    <style>
+        :root {
+            --primary: #3498db;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+            --card-bg: #ffffff;
+        }
+        
+        body { 
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            padding: 40px 20px; 
+            color: var(--text-color); 
+        }
+        
+        .container { 
+            max-width: 900px; 
+            margin: auto; 
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        h1 { 
+            color: #2c3e50; 
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .job-card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            margin-bottom: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        
+        .job-title { 
+            font-size: 1.5em; 
+            color: var(--primary); 
+            margin: 0 0 10px 0; 
+        }
+        
+        .job-location { 
+            font-size: 0.9em; 
+            color: #7f8c8d; 
+            margin-bottom: 15px; 
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .job-reqs { 
+            font-size: 0.95em; 
+            line-height: 1.6; 
+            margin-bottom: 20px;
+            color: #555;
+        }
+        
+        .apply-btn { 
+            display: inline-block; 
+            padding: 10px 24px; 
+            background-color: #2ecc71; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        .apply-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ScrapperBuddy Jobs</h1>
+            <div class="subtitle">AI-Aggregated Job Matches</div>
+        </header>
+        
+        <div id="jobs-container">
+            <div class="loading">Fetching latest jobs...</div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchJobs() {
+            try {
+                // Call the Netlify serverless function to get jobs from MongoDB
+                // Note: when running locally without netlify dev, this path won't resolve.
+                const response = await fetch('/.netlify/functions/getJobs');
+                const jobs = await response.json();
+                
+                const container = document.getElementById('jobs-container');
+                container.innerHTML = ''; // Clear loading indicator
+
+                if (!jobs || jobs.length === 0) {
+                    container.innerHTML = '<div class="loading">No jobs found in database yet.</div>';
+                    return;
+                }
+
+                jobs.forEach(job => {
+                    const card = document.createElement('div');
+                    card.className = 'job-card';
+                    card.innerHTML = `
+                        <h2 class="job-title">${job.title || 'Untitled Position'}</h2>
+                        ${job.is_match ? '<span style="background-color: #2ecc71; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; display: inline-block;">Great Match!</span>' : '<span style="background-color: #e74c3c; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; display: inline-block;">Not a Match</span>'}
+                        <div class="job-location">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            ${job.location || 'Location not specified'}
+                        </div>
+                        <div class="job-reqs">${job.requirements || 'Requirements not specified.'}</div>
+                        <div style="background: #f1f2f6; padding: 10px; border-radius: 6px; margin-bottom: 20px; font-size: 0.9em; border-left: 4px solid ${job.is_match ? '#2ecc71' : '#e74c3c'};">
+                            <strong>AI Recruiter:</strong> ${job.match_reason || 'No evaluation provided.'}
+                        </div>
+                        <a href="${job.link || '#'}" class="apply-btn" target="_blank" rel="noopener noreferrer">Apply Now</a>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error("Failed to load jobs:", error);
+                document.getElementById('jobs-container').innerHTML = 
+                    '<div class="loading" style="color:#e74c3c;">Failed to fetch jobs. Make sure the API is running.</div>';
+            }
+        }
+
+        // Initialize fetch on page load
+        document.addEventListener('DOMContentLoaded', fetchJobs);
+    </script>
+</body>
+</html>
