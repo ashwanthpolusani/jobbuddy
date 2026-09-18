@@ -3,3 +3,4 @@ google-generativeai
 pymongo
 python-dotenv
 pypdf
+certifi

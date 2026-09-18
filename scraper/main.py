@@ -4,6 +4,7 @@ import time
 from dotenv import load_dotenv
 from pymongo import MongoClient
 import google.generativeai as genai
+import certifi
 from playwright.sync_api import sync_playwright
 from pypdf import PdfReader
 
@@ -103,7 +104,7 @@ def save_to_mongodb(jobs):
     
     client = None
     try:
-        client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+        client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000, tlsCAFile=certifi.where())
         db = client.job_aggregator
         collection = db.jobs
         
