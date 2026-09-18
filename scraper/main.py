@@ -1,9 +1,10 @@
 import os
 import json
 import time
+import re
 from dotenv import load_dotenv
 from pymongo import MongoClient
-import google.generativeai as genai
+from google import genai
 import certifi
 from playwright.sync_api import sync_playwright
 from pypdf import PdfReader
@@ -31,6 +32,14 @@ def get_resume_text():
         print(f"Error reading resume: {e}")
         return ""
 
+def clean_html(html):
+    """Removes scripts, styles, and SVGs to reduce token count drastically."""
+    html = re.sub(r'<script.*?</script>', '', html, flags=re.DOTALL | re.IGNORECASE)
+    html = re.sub(r'<style.*?</style>', '', html, flags=re.DOTALL | re.IGNORECASE)
+    html = re.sub(r'<svg.*?</svg>', '', html, flags=re.DOTALL | re.IGNORECASE)
+    html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
+    return html
+
 def fetch_html_with_playwright(url):
     """Uses Playwright to open a browser, render JS, and get the raw HTML."""
     print(f"Fetching {url} with Playwright...")
@@ -38,11 +47,12 @@ def fetch_html_with_playwright(url):
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
-            page.goto(url, wait_until="networkidle", timeout=30000)
+            # domcontentloaded is faster and less prone to timeout than networkidle
+            page.goto(url, wait_until="domcontentloaded", timeout=45000)
             time.sleep(3)
             html = page.content()
             browser.close()
-            return html
+            return clean_html(html)
     except Exception as e:
         print(f"Error fetching {url}: {e}")
         return ""
@@ -54,13 +64,8 @@ def extract_jobs_with_gemini(raw_html, resume_text):
         print("Missing GEMINI_API_KEY or HTML content is empty.")
         return []
 
-    genai.configure(api_key=GEMINI_API_KEY)
-    
     try:
-        model = genai.GenerativeModel(
-            'gemini-3.5-flash-lite',
-            generation_config={"response_mime_type": "application/json"}
-        )
+        client = genai.Client(api_key=GEMINI_API_KEY)
         
         prompt = f"""
         You are an expert tech recruiter. Your task is to extract job listings from the provided HTML AND evaluate them against the candidate's resume and constraints.
@@ -89,10 +94,28 @@ def extract_jobs_with_gemini(raw_html, resume_text):
         {raw_html}
         """
         
-        response = model.generate_content(prompt)
-        return json.loads(response.text)
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = client.models.generate_content(
+                    model='gemini-3.5-flash-lite',
+                    contents=prompt,
+                    config={"response_mime_type": "application/json"}
+                )
+                return json.loads(response.text)
+            except Exception as e:
+                error_msg = str(e)
+                if '429' in error_msg or 'Quota exceeded' in error_msg:
+                    print(f"Rate limit hit. Sleeping for 65 seconds... (Attempt {attempt+1}/{max_retries})")
+                    time.sleep(65)
+                else:
+                    print(f"Gemini API Error: {error_msg}")
+                    return []
+        
+        print("Max retries exceeded for Gemini API.")
+        return []
     except Exception as e:
-        print(f"Gemini API Error: {e}")
+        print(f"Gemini Configuration Error: {e}")
         return []
 
 def save_to_mongodb(jobs):

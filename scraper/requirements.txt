@@ -1,5 +1,5 @@
 playwright
-google-generativeai
+google-genai
 pymongo
 python-dotenv
 pypdf
