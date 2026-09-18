@@ -1,6 +1,6 @@
 playwright
-google-genai
-pymongo
-python-dotenv
-pypdf
-certifi
+google-genai==0.3.0
+pymongo==4.10.1
+python-dotenv==1.0.1
+playwright==1.49.1
+certifi==2024.12.14

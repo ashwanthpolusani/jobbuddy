@@ -9,7 +9,6 @@ from pymongo import MongoClient
 from google import genai
 import certifi
 from playwright.sync_api import sync_playwright
-from pypdf import PdfReader
 import safe_ats  # v3 Safe API Router
 
 load_dotenv()
@@ -17,7 +16,7 @@ load_dotenv()
 # ── Configuration ──────────────────────────────────────────────────────────────
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 MONGODB_URI    = os.getenv("MONGODB_URI")
-RESUME_PATH    = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ashwanth polusani.pdf")
+PROFILE_PATH   = os.path.join(os.path.dirname(__file__), "profile.txt")
 URLS_FILE      = os.path.join(os.path.dirname(__file__), "urls.txt")
 
 # Both models share the same free-tier limits: 15 RPM, 500 RPD, 250K TPM
@@ -50,13 +49,13 @@ def get_target_urls():
         
     return urls
 
-def get_resume_text():
-    try:
-        reader = PdfReader(RESUME_PATH)
-        return "".join(page.extract_text() for page in reader.pages)
-    except Exception as e:
-        print(f"[WARN] Could not read resume: {e}")
+def get_profile_text():
+    """Reads the static profile.txt file to avoid PDF parsing overhead."""
+    if not os.path.exists(PROFILE_PATH):
+        print("[WARN] profile.txt not found. AI matching quality will be reduced.")
         return ""
+    with open(PROFILE_PATH, 'r') as f:
+        return f.read()
 
 def clean_html(html):
     """Strip scripts, styles, SVG, comments to cut token count ~80%."""
@@ -179,17 +178,9 @@ def fetch_html_with_playwright(url: str) -> tuple[str, int, str | None]:
 
 # ── Gemini ─────────────────────────────────────────────────────────────────────
 GEMINI_PROMPT_TEMPLATE = """
-You are a strict job-listing extractor helping a FRESHER (0 years experience, 0 internships) from Hyderabad, India.
+You are a strict job-listing extractor helping a candidate find jobs.
 
-CANDIDATE PROFILE:
-- B.Tech Computer Science graduate (2026), Hyderabad, India
-- Skills from projects: Python, React, Flask, Node.js, MongoDB, ML/NLP, full-stack web dev
-- 0 years work experience, 0 internships — COMPLETELY FRESH graduate
-- Open to: any city in India, or abroad ONLY if company explicitly sponsors visa
-- NOT eligible for: any role requiring 1+ years experience, or work authorization the candidate doesn't have
-
-CANDIDATE RESUME:
-{resume_text}
+{profile_text}
 
 ──────────────────────────────────────────
 TASK: Extract and evaluate job listings from the raw data below.
@@ -234,11 +225,11 @@ RAW DATA TO EVALUATE:
 {raw_data}
 """
 
-def extract_jobs_with_gemini(raw_data: str, resume_text: str, url: str, pool: ModelPool) -> list[dict]:
+def extract_jobs_with_gemini(raw_data: str, profile_text: str, url: str, pool: ModelPool) -> list[dict]:
     if not GEMINI_API_KEY or not raw_data:
         return []
 
-    prompt = GEMINI_PROMPT_TEMPLATE.format(resume_text=resume_text, raw_data=raw_data)
+    prompt = GEMINI_PROMPT_TEMPLATE.format(profile_text=profile_text, raw_data=raw_data)
     try:
         text = pool.generate(prompt)
         jobs = json.loads(text)
@@ -329,12 +320,10 @@ def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
 # ── Main ───────────────────────────────────────────────────────────────────────
 def main():
     print("═" * 60)
-    print("  JobBuddy Scraper v2 — Starting")
+    print("  JobBuddy Scraper v3 — Starting")
     print("═" * 60)
 
-    resume_text = get_resume_text()
-    if not resume_text:
-        print("[WARN] Resume text empty — AI matching quality will be reduced.")
+    profile_text = get_profile_text()
 
     urls = get_target_urls()
     print(f"  Loaded {len(urls)} target URLs.")
@@ -367,7 +356,7 @@ def main():
                 
             # Send the JSON shortlist to Gemini to do the final strict experience-check
             raw_data_for_gemini = json.dumps(filtered, indent=2)
-            jobs = extract_jobs_with_gemini(raw_data_for_gemini, resume_text, url, pool)
+            jobs = extract_jobs_with_gemini(raw_data_for_gemini, profile_text, url, pool)
             fetch_time_ms = int((time.time()-start)*1000)
 
         # 2. PLAYWRIGHT FALLBACK (The safe HTML path)
@@ -381,7 +370,7 @@ def main():
                 time.sleep(2)
                 continue
 
-            jobs = extract_jobs_with_gemini(html, resume_text, url, pool)
+            jobs = extract_jobs_with_gemini(html, profile_text, url, pool)
 
         # 3. SAVE RESULTS
         if not jobs:
