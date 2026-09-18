@@ -16,10 +16,7 @@ async function connectToDatabase() {
         throw new Error("MONGODB_URI environment variable is not defined");
     }
 
-    const client = new MongoClient(uri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
+    const client = new MongoClient(uri);
 
     await client.connect();
     cachedClient = client;
