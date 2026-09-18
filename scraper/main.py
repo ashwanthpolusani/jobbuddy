@@ -22,8 +22,8 @@ URLS_FILE      = os.path.join(os.path.dirname(__file__), "urls.txt")
 # Both models share the same free-tier limits: 15 RPM, 500 RPD, 250K TPM
 # Using two models gives us: 30 RPM combined, 1000 RPD combined
 GEMINI_MODELS = [
-    "gemini-2.5-flash-lite",   # Model A
-    "gemini-2.0-flash-lite",   # Model B (fallback)
+    "gemini-3.5-flash-lite",   # Model A (primary)
+    "gemini-3.1-flash-lite",   # Model B (fallback)
 ]
 RPM_LIMIT = 15
 RPD_LIMIT = 500
