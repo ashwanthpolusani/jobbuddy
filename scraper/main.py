@@ -105,8 +105,8 @@ def extract_jobs_with_gemini(raw_html, resume_text):
                 return json.loads(response.text)
             except Exception as e:
                 error_msg = str(e)
-                if '429' in error_msg or 'Quota exceeded' in error_msg:
-                    print(f"Rate limit hit. Sleeping for 65 seconds... (Attempt {attempt+1}/{max_retries})")
+                if '429' in error_msg or 'Quota exceeded' in error_msg or '503' in error_msg:
+                    print(f"Rate limit or Server Overload hit. Sleeping for 65 seconds... (Attempt {attempt+1}/{max_retries})")
                     time.sleep(65)
                 else:
                     print(f"Gemini API Error: {error_msg}")
