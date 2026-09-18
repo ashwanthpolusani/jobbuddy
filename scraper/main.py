@@ -19,6 +19,16 @@ MONGODB_URI    = os.getenv("MONGODB_URI")
 RESUME_PATH    = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ashwanth polusani.pdf")
 URLS_FILE      = os.path.join(os.path.dirname(__file__), "urls.txt")
 
+# Both models share the same free-tier limits: 15 RPM, 500 RPD, 250K TPM
+# Using two models gives us: 30 RPM combined, 1000 RPD combined
+GEMINI_MODELS = [
+    "gemini-2.5-flash-lite",   # Model A
+    "gemini-2.0-flash-lite",   # Model B (fallback)
+]
+RPM_LIMIT = 15
+RPD_LIMIT = 500
+
+
 # ── Helpers ────────────────────────────────────────────────────────────────────
 def get_target_urls():
     if not os.path.exists(URLS_FILE):
@@ -41,6 +51,87 @@ def clean_html(html):
     html = re.sub(r'<svg.*?</svg>',      '', html, flags=re.DOTALL | re.IGNORECASE)
     html = re.sub(r'<!--.*?-->',         '', html, flags=re.DOTALL)
     return html
+
+# ── Dual-Model Pool ────────────────────────────────────────────────────────────
+class ModelPool:
+    """
+    Manages two Gemini models with round-robin load balancing and
+    instant failover. Only sleeps when BOTH models are rate-limited.
+    """
+    def __init__(self, api_key: str, models: list[str]):
+        self.client = genai.Client(api_key=api_key)
+        self.models = models
+        self._current = 0  # index for round-robin
+        # Per-model tracking
+        self._stats = {
+            m: {"minute_count": 0, "day_count": 0, "minute_start": time.time()}
+            for m in models
+        }
+
+    def _refresh_minute(self, model: str):
+        s = self._stats[model]
+        if time.time() - s["minute_start"] >= 60:
+            s["minute_count"] = 0
+            s["minute_start"] = time.time()
+
+    def _is_available(self, model: str) -> bool:
+        self._refresh_minute(model)
+        s = self._stats[model]
+        return s["minute_count"] < RPM_LIMIT and s["day_count"] < RPD_LIMIT
+
+    def _record_use(self, model: str):
+        self._stats[model]["minute_count"] += 1
+        self._stats[model]["day_count"] += 1
+
+    def _mark_limited(self, model: str):
+        """Force the model to appear maxed out for this minute."""
+        self._stats[model]["minute_count"] = RPM_LIMIT
+
+    def generate(self, prompt: str) -> str:
+        """
+        Try models in round-robin order.
+        Instant failover on 429/503. Sleep only when both exhausted.
+        Returns the response text or raises RuntimeError.
+        """
+        # Build ordered list starting from current round-robin index
+        ordered = [self.models[(self._current + i) % len(self.models)]
+                   for i in range(len(self.models))]
+        self._current = (self._current + 1) % len(self.models)
+
+        max_global_retries = 3
+        for global_attempt in range(max_global_retries):
+            for model in ordered:
+                if not self._is_available(model):
+                    print(f"  ⟳ {model} quota reached — skipping to next model")
+                    continue
+                try:
+                    response = self.client.models.generate_content(
+                        model=model,
+                        contents=prompt,
+                        config={"response_mime_type": "application/json"}
+                    )
+                    self._record_use(model)
+                    print(f"  ✓ [{model}] responded")
+                    return response.text
+                except Exception as e:
+                    err = str(e)
+                    if '429' in err or 'Quota' in err or '503' in err:
+                        print(f"  ⚠ [{model}] rate limited — trying next model instantly")
+                        self._mark_limited(model)
+                        continue  # immediately try next model
+                    else:
+                        raise  # non-rate-limit error: propagate up
+
+            # Both models are exhausted — wait for minute to reset
+            print(f"  ⏳ Both models rate limited. Sleeping 65s… (attempt {global_attempt+1}/{max_global_retries})")
+            time.sleep(65)
+            # Reset tracking so we retry fresh
+            for m in self.models:
+                self._stats[m]["minute_count"] = 0
+                self._stats[m]["minute_start"] = time.time()
+
+        raise RuntimeError("All models exhausted after max retries.")
+
 
 def make_job_id(company: str, title: str, link: str) -> str:
     """Stable unique ID for deduplication via upsert."""
@@ -133,43 +224,28 @@ HTML:
 {raw_html}
 """
 
-def extract_jobs_with_gemini(raw_html: str, resume_text: str, url: str) -> list[dict]:
+def extract_jobs_with_gemini(raw_html: str, resume_text: str, url: str, pool: ModelPool) -> list[dict]:
     if not GEMINI_API_KEY or not raw_html:
         return []
 
+    prompt = GEMINI_PROMPT_TEMPLATE.format(resume_text=resume_text, raw_html=raw_html)
     try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        prompt = GEMINI_PROMPT_TEMPLATE.format(resume_text=resume_text, raw_html=raw_html)
-
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = client.models.generate_content(
-                    model='gemini-2.0-flash-lite',
-                    contents=prompt,
-                    config={"response_mime_type": "application/json"}
-                )
-                jobs = json.loads(response.text)
-                if not isinstance(jobs, list):
-                    return []
-                # Inject source_url and scraped_at
-                for job in jobs:
-                    job['source_url']  = url
-                    job['scraped_at']  = now_iso()
-                return jobs
-            except Exception as e:
-                err = str(e)
-                if '429' in err or 'Quota' in err or '503' in err:
-                    print(f"  ⚠ Rate limit/overload (attempt {attempt+1}/3). Sleeping 65s…")
-                    time.sleep(65)
-                else:
-                    print(f"  ✗ Gemini error: {err}")
-                    return []
-
-        print("  ✗ Max retries exceeded for Gemini.")
+        text = pool.generate(prompt)
+        jobs = json.loads(text)
+        if not isinstance(jobs, list):
+            return []
+        for job in jobs:
+            job['source_url']  = url
+            job['scraped_at']  = now_iso()
+        return jobs
+    except json.JSONDecodeError as e:
+        print(f"  ✗ JSON parse error: {e}")
+        return []
+    except RuntimeError as e:
+        print(f"  ✗ {e}")
         return []
     except Exception as e:
-        print(f"  ✗ Gemini config error: {e}")
+        print(f"  ✗ Gemini error: {e}")
         return []
 
 # ── MongoDB ────────────────────────────────────────────────────────────────────
@@ -251,8 +327,11 @@ def main():
         print("[WARN] Resume text empty — AI matching quality will be reduced.")
 
     urls = get_target_urls()
-    print(f"  Loaded {len(urls)} target URLs.\n")
+    print(f"  Loaded {len(urls)} target URLs.")
+    print(f"  Models: {GEMINI_MODELS[0]} (primary) + {GEMINI_MODELS[1]} (fallback)")
+    print(f"  Combined limits: {RPM_LIMIT*2} RPM · {RPD_LIMIT*2} RPD\n")
 
+    pool = ModelPool(api_key=GEMINI_API_KEY, models=GEMINI_MODELS)
     total_jobs_saved = 0
 
     for i, url in enumerate(urls, 1):
@@ -267,7 +346,7 @@ def main():
             time.sleep(2)
             continue
 
-        jobs = extract_jobs_with_gemini(html, resume_text, url)
+        jobs = extract_jobs_with_gemini(html, resume_text, url, pool)
 
         if not jobs:
             print(f"  → 0 valid jobs extracted")
@@ -278,11 +357,13 @@ def main():
             print(f"  ✓ {len(jobs)} jobs extracted, {saved} upserted to DB")
             record_site_stats(url, True, fetch_time_ms, jobs, None)
 
-        # Respectful delay to stay under Gemini free-tier limits
-        time.sleep(12)
+        # Shorter delay now that we have 2x rate limit headroom
+        time.sleep(6)
 
     print(f"\n{'═'*60}")
     print(f"  Run complete. {total_jobs_saved} total jobs saved/updated.")
+    print(f"  Model A ({GEMINI_MODELS[0]}) used: {pool._stats[GEMINI_MODELS[0]]['day_count']} requests")
+    print(f"  Model B ({GEMINI_MODELS[1]}) used: {pool._stats[GEMINI_MODELS[1]]['day_count']} requests")
     print(f"{'═'*60}\n")
 
 if __name__ == "__main__":
