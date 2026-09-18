@@ -9,6 +9,10 @@ on:
 jobs:
   scrape-and-store:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chunk: [0, 1, 2, 3] # Spawns 4 parallel runners (increase if you add >500 URLs)
+      fail-fast: false      # If one chunk fails, let the others finish
     
     steps:
     - name: Checkout repository
@@ -35,6 +39,8 @@ jobs:
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        CHUNK_INDEX: ${{ matrix.chunk }}
+        TOTAL_CHUNKS: 4
       run: |
         cd scraper
         python main.py

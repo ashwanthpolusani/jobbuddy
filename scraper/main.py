@@ -10,6 +10,7 @@ from google import genai
 import certifi
 from playwright.sync_api import sync_playwright
 from pypdf import PdfReader
+import safe_ats  # v3 Safe API Router
 
 load_dotenv()
 
@@ -33,8 +34,21 @@ RPD_LIMIT = 500
 def get_target_urls():
     if not os.path.exists(URLS_FILE):
         return []
+    
+    # Read all valid URLs
     with open(URLS_FILE, 'r') as f:
-        return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+    
+    # Modulo Sharding for GH Actions Matrix Scaling
+    chunk_index = int(os.getenv("CHUNK_INDEX", "0"))
+    total_chunks = int(os.getenv("TOTAL_CHUNKS", "1"))
+    
+    if total_chunks > 1:
+        sharded_urls = [u for i, u in enumerate(urls) if i % total_chunks == chunk_index]
+        print(f"  [Matrix] Sharding enabled: Processing chunk {chunk_index+1}/{total_chunks}")
+        return sharded_urls
+        
+    return urls
 
 def get_resume_text():
     try:
@@ -178,40 +192,36 @@ CANDIDATE RESUME:
 {resume_text}
 
 ──────────────────────────────────────────
-TASK: Extract job listings from the HTML below.
+TASK: Extract and evaluate job listings from the raw data below.
 
 STRICT RULES — follow exactly:
 
-1. SKIP generic pages: If the page only shows a "Browse Jobs" / "View Openings" button
-   with no actual specific job titles listed → return an empty array [].
-
-2. REJECT any job that requires any work experience, any internships, or any years on the job.
+1. REJECT any job that requires any work experience, any internships, or any years on the job.
    This includes "1+ year preferred", "some experience", etc.
    ONLY include jobs explicitly labeled: fresher, entry-level, new grad, trainee,
    associate, 0–1 years, or no experience required.
    When in doubt about experience requirements → EXCLUDE the job.
 
-3. SKIP link_type "career_homepage": If a link goes to a generic careers homepage
+2. SKIP link_type "career_homepage": If a link goes to a generic careers homepage
    (not filtered to specific roles or a specific department) → do NOT include it.
 
-4. For each valid job, determine link_type:
+3. For each valid job, determine link_type:
    - "direct_apply": URL leads directly to one specific job application form
    - "filtered_list": URL leads to a pre-filtered list (e.g., by city, department, or team)
-   Do NOT include "career_homepage" type — skip those entirely.
 
-5. Assign category (pick ONE):
+4. Assign category (pick ONE):
    software_engineering | data_ml | devops_cloud | cybersecurity | early_careers | product_design | other
 
-6. Assign quality (integer 1–5):
+5. Assign quality (integer 1–5):
    5 = Specific title + real requirements stated + direct apply link + strong skills match
    4 = Specific title + some requirements + good match
    3 = Specific title + filtered list link + limited info
    2 = Vague title + filtered list + partial info
    1 = Do not include (skip)
 
-7. Extract company_name from page content, not from URL.
+6. Extract company_name accurately.
 
-8. Return ONLY a valid JSON array. Each element must have exactly these keys:
+7. Return ONLY a valid JSON array. Each element must have exactly these keys:
    "title", "company_name", "location", "requirements", "link",
    "link_type", "category", "quality", "match_reason"
 
@@ -220,15 +230,15 @@ STRICT RULES — follow exactly:
    - All links must be absolute URLs
    - If no valid jobs found → return []
 
-HTML:
-{raw_html}
+RAW DATA TO EVALUATE:
+{raw_data}
 """
 
-def extract_jobs_with_gemini(raw_html: str, resume_text: str, url: str, pool: ModelPool) -> list[dict]:
-    if not GEMINI_API_KEY or not raw_html:
+def extract_jobs_with_gemini(raw_data: str, resume_text: str, url: str, pool: ModelPool) -> list[dict]:
+    if not GEMINI_API_KEY or not raw_data:
         return []
 
-    prompt = GEMINI_PROMPT_TEMPLATE.format(resume_text=resume_text, raw_html=raw_html)
+    prompt = GEMINI_PROMPT_TEMPLATE.format(resume_text=resume_text, raw_data=raw_data)
     try:
         text = pool.generate(prompt)
         jobs = json.loads(text)
@@ -337,19 +347,45 @@ def main():
     for i, url in enumerate(urls, 1):
         print(f"\n[{i}/{len(urls)}] {url}")
 
-        html, fetch_time_ms, fetch_error = fetch_html_with_playwright(url)
-        fetch_success = bool(html and not fetch_error)
+        # 1. ATS API ROUTER (The fast/safe path)
+        is_api, api_jobs, ats_name = safe_ats.process_ats_url(url)
+        
+        if is_api:
+            print(f"  ⚡ ATS Detected: {ats_name} API (bypassing Playwright)")
+            start = time.time()
+            if not api_jobs:
+                print(f"  → 0 total open roles found via {ats_name} API.")
+                record_site_stats(url, True, int((time.time()-start)*1000), [], None)
+                continue
+                
+            filtered = safe_ats.pre_filter_jobs(api_jobs)
+            print(f"  → API returned {len(api_jobs)} jobs. Pre-filtered to {len(filtered)} tech/junior roles.")
+            
+            if not filtered:
+                record_site_stats(url, True, int((time.time()-start)*1000), [], None)
+                continue
+                
+            # Send the JSON shortlist to Gemini to do the final strict experience-check
+            raw_data_for_gemini = json.dumps(filtered, indent=2)
+            jobs = extract_jobs_with_gemini(raw_data_for_gemini, resume_text, url, pool)
+            fetch_time_ms = int((time.time()-start)*1000)
 
-        if not fetch_success:
-            print(f"  ✗ Fetch failed ({fetch_time_ms}ms): {fetch_error}")
-            record_site_stats(url, False, fetch_time_ms, [], fetch_error)
-            time.sleep(2)
-            continue
+        # 2. PLAYWRIGHT FALLBACK (The safe HTML path)
+        else:
+            html, fetch_time_ms, fetch_error = fetch_html_with_playwright(url)
+            fetch_success = bool(html and not fetch_error)
 
-        jobs = extract_jobs_with_gemini(html, resume_text, url, pool)
+            if not fetch_success:
+                print(f"  ✗ Fetch failed ({fetch_time_ms}ms): {fetch_error}")
+                record_site_stats(url, False, fetch_time_ms, [], fetch_error)
+                time.sleep(2)
+                continue
 
+            jobs = extract_jobs_with_gemini(html, resume_text, url, pool)
+
+        # 3. SAVE RESULTS
         if not jobs:
-            print(f"  → 0 valid jobs extracted")
+            print(f"  → 0 valid jobs extracted (post-Gemini)")
             record_site_stats(url, True, fetch_time_ms, [], None)
         else:
             saved = upsert_jobs(jobs)
