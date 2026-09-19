@@ -20,6 +20,7 @@ exports.handler = async (event, context) => {
     const link_type  = params.link_type  || null;
     const min_quality = parseInt(params.min_quality ?? "3", 10);
     const limit      = Math.min(parseInt(params.limit ?? "100", 10), 200);
+    const skip       = Math.max(parseInt(params.skip  ?? "0",   10), 0);
 
     try {
         const client = await connectToDatabase();
@@ -42,6 +43,7 @@ exports.handler = async (event, context) => {
         const jobs = await collection
             .find(filter)
             .sort({ scraped_at: -1, _id: -1 })
+            .skip(skip)
             .limit(limit)
             .toArray();
 

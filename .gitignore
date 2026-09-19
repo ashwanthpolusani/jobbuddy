@@ -1,5 +1,9 @@
 node_modules/
 venv/
+scraper/venv/
 .env
 __pycache__/
+*.pyc
 .netlify/
+scratch/
+*.log

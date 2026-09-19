@@ -4,6 +4,7 @@ https://careers.microsoft.com/
 https://jobs.apple.com/
 https://www.metacareers.com/
 https://jobs.netflix.com/
+https://explore.jobs.netflix.net/api/apply/v2/jobs?domain=netflix.com
 https://careers.adobe.com/
 https://salesforce.wd1.myworkdayjobs.com/External_Career_Site
 https://careers.oracle.com/
@@ -22,7 +23,7 @@ https://workday.wd5.myworkdayjobs.com/Workday
 https://www.splunk.com/en_us/careers.html
 https://www.atlassian.com/company/careers
 https://www.palantir.com/careers/
-https://careers.snowflake.com/
+https://careers.snowflake.com/us/en/c/engineering-jobs?from=[PAGE_OFFSET:0:90:10]&s=1
 https://databricks.com/company/careers
 https://stripe.com/jobs
 https://careers.squareup.com/

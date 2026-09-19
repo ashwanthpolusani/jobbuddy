@@ -2,8 +2,8 @@ name: Playwright Job Scraper
 
 on:
   schedule:
-    # Runs at 08:00 UTC every day
-    - cron: '0 8 * * *'
+    # Runs at 08:30 IST (03:00 UTC) every day
+    - cron: '0 3 * * *'
   workflow_dispatch: # Allows manual run
 
 jobs:

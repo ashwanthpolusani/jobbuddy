@@ -20,13 +20,15 @@ PROFILE_PATH   = os.path.join(os.path.dirname(__file__), "profile.txt")
 URLS_FILE      = os.path.join(os.path.dirname(__file__), "urls.txt")
 
 # Both models share the same free-tier limits: 15 RPM, 500 RPD, 250K TPM
-# Using two models gives us: 30 RPM combined, 1000 RPD combined
+# Note: All 4 GH Actions parallel runners share one API key, so real RPM is still
+# 15/min total (each runner processes a shard of URLs, so contention is minimal).
 GEMINI_MODELS = [
     "gemini-3.5-flash-lite",   # Model A (primary)
     "gemini-3.1-flash-lite",   # Model B (fallback)
 ]
-RPM_LIMIT = 15
-RPD_LIMIT = 500
+RPM_LIMIT = 15          # Per-model per-minute limit
+RPD_LIMIT = 500         # Per-model per-day limit
+GEMINI_CHUNK_SIZE = 50  # Max jobs per Gemini API call (prevents Payload Too Large)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -36,9 +38,25 @@ def get_target_urls():
     
     # Read all valid URLs
     with open(URLS_FILE, 'r') as f:
-        urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        raw_urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
     
-    # Modulo Sharding for GH Actions Matrix Scaling
+    # 1. Expand Pagination Templates
+    # Example: https://site.com/jobs?from=[PAGE_OFFSET:0:90:10]
+    urls = []
+    pattern = re.compile(r'\[PAGE_OFFSET:(\d+):(\d+):(\d+)\]')
+    for raw_url in raw_urls:
+        match = pattern.search(raw_url)
+        if match:
+            start = int(match.group(1))
+            end = int(match.group(2))
+            step = int(match.group(3))
+            if step <= 0: step = 10 # safety fallback
+            for offset in range(start, end + 1, step):
+                urls.append(pattern.sub(str(offset), raw_url))
+        else:
+            urls.append(raw_url)
+    
+    # 2. Modulo Sharding for GH Actions Matrix Scaling
     chunk_index = int(os.getenv("CHUNK_INDEX", "0"))
     total_chunks = int(os.getenv("TOTAL_CHUNKS", "1"))
     
@@ -64,6 +82,31 @@ def clean_html(html):
     html = re.sub(r'<svg.*?</svg>',      '', html, flags=re.DOTALL | re.IGNORECASE)
     html = re.sub(r'<!--.*?-->',         '', html, flags=re.DOTALL)
     return html
+
+def extract_text_and_links(html: str) -> str:
+    """Uses markdownify to convert HTML to Markdown, preserving structure and links while minimizing tokens."""
+    try:
+        import markdownify
+        from bs4 import BeautifulSoup
+        
+        # First clean up unnecessary elements that bloat the output
+        soup = BeautifulSoup(html, 'html.parser')
+        for element in soup(["script", "style", "noscript", "svg"]):
+            element.extract()
+            
+        clean_html_str = str(soup)
+        
+        # Convert to markdown: preserves headers (e.g. ### SOFTWARE ENGINEERING) and links [Job](url)
+        md = markdownify.markdownify(clean_html_str, heading_style="ATX")
+        
+        # Clean up excessive blank lines to save tokens
+        import re
+        md = re.sub(r'\n{3,}', '\n\n', md).strip()
+        
+        return md if md else clean_html(html)
+    except Exception as e:
+        print(f"  ⚠ Markdown conversion error: {e}. Falling back to cleaned HTML.")
+        return clean_html(html)
 
 # ── Dual-Model Pool ────────────────────────────────────────────────────────────
 class ModelPool:
@@ -168,7 +211,8 @@ def fetch_html_with_playwright(url: str) -> tuple[str, int, str | None]:
             page = browser.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=45000)
             time.sleep(3)
-            html = clean_html(page.content())
+            raw_html = page.content()
+            html = extract_text_and_links(raw_html)
             browser.close()
         elapsed = int((time.time() - start) * 1000)
         return html, elapsed, None
@@ -220,6 +264,7 @@ STRICT RULES — follow exactly:
    - "match_reason": 1–2 sentences explaining WHY this is a good fit for the candidate
    - All links must be absolute URLs
    - If no valid jobs found → return []
+   - IF the raw data appears to be a Captcha, Cloudflare challenge, Access Denied, or a generic homepage/video page instead of a careers portal, return EXACTLY this: [{{"error_type": "site_blocked_or_invalid"}}]
 
 RAW DATA TO EVALUATE:
 {raw_data}
@@ -230,11 +275,14 @@ def extract_jobs_with_gemini(raw_data: str, profile_text: str, url: str, pool: M
         return []
 
     prompt = GEMINI_PROMPT_TEMPLATE.format(profile_text=profile_text, raw_data=raw_data)
+    
     try:
         text = pool.generate(prompt)
         jobs = json.loads(text)
         if not isinstance(jobs, list):
             return []
+        # Defensive: only keep actual dicts (guards against Gemini returning ["error_type"] strings)
+        jobs = [job for job in jobs if isinstance(job, dict)]
         for job in jobs:
             job['source_url']  = url
             job['scraped_at']  = now_iso()
@@ -287,7 +335,7 @@ def upsert_jobs(jobs: list[dict]) -> int:
     return saved
 
 def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
-                      jobs: list[dict], error: str | None):
+                      jobs: list[dict], error: str | None, ats_replacement_url: str | None = None):
     """Write one performance record per URL visit to site_stats collection."""
     if not MONGODB_URI:
         return
@@ -310,6 +358,7 @@ def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
         "link_types":         link_types,
         "avg_quality":        round(sum(qualities) / len(qualities), 2) if qualities else 0,
         "error":              error,
+        "ats_replacement_url": ats_replacement_url
     }
     try:
         db = get_db()
@@ -323,18 +372,27 @@ def main():
     print("  JobBuddy Scraper v3 — Starting")
     print("═" * 60)
 
+    # ── Guard: fail fast if required secrets are missing ──────────────
+    if not GEMINI_API_KEY:
+        print("  ✗ FATAL: GEMINI_API_KEY is not set. Add it to .env or GitHub Secrets.")
+        return
+    if not MONGODB_URI:
+        print("  ✗ FATAL: MONGODB_URI is not set. Add it to .env or GitHub Secrets.")
+        return
+
     profile_text = get_profile_text()
 
     urls = get_target_urls()
     print(f"  Loaded {len(urls)} target URLs.")
     print(f"  Models: {GEMINI_MODELS[0]} (primary) + {GEMINI_MODELS[1]} (fallback)")
-    print(f"  Combined limits: {RPM_LIMIT*2} RPM · {RPD_LIMIT*2} RPD\n")
+    print(f"  Rate limits: {RPM_LIMIT} RPM · {RPD_LIMIT} RPD per model (shared API key)\n")
 
     pool = ModelPool(api_key=GEMINI_API_KEY, models=GEMINI_MODELS)
     total_jobs_saved = 0
 
     for i, url in enumerate(urls, 1):
         print(f"\n[{i}/{len(urls)}] {url}")
+        api_link = None  # Reset per-URL to prevent leak across iterations
 
         # 1. ATS API ROUTER (The fast/safe path)
         is_api, api_jobs, ats_name = safe_ats.process_ats_url(url)
@@ -354,9 +412,13 @@ def main():
                 record_site_stats(url, True, int((time.time()-start)*1000), [], None)
                 continue
                 
-            # Send the JSON shortlist to Gemini to do the final strict experience-check
-            raw_data_for_gemini = json.dumps(filtered, indent=2)
-            jobs = extract_jobs_with_gemini(raw_data_for_gemini, profile_text, url, pool)
+            # Send the JSON shortlist to Gemini to do the final strict experience-check (CHUNKED)
+            jobs = []
+            for j in range(0, len(filtered), GEMINI_CHUNK_SIZE):
+                chunk = filtered[j:j + GEMINI_CHUNK_SIZE]
+                raw_data_for_gemini = json.dumps(chunk, indent=2)
+                chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, profile_text, url, pool)
+                jobs.extend(chunk_jobs)
             fetch_time_ms = int((time.time()-start)*1000)
 
         # 2. PLAYWRIGHT FALLBACK (The safe HTML path)
@@ -370,17 +432,66 @@ def main():
                 time.sleep(2)
                 continue
 
-            jobs = extract_jobs_with_gemini(html, profile_text, url, pool)
+            # ATS Auto-Detection
+            detected_is_api, detected_api_jobs, detected_ats_name = safe_ats.process_html_for_ats(html)
+            if detected_is_api:
+                print(f"  ⚡ Auto-Detected {detected_ats_name} inside webpage! Switching to API.")
+                
+                # Derive the replacement API link from the detected slug in the HTML
+                if detected_ats_name == "Greenhouse" and safe_ats.extract_slug(url, "greenhouse"):
+                    api_link = f"https://boards.greenhouse.io/{safe_ats.extract_slug(url, 'greenhouse')}"
+                elif detected_ats_name == "Lever" and safe_ats.extract_slug(url, "lever"):
+                    api_link = f"https://jobs.lever.co/{safe_ats.extract_slug(url, 'lever')}"
+                elif detected_api_jobs:
+                    # Last resort: try extracting slug from the first job's link
+                    sample_link = detected_api_jobs[0].get('link', '')
+                    slug = safe_ats.extract_slug(sample_link, detected_ats_name.lower())
+                    if slug:
+                        api_link = f"https://boards.greenhouse.io/{slug}" if detected_ats_name == "Greenhouse" else f"https://jobs.lever.co/{slug}"
+
+                
+                # Log replacement recommendation
+                log_path = os.path.join(os.path.dirname(__file__), "..", "scratch", "ats_replacements.log")
+                os.makedirs(os.path.dirname(log_path), exist_ok=True)
+                with open(log_path, "a") as f:
+                    if api_link:
+                         f.write(f"[{now_iso()}] {detected_ats_name} Detected: REPLACE {url} WITH {api_link}\n")
+                    else:
+                         f.write(f"[{now_iso()}] {detected_ats_name} Detected: Consider replacing {url} with direct ATS link in urls.txt for faster runs.\n")
+                
+                filtered = safe_ats.pre_filter_jobs(detected_api_jobs)
+                print(f"  → {detected_ats_name} API returned {len(detected_api_jobs)} jobs. Pre-filtered to {len(filtered)} roles.")
+                
+                if not filtered:
+                    record_site_stats(url, True, fetch_time_ms, [], None, ats_replacement_url=api_link)
+                    continue
+                
+                jobs = []
+                for j in range(0, len(filtered), GEMINI_CHUNK_SIZE):
+                    chunk = filtered[j:j + GEMINI_CHUNK_SIZE]
+                    raw_data_for_gemini = json.dumps(chunk, indent=2)
+                    chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, profile_text, url, pool)
+                    jobs.extend(chunk_jobs)
+            else:
+                jobs = extract_jobs_with_gemini(html, profile_text, url, pool)
 
         # 3. SAVE RESULTS
-        if not jobs:
+        # Filter out any error_type sentinel objects that may have leaked through from any chunk
+        error_jobs = [j for j in jobs if "error_type" in j]
+        real_jobs  = [j for j in jobs if "error_type" not in j]
+        
+        if error_jobs and not real_jobs:
+            issue = error_jobs[0].get("error_type")
+            print(f"  ⚠ Gemini detected site issue: {issue}")
+            record_site_stats(url, True, fetch_time_ms, [], error=f"Gemini Analysis: {issue}", ats_replacement_url=api_link)
+        elif not real_jobs:
             print(f"  → 0 valid jobs extracted (post-Gemini)")
-            record_site_stats(url, True, fetch_time_ms, [], None)
+            record_site_stats(url, True, fetch_time_ms, [], None, ats_replacement_url=api_link)
         else:
-            saved = upsert_jobs(jobs)
+            saved = upsert_jobs(real_jobs)
             total_jobs_saved += saved
-            print(f"  ✓ {len(jobs)} jobs extracted, {saved} upserted to DB")
-            record_site_stats(url, True, fetch_time_ms, jobs, None)
+            print(f"  ✓ {len(real_jobs)} jobs extracted, {saved} upserted to DB")
+            record_site_stats(url, True, fetch_time_ms, real_jobs, None, ats_replacement_url=api_link)
 
         # Shorter delay now that we have 2x rate limit headroom
         time.sleep(6)

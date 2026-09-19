@@ -33,6 +33,7 @@ exports.handler = async (event, context) => {
                     avg_quality:        { $avg: "$avg_quality" },
                     last_run:           { $first: "$run_date" },
                     last_error:         { $first: "$error" },
+                    last_ats_replacement: { $first: "$ats_replacement_url" },
                     direct_apply_total: { $sum: "$link_types.direct_apply" },
                     filtered_list_total:{ $sum: "$link_types.filtered_list" },
                     homepage_total:     { $sum: "$link_types.career_homepage" },
