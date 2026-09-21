@@ -1,4 +1,11 @@
 # ── Direct JSON links (Fast & Simple) ───────────────────────────
+https://boards-api.greenhouse.io/v1/boards/nextiva/jobs
+https://boards-api.greenhouse.io/v1/boards/mcafee/jobs
+https://api.lever.co/v0/postings/activecampaign
+https://boards-api.greenhouse.io/v1/boards/hubspot/jobs
+https://boards-api.greenhouse.io/v1/boards/dialpad/jobs
+https://jobs.lever.co/plaid
+https://boards-api.greenhouse.io/v1/boards/linkedin/jobs
 https://boards-api.greenhouse.io/v1/boards/gitlab/jobs
 https://boards-api.greenhouse.io/v1/boards/dropbox/jobs
 https://boards-api.greenhouse.io/v1/boards/epicgames/jobs
@@ -48,7 +55,6 @@ https://careers.servicenow.com/jobs/?page=[PAGE_OFFSET:1:5:1]#results
 https://careers.snowflake.com/us/en/c/engineering-jobs?from=[PAGE_OFFSET:0:90:10]&s=1
 
 # ── Hidden JSON links found at runtime (ATS Auto-Detect) ────────
-https://jobs.lever.co/plaid
 
 # ── Custom Code required JSON endpoints ─────────────────────────
 https://broadcom.wd1.myworkdayjobs.com/External_Career
@@ -63,7 +69,6 @@ https://careers.adobe.com/
 https://careers.apac.bnpparibas/
 https://careers.blackrock.com/job-search-results/?location=India
 https://careers.google.com/
-https://careers.linkedin.com/
 https://careers.microsoft.com/
 https://careers.oracle.com/
 https://careers.qualcomm.com/
@@ -84,7 +89,6 @@ https://postmarkapp.com/about/careers
 https://sendgrid.com/careers/
 https://slack.com/careers
 https://www.accenture.com/in-en/careers/jobsearch
-https://www.activecampaign.com/about/careers
 https://www.adobe.com/careers.html
 https://www.amazon.jobs/
 https://www.atlassian.com/company/careers
@@ -95,12 +99,10 @@ https://www.capgemini.com/in-en/careers/job-search/
 https://www.crowdstrike.com/careers/
 https://www.cyberark.com/careers/
 https://www.darktrace.com/careers/
-https://www.dialpad.com/careers/
 https://www.f5.com/company/careers
 https://www.fortinet.com/corporate/careers
 https://www.freshbooks.com/careers
 https://www.hisense-usa.com/about-us/careers
-https://www.hubspot.com/careers
 https://www.ibm.com/employment/
 https://www.infor.com/about/careers
 https://www.insurity.com/about/careers/
@@ -109,12 +111,10 @@ https://www.jabra.com/about/careers
 https://www.jive.com/about/careers/
 https://www.lifeatspotify.com/
 https://www.mailchimp.com/jobs/
-https://www.mcafee.com/enterprise/en-us/about/careers.html
 https://www.metacareers.com/
 https://www.microfocus.com/en-us/about/careers
 https://www.microsoft.com/en-us/microsoft-365/careers
 https://www.mimecast.com/company/careers/
-https://www.nextiva.com/company/careers.html
 https://www.notion.so/careers
 https://www.nvidia.com/en-us/about-nvidia/careers/
 https://www.ooma.com/company/careers/
