@@ -1,9 +1,18 @@
 import os
+import sys
 import json
 import time
 import re
 import hashlib
 from datetime import datetime, timezone
+
+# Fix Windows console encoding issues for printing unicode box-drawing characters
+if sys.stdout.encoding.lower() != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass
+
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from google import genai

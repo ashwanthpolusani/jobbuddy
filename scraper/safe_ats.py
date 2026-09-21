@@ -75,7 +75,7 @@ def fetch_ashby_jobs(slug: str) -> list[dict] | None:
                     "content": j.get('descriptionPlain', '')
                 })
             return normalized
-    except urllib.error.HTTPError as e:
+    except HTTPError as e:
         print(f"    [Ashby API Blocked or Missing for {slug}] HTTP {e.code}")
         return None
     except Exception as e:
