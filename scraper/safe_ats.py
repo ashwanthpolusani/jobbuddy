@@ -50,7 +50,7 @@ def extract_workday_params(url: str) -> tuple[str, str, str] | None:
         return None
     return (tenant, domain, site)
 
-def fetch_greenhouse_jobs(slug: str) -> list[dict]:
+def fetch_greenhouse_jobs(slug: str) -> list[dict] | None:
     """Fetches all jobs from Greenhouse public API."""
     url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true"
     try:
@@ -71,11 +71,14 @@ def fetch_greenhouse_jobs(slug: str) -> list[dict]:
                     "content": j.get('content', '') # raw html of job
                 })
             return normalized
+    except HTTPError as e:
+        print(f"    [Greenhouse API Blocked or Missing for {slug}] HTTP {e.code}")
+        return None
     except Exception as e:
         print(f"    [Greenhouse API Error] {e}")
         return []
 
-def fetch_lever_jobs(slug: str) -> list[dict]:
+def fetch_lever_jobs(slug: str) -> list[dict] | None:
     """Fetches all jobs from Lever public API."""
     url = f"https://api.lever.co/v0/postings/{slug}?mode=json"
     try:
@@ -267,12 +270,16 @@ def process_ats_url(url: str) -> tuple[bool, list[dict], str]:
     if "greenhouse.io" in url:
         slug = extract_slug(url, "greenhouse")
         if slug:
-            return True, fetch_greenhouse_jobs(slug), "Greenhouse"
+            jobs = fetch_greenhouse_jobs(slug)
+            if jobs is not None:
+                return True, jobs, "Greenhouse"
             
     elif "lever.co" in url:
         slug = extract_slug(url, "lever")
         if slug:
-            return True, fetch_lever_jobs(slug), "Lever"
+            jobs = fetch_lever_jobs(slug)
+            if jobs is not None:
+                return True, jobs, "Lever"
             
     elif "/api/apply/v2/jobs" in url:
         return True, fetch_eightfold_jobs(url), "Eightfold"

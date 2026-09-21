@@ -1,12 +1,12 @@
 # ── Direct JSON API Sites (Fast) ──────────────────────────
-https://boards-api.greenhouse.io/v1/boards/notion/jobs
-https://boards-api.greenhouse.io/v1/boards/figma/jobs
-https://boards-api.greenhouse.io/v1/boards/insurity/jobs
-https://boards-api.greenhouse.io/v1/boards/stripe/jobs
-https://boards-api.greenhouse.io/v1/boards/tenableinc/jobs
+https://www.notion.so/careers
+https://boards.greenhouse.io/figma
+https://www.insurity.com/about/careers/
+https://boards.greenhouse.io/stripe
+https://boards.greenhouse.io/tenableinc
 https://explore.jobs.netflix.net/api/apply/v2/jobs?domain=netflix.com
-https://api.lever.co/v0/postings/palantir
-https://api.lever.co/v0/postings/plaid
+https://jobs.lever.co/palantir
+https://jobs.lever.co/plaid
 https://salesforce.wd1.myworkdayjobs.com/External_Career_Site
 https://swiggy.mynexthire.com/employer/jobs/careers
 https://visa.wd5.myworkdayjobs.com/Visa
