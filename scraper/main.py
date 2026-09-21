@@ -442,12 +442,29 @@ def main():
                     api_link = f"https://boards.greenhouse.io/{safe_ats.extract_slug(url, 'greenhouse')}"
                 elif detected_ats_name == "Lever" and safe_ats.extract_slug(url, "lever"):
                     api_link = f"https://jobs.lever.co/{safe_ats.extract_slug(url, 'lever')}"
+                elif detected_ats_name == "Workday" and safe_ats.extract_workday_params(url):
+                    _, domain, site = safe_ats.extract_workday_params(url)
+                    api_link = f"https://{domain}/en-US/{site}"
+                elif detected_ats_name == "MyNextHire":
+                    match = re.search(r'https://([^/]+\.mynexthire\.com)', url)
+                    if match:
+                        api_link = f"https://{match.group(1)}/employer/jobs/careers"
                 elif detected_api_jobs:
                     # Last resort: try extracting slug from the first job's link
                     sample_link = detected_api_jobs[0].get('link', '')
-                    slug = safe_ats.extract_slug(sample_link, detected_ats_name.lower())
-                    if slug:
-                        api_link = f"https://boards.greenhouse.io/{slug}" if detected_ats_name == "Greenhouse" else f"https://jobs.lever.co/{slug}"
+                    if detected_ats_name == "Workday":
+                        params = safe_ats.extract_workday_params(sample_link)
+                        if params:
+                            _, domain, site = params
+                            api_link = f"https://{domain}/en-US/{site}"
+                    elif detected_ats_name == "MyNextHire":
+                        match = re.search(r'https://([^/]+\.mynexthire\.com)', sample_link)
+                        if match:
+                            api_link = f"https://{match.group(1)}/employer/jobs/careers"
+                    else:
+                        slug = safe_ats.extract_slug(sample_link, detected_ats_name.lower())
+                        if slug:
+                            api_link = f"https://boards.greenhouse.io/{slug}" if detected_ats_name == "Greenhouse" else f"https://jobs.lever.co/{slug}"
 
                 
                 # Log replacement recommendation

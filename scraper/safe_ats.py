@@ -18,6 +18,24 @@ def extract_slug(url: str, platform: str) -> str | None:
         return None
     return None
 
+def extract_workday_params(url: str) -> tuple[str, str, str] | None:
+    """
+    Extracts (tenant, domain, site_name) from a Workday URL.
+    Returns None if not a valid workday URL.
+    """
+    # e.g., https://visa.wd5.myworkdayjobs.com/Visa -> domain: visa.wd5.myworkdayjobs.com, tenant: visa, site: Visa
+    # e.g., https://visa.wd5.myworkdayjobs.com/en-US/Visa -> site: Visa
+    match = re.search(r'https://([a-zA-Z0-9\-]+)\.([^/]+myworkdayjobs\.com)/(?:[a-zA-Z]{2}-[a-zA-Z]{2}/)?([^/]+)', url)
+    if not match:
+        return None
+    tenant = match.group(1)
+    domain = f"{tenant}.{match.group(2)}"
+    site = match.group(3)
+    # Ignore job-specific paths if present
+    if site.startswith('job') or site.startswith('login'):
+        return None
+    return (tenant, domain, site)
+
 def fetch_greenhouse_jobs(slug: str) -> list[dict]:
     """Fetches all jobs from Greenhouse public API."""
     url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true"
@@ -105,6 +123,93 @@ def fetch_eightfold_jobs(base_url: str) -> list[dict]:
         
     return all_jobs
 
+def fetch_workday_jobs(url: str) -> list[dict]:
+    """Fetches all jobs from Workday public API by automatically looping through pages."""
+    params = extract_workday_params(url)
+    if not params:
+        return []
+        
+    tenant, domain, site = params
+    api_url = f"https://{domain}/wday/cxs/{tenant}/{site}/jobs"
+    
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+    
+    all_jobs = []
+    offset = 0
+    limit = 20
+    
+    try:
+        while True:
+            data = json.dumps({'limit': limit, 'offset': offset}).encode('utf-8')
+            req = urllib.request.Request(api_url, data=data, headers=headers, method='POST')
+            
+            with urllib.request.urlopen(req, timeout=15) as response:
+                resp_data = json.loads(response.read().decode('utf-8'))
+                postings = resp_data.get('jobPostings', [])
+                
+                if not postings:
+                    break
+                    
+                for p in postings:
+                    title = p.get('title', '')
+                    loc = p.get('locationsText', '')
+                    ext_path = p.get('externalPath', '')
+                    full_link = f"https://{domain}/en-US/{site}{ext_path}"
+                    
+                    all_jobs.append({
+                        "title": title,
+                        "location": loc,
+                        "link": full_link,
+                        "content": "" # Workday list API doesn't include full descriptions
+                    })
+                
+                offset += limit
+                if offset >= resp_data.get('total', 0):
+                    break
+                    
+    except Exception as e:
+        print(f"    [Workday API Error] {e}")
+        
+    return all_jobs
+
+def fetch_mynexthire_jobs(domain: str) -> list[dict]:
+    """Fetches all jobs from MyNextHire (e.g. Swiggy) public API."""
+    api_url = f"https://{domain}/employer/careers/reqlist/get"
+    
+    headers = {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json;charset=UTF-8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+    
+    # MyNextHire returns all jobs in a single request with this payload
+    payload = {"source": "careers", "code": "", "filterByBuId": -1}
+    data = json.dumps(payload).encode('utf-8')
+    
+    all_jobs = []
+    try:
+        req = urllib.request.Request(api_url, data=data, headers=headers, method='POST')
+        with urllib.request.urlopen(req, timeout=15) as response:
+            resp_data = json.loads(response.read().decode('utf-8'))
+            jobs_list = resp_data.get('reqDetailsBOList', [])
+            
+            for j in jobs_list:
+                all_jobs.append({
+                    "title": j.get('reqTitle', ''),
+                    "location": j.get('location', ''),
+                    # Reconstruct the direct apply link based on typical MyNextHire routing
+                    "link": f"https://{domain}/employer/jobs/careers?category={j.get('reqId', '')}",
+                    "content": ""
+                })
+    except Exception as e:
+        print(f"    [MyNextHire API Error] {e}")
+        
+    return all_jobs
+
 def pre_filter_jobs(jobs: list[dict]) -> list[dict]:
     """
     Filters a massive list of ATS jobs down to just software/fresher roles
@@ -158,6 +263,18 @@ def process_ats_url(url: str) -> tuple[bool, list[dict], str]:
             
     elif "/api/apply/v2/jobs" in url:
         return True, fetch_eightfold_jobs(url), "Eightfold"
+
+    elif ".mynexthire.com" in url:
+        match = re.search(r'https://([^/]+\.mynexthire\.com)', url)
+        if match:
+            return True, fetch_mynexthire_jobs(match.group(1)), "MyNextHire"
+
+    elif ".myworkdayjobs.com" in url:
+        params = extract_workday_params(url)
+        if params:
+            # Note: Workday requires complex CSRF/Cloudflare tokens for pagination.
+            # This API route will safely fetch the first 20 jobs instantly.
+            return True, fetch_workday_jobs(url), "Workday"
             
     return False, [], "Unknown"
 
@@ -180,6 +297,19 @@ def process_html_for_ats(html: str) -> tuple[bool, list[dict], str]:
     if lv_match:
         slug = lv_match.group(1)
         return True, fetch_lever_jobs(slug), "Lever"
+        
+    # 3. Check for MyNextHire links
+    mnh_match = re.search(r'(https://[^/\"\'\?\>]+\.mynexthire\.com)', html)
+    if mnh_match:
+        domain = mnh_match.group(1).replace('https://', '')
+        return True, fetch_mynexthire_jobs(domain), "MyNextHire"
+        
+    # 4. Check for Workday links embedded in HTML
+    wd_match = re.search(r'(https://[a-zA-Z0-9\-]+\.[^/]+myworkdayjobs\.com/(?:[a-zA-Z]{2}-[a-zA-Z]{2}/)?[^/\"\'\?\>]+)', html)
+    if wd_match:
+        wd_url = wd_match.group(1)
+        if not wd_url.endswith('/login'):
+            return True, fetch_workday_jobs(wd_url), "Workday"
 
     return False, [], "Unknown"
 
