@@ -12,6 +12,7 @@ https://careers.snowflake.com/us/en/c/engineering-jobs?from=[PAGE_OFFSET:0:90:10
 https://jobs.lever.co/plaid
 
 # ── Custom Code required JSON endpoints ─────────────────────────
+https://broadcom.wd1.myworkdayjobs.com/External_Career
 https://swiggy.mynexthire.com/employer/jobs/careers
 https://visa.wd5.myworkdayjobs.com/Visa
 https://workday.wd5.myworkdayjobs.com/Workday
@@ -165,7 +166,6 @@ https://www.webex.com/about/careers.html
 https://www.xero.com/us/about/careers/
 
 # ── Links that are irresponsive or failed ───────────────────────
-https://careers.broadcom.com/
 https://careers.vmware.com/
 https://jobs2.deloitte.com/ui/en/search-results?location=India
 
