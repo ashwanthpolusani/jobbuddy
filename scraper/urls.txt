@@ -1,4 +1,40 @@
 # ── Direct JSON links (Fast & Simple) ───────────────────────────
+https://boards-api.greenhouse.io/v1/boards/gitlab/jobs
+https://boards-api.greenhouse.io/v1/boards/dropbox/jobs
+https://boards-api.greenhouse.io/v1/boards/epicgames/jobs
+https://boards-api.greenhouse.io/v1/boards/elastic/jobs
+https://boards-api.greenhouse.io/v1/boards/spacex/jobs
+https://boards-api.greenhouse.io/v1/boards/rocketlab/jobs
+https://boards-api.greenhouse.io/v1/boards/roblox/jobs
+https://boards-api.greenhouse.io/v1/boards/databricks/jobs
+https://boards-api.greenhouse.io/v1/boards/lyft/jobs
+https://boards-api.greenhouse.io/v1/boards/gemini/jobs
+https://boards-api.greenhouse.io/v1/boards/pinterest/jobs
+https://boards-api.greenhouse.io/v1/boards/reddit/jobs
+https://boards-api.greenhouse.io/v1/boards/fastly/jobs
+https://boards-api.greenhouse.io/v1/boards/mongodb/jobs
+https://boards-api.greenhouse.io/v1/boards/scaleai/jobs
+https://boards-api.greenhouse.io/v1/boards/duolingo/jobs
+https://boards-api.greenhouse.io/v1/boards/asana/jobs
+https://boards-api.greenhouse.io/v1/boards/flexport/jobs
+https://boards-api.greenhouse.io/v1/boards/datadog/jobs
+https://boards-api.greenhouse.io/v1/boards/okta/jobs
+https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs
+https://boards-api.greenhouse.io/v1/boards/instacart/jobs
+https://boards-api.greenhouse.io/v1/boards/betterment/jobs
+https://boards-api.greenhouse.io/v1/boards/coinbase/jobs
+https://boards-api.greenhouse.io/v1/boards/twilio/jobs
+https://boards-api.greenhouse.io/v1/boards/discord/jobs
+https://boards-api.greenhouse.io/v1/boards/brex/jobs
+https://boards-api.greenhouse.io/v1/boards/affirm/jobs
+https://boards-api.greenhouse.io/v1/boards/robinhood/jobs
+https://boards-api.greenhouse.io/v1/boards/sofi/jobs
+https://boards-api.greenhouse.io/v1/boards/anthropic/jobs
+https://boards-api.greenhouse.io/v1/boards/coursera/jobs
+https://boards-api.greenhouse.io/v1/boards/udemy/jobs
+https://boards-api.greenhouse.io/v1/boards/masterclass/jobs
+https://boards-api.greenhouse.io/v1/boards/chime/jobs
+https://boards-api.greenhouse.io/v1/boards/airbnb/jobs
 https://api.lever.co/v0/postings/palantir
 https://boards-api.greenhouse.io/v1/boards/figma/jobs
 https://boards-api.greenhouse.io/v1/boards/stripe/jobs
@@ -21,12 +57,9 @@ https://visa.wd5.myworkdayjobs.com/Visa
 https://workday.wd5.myworkdayjobs.com/Workday
 
 # ── Standard HTML parsed by Playwright/Gemini ───────────────────
-https://about.gitlab.com/jobs/
-https://asana.com/jobs
 https://automattic.com/work-with-us/
 https://aws.amazon.com/careers/
 https://careers.adobe.com/
-https://careers.airbnb.com/
 https://careers.apac.bnpparibas/
 https://careers.blackrock.com/job-search-results/?location=India
 https://careers.google.com/
@@ -34,7 +67,6 @@ https://careers.linkedin.com/
 https://careers.microsoft.com/
 https://careers.oracle.com/
 https://careers.qualcomm.com/
-https://careers.robinhood.com/
 https://careers.shopify.com/
 https://careers.snap.com/
 https://careers.squareup.com/
@@ -42,9 +74,7 @@ https://careers.swiggy.com/
 https://careers.techmahindra.com/
 https://careers.tiktok.com/
 https://careers.wipro.com/careers-home/jobs
-https://databricks.com/company/careers
 https://dynamics.microsoft.com/en-us/careers/
-https://instacart.careers/
 https://jobs.apple.com/
 https://jobs.dell.com/
 https://jobs.hp.com/
@@ -53,7 +83,6 @@ https://monday.com/careers
 https://postmarkapp.com/about/careers
 https://sendgrid.com/careers/
 https://slack.com/careers
-https://stripe.com/jobs
 https://www.accenture.com/in-en/careers/jobsearch
 https://www.activecampaign.com/about/careers
 https://www.adobe.com/careers.html
@@ -63,13 +92,11 @@ https://www.avaya.com/en/about-avaya/careers/
 https://www.barracuda.com/company/careers
 https://www.bigcommerce.com/careers/
 https://www.capgemini.com/in-en/careers/job-search/
-https://www.cloudflare.com/careers/
 https://www.crowdstrike.com/careers/
 https://www.cyberark.com/careers/
 https://www.darktrace.com/careers/
 https://www.dialpad.com/careers/
 https://www.f5.com/company/careers
-https://www.fastly.com/about/careers
 https://www.fortinet.com/corporate/careers
 https://www.freshbooks.com/careers
 https://www.hisense-usa.com/about-us/careers
@@ -81,7 +108,6 @@ https://www.intuit.com/careers/
 https://www.jabra.com/about/careers
 https://www.jive.com/about/careers/
 https://www.lifeatspotify.com/
-https://www.lyft.com/careers
 https://www.mailchimp.com/jobs/
 https://www.mcafee.com/enterprise/en-us/about/careers.html
 https://www.metacareers.com/
@@ -91,7 +117,6 @@ https://www.mimecast.com/company/careers/
 https://www.nextiva.com/company/careers.html
 https://www.notion.so/careers
 https://www.nvidia.com/en-us/about-nvidia/careers/
-https://www.okta.com/company/careers/
 https://www.ooma.com/company/careers/
 https://www.philips.com/a-w/careers/healthtech/home.html
 https://www.polycom.com/company/careers.html
@@ -107,7 +132,6 @@ https://www.synopsys.com/careers.html
 https://www.tcl.com/global/en/about-tcl/careers
 https://www.toshiba.com/tai/careers/
 https://www.trendmicro.com/en_us/about/careers.html
-https://www.twilio.com/company/jobs
 https://www.varonis.com/careers/
 https://www.verisign.com/en_US/company-information/careers/index.xhtml
 https://www.weebly.com/careers
@@ -130,9 +154,7 @@ https://www.bluehost.com/about/careers
 https://www.box.com/careers
 https://www.canva.com/careers/
 https://www.checkpoint.com/about-us/careers/
-https://www.coinbase.com/careers
 https://www.constantcontact.com/about/careers
-https://www.dropbox.com/jobs
 https://www.epicor.com/en-us/about/careers/
 https://www.fireeye.com/company/careers.html
 https://www.godaddy.com/careers
