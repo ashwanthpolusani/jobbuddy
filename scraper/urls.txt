@@ -9,9 +9,14 @@ https://careers.adobe.com/
 https://salesforce.wd1.myworkdayjobs.com/External_Career_Site
 https://careers.oracle.com/
 https://www.ibm.com/employment/
-https://jobs.cisco.com/
-https://jobs.intel.com/
-https://careers.amd.com/
+# ── Fintech & Payments ──────────────────────────────────────────
+https://boards.greenhouse.io/stripe
+https://jobs.lever.co/plaid
+https://careers.robinhood.com/
+https://visa.wd5.myworkdayjobs.com/Visa
+
+# ── E-commerce & Delivery ───────────────────────────────────────
+https://swiggy.mynexthire.com/employer/jobs/careers
 https://www.nvidia.com/en-us/about-nvidia/careers/
 https://careers.qualcomm.com/
 https://careers.broadcom.com/

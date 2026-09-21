@@ -168,8 +168,7 @@ def fetch_workday_jobs(url: str) -> list[dict]:
                     })
                 
                 offset += limit
-                if offset >= resp_data.get('total', 0):
-                    break
+
                     
     except Exception as e:
         print(f"    [Workday API Error] {e}")
@@ -272,8 +271,6 @@ def process_ats_url(url: str) -> tuple[bool, list[dict], str]:
     elif ".myworkdayjobs.com" in url:
         params = extract_workday_params(url)
         if params:
-            # Note: Workday requires complex CSRF/Cloudflare tokens for pagination.
-            # This API route will safely fetch the first 20 jobs instantly.
             return True, fetch_workday_jobs(url), "Workday"
             
     return False, [], "Unknown"
