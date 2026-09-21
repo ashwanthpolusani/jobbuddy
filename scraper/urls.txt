@@ -1,22 +1,30 @@
+# ── Direct JSON API Sites (Fast) ──────────────────────────
+https://boards.greenhouse.io/embed
+https://boards.greenhouse.io/figma
+https://boards.greenhouse.io/insurity
+https://boards.greenhouse.io/stripe
+https://boards.greenhouse.io/tenableinc
+https://explore.jobs.netflix.net/api/apply/v2/jobs?domain=netflix.com
+https://jobs.lever.co/palantir
+https://jobs.lever.co/plaid
+https://salesforce.wd1.myworkdayjobs.com/External_Career_Site
+https://swiggy.mynexthire.com/employer/jobs/careers
+https://visa.wd5.myworkdayjobs.com/Visa
+https://workday.wd5.myworkdayjobs.com/Workday
+
+
 https://careers.google.com/
 https://www.amazon.jobs/
 https://careers.microsoft.com/
 https://jobs.apple.com/
 https://www.metacareers.com/
 https://jobs.netflix.com/
-https://explore.jobs.netflix.net/api/apply/v2/jobs?domain=netflix.com
 https://careers.adobe.com/
-https://salesforce.wd1.myworkdayjobs.com/External_Career_Site
 https://careers.oracle.com/
 https://www.ibm.com/employment/
 # ── Fintech & Payments ──────────────────────────────────────────
-https://boards.greenhouse.io/stripe
-https://jobs.lever.co/plaid
 https://careers.robinhood.com/
-https://visa.wd5.myworkdayjobs.com/Visa
-
 # ── E-commerce & Delivery ───────────────────────────────────────
-https://swiggy.mynexthire.com/employer/jobs/careers
 https://www.nvidia.com/en-us/about-nvidia/careers/
 https://careers.qualcomm.com/
 https://careers.broadcom.com/
@@ -24,16 +32,13 @@ https://jobs.hp.com/
 https://jobs.dell.com/
 https://careers.vmware.com/
 https://careers.servicenow.com/
-https://workday.wd5.myworkdayjobs.com/Workday
 https://www.splunk.com/en_us/careers.html
 https://www.atlassian.com/company/careers
-https://www.palantir.com/careers/
 https://careers.snowflake.com/us/en/c/engineering-jobs?from=[PAGE_OFFSET:0:90:10]&s=1
 https://databricks.com/company/careers
 https://stripe.com/jobs
 https://careers.squareup.com/
 https://www.paypal.com/us/webapps/mpp/jobs
-https://careers.robinhood.com/
 https://www.coinbase.com/careers
 https://www.uber.com/us/en/careers/
 https://www.lyft.com/careers
@@ -55,7 +60,6 @@ https://www.box.com/careers
 https://asana.com/jobs
 https://monday.com/careers
 https://www.notion.so/careers
-https://www.figma.com/careers/
 https://www.canva.com/careers/
 https://github.com/about/careers
 https://about.gitlab.com/jobs/
@@ -84,10 +88,8 @@ https://www.barracuda.com/company/careers
 https://www.rsa.com/en-us/company/careers
 https://www.sentinelone.com/careers/
 https://www.darktrace.com/careers/
-https://www.tenable.com/careers
 https://www.qualys.com/company/careers/
 https://www.rapid7.com/company/careers/
-https://www.veracode.com/about/careers
 https://www.synopsys.com/careers.html
 https://www.microfocus.com/en-us/about/careers
 https://www.verisign.com/en_US/company-information/careers/index.xhtml
@@ -154,7 +156,6 @@ https://careers.wipro.com/careers-home/jobs
 https://www.capgemini.com/in-en/careers/job-search/
 https://jobs2.deloitte.com/ui/en/search-results?location=India
 https://careers.cognizant.com/global/en/search-results?location=India
-https://www.insurity.com/about/careers/
 https://careers.blackrock.com/job-search-results/?location=India
 https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/requisitions?location=India
 https://careers.swiggy.com/
