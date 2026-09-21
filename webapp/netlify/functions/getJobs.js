@@ -40,6 +40,10 @@ exports.handler = async (event, context) => {
             ];
         }
 
+        // Only fetch jobs that are still live (seen in the last 7 days)
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        filter.scraped_at = { $gte: sevenDaysAgo };
+
         const jobs = await collection
             .find(filter)
             .sort({ scraped_at: -1, _id: -1 })

@@ -328,15 +328,21 @@ def create_indexes():
     """Ensure optimal indexes exist. Safe to call on every startup (idempotent)."""
     try:
         db = get_db()
+        # 1. Search/Filter Indexes
         db.jobs.create_index("job_id",      unique=True,  background=True)
-        db.jobs.create_index("scraped_at",               background=True)
         db.jobs.create_index("quality",                  background=True)
         db.jobs.create_index("category",                 background=True)
         db.jobs.create_index("company_name",             background=True)
         db.jobs.create_index("ats_name",                 background=True)
         db.site_stats.create_index("url",                background=True)
-        db.site_stats.create_index("run_date",           background=True)
-        print("  ✓ MongoDB indexes verified.")
+        
+        # 2. TTL Indexes (Auto-Deletion)
+        # Delete jobs 30 days (2592000s) after the scraper last saw them
+        db.jobs.create_index("scraped_at", expireAfterSeconds=2592000, background=True)
+        # Delete site logs 14 days (1209600s) after they run
+        db.site_stats.create_index("run_date", expireAfterSeconds=1209600, background=True)
+        
+        print("  ✓ MongoDB indexes (with TTL) verified.")
     except Exception as e:
         print(f"  ⚠ Index creation warning: {e}")
 
