@@ -144,9 +144,11 @@ def fetch_eightfold_jobs(base_url: str) -> list[dict]:
     all_jobs = []
     start = 0
     num = 10
+    max_pages = 100  # Safety cap: ~1000 jobs max
+    page = 0
     
     try:
-        while True:
+        while page < max_pages:
             fetch_url = f"{base_url}{separator}start={start}&num={num}"
             req = urllib.request.Request(fetch_url, headers={'User-Agent': 'Mozilla/5.0'})
             with urllib.request.urlopen(req, timeout=10) as response:
@@ -165,6 +167,7 @@ def fetch_eightfold_jobs(base_url: str) -> list[dict]:
                     })
                 
                 start += num
+                page += 1
                 if start >= data.get('count', 0):
                     break
     except Exception as e:
