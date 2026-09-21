@@ -1,19 +1,33 @@
 import re
 import json
 import urllib.request
+import urllib.parse
 from urllib.error import URLError, HTTPError
 
-def extract_slug(url: str, platform: str) -> str | None:
-    """Extracts the company slug from a Greenhouse or Lever URL."""
+def extract_slug(url: str, ats: str) -> str | None:
+    """Extracts the company slug from a known ATS url."""
     try:
-        if platform == "greenhouse":
-            # e.g. https://boards.greenhouse.io/stripe/jobs/123 -> stripe
-            match = re.search(r'boards\.greenhouse\.io/([^/]+)', url)
-            return match.group(1) if match else None
-        elif platform == "lever":
-            # e.g. https://jobs.lever.co/netflix/123 -> netflix
-            match = re.search(r'jobs\.lever\.co/([^/]+)', url)
-            return match.group(1) if match else None
+        if ats == "greenhouse":
+            # Check for direct API links first
+            api_match = re.search(r'boards-api\.greenhouse\.io/v1/boards/([^/]+)', url)
+            if api_match:
+                return api_match.group(1)
+            # Check for standard links
+            match = re.search(r'greenhouse\.io/([^/]+)', url)
+            if match:
+                slug = match.group(1)
+                # Sometimes the url is greenhouse.io/embed/job_board?for=company
+                if slug == 'embed':
+                    qs = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
+                    return qs.get('for', [None])[0]
+                return slug
+        elif ats == "lever":
+            api_match = re.search(r'api\.lever\.co/v0/postings/([^/]+)', url)
+            if api_match:
+                return api_match.group(1)
+            match = re.search(r'lever\.co/([^/]+)', url)
+            if match:
+                return match.group(1)
     except Exception:
         return None
     return None
@@ -250,12 +264,12 @@ def process_ats_url(url: str) -> tuple[bool, list[dict], str]:
     Determines if URL is a supported ATS. 
     Returns (is_supported, raw_jobs_list, ats_name)
     """
-    if "boards.greenhouse.io" in url:
+    if "greenhouse.io" in url:
         slug = extract_slug(url, "greenhouse")
         if slug:
             return True, fetch_greenhouse_jobs(slug), "Greenhouse"
             
-    elif "jobs.lever.co" in url:
+    elif "lever.co" in url:
         slug = extract_slug(url, "lever")
         if slug:
             return True, fetch_lever_jobs(slug), "Lever"
