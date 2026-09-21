@@ -88,6 +88,27 @@
         letter-spacing: 0.06em;
     }
 
+    /* ── EXPERIENCE VERDICT ──────────────────────────────────────────── */
+    .verdict-safe     { font-size:0.6rem; font-weight:700; padding:1px 7px; border-radius:3px; flex-shrink:0; background:rgba(34,197,94,0.12); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+    .verdict-possible { font-size:0.6rem; font-weight:700; padding:1px 7px; border-radius:3px; flex-shrink:0; background:rgba(234,179,8,0.1);  color:#eab308; border:1px solid rgba(234,179,8,0.3); }
+    .verdict-blocked  { font-size:0.6rem; font-weight:700; padding:1px 7px; border-radius:3px; flex-shrink:0; background:rgba(239,68,68,0.1);  color:#f87171; border:1px solid rgba(239,68,68,0.25); }
+
+    /* ── MATCH SCORE ────────────────────────────────────────────────── */
+    .match-score {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+    .score-high { background:rgba(34,197,94,0.1);  color:#22c55e; }
+    .score-mid  { background:rgba(234,179,8,0.1);  color:#eab308; }
+    .score-low  { background:rgba(239,68,68,0.08); color:#f87171; }
+
+    /* BLOCKED jobs are dimmed — user sees them but can tell they’re hard to get */
+    .job-card.blocked { opacity: 0.45; }
+    .job-card.blocked:hover { opacity: 0.75; }
+
     /* ── TOP NAV ─────────────────────────────────────────────────────── */
     .top-nav {
         display: flex;
@@ -499,6 +520,13 @@
             <option value="direct_apply">Direct Apply</option>
             <option value="filtered_list">Browse Lists</option>
         </select>
+        <select class="filter-select" id="exp-select" onchange="renderJobs()">
+            <option value="all">All Experience</option>
+            <option value="SAFE" selected>✅ Safe to Apply</option>
+            <option value="SAFE,POSSIBLE">✅ Safe + Possible</option>
+            <option value="POSSIBLE">⚠️ Possible only</option>
+            <option value="hide_blocked">Hide Blocked</option>
+        </select>
     </div>
 
     <div class="result-count" id="result-count"></div>
@@ -578,11 +606,27 @@ function renderJobs() {
         if (activeCat !== 'all' && job.category !== activeCat) return false;
         if (qualityOfJob(job) < minQ) return false;
         if (typeF !== 'all' && linkTypeOfJob(job) !== typeF) return false;
+        // Experience filter
+        const expF    = document.getElementById('exp-select').value;
+        const verdict = job.experience_verdict || null;
+        if (expF === 'SAFE'          && verdict !== 'SAFE')   return false;
+        if (expF === 'POSSIBLE'      && verdict !== 'POSSIBLE') return false;
+        if (expF === 'SAFE,POSSIBLE' && verdict === 'BLOCKED') return false;
+        if (expF === 'hide_blocked'  && verdict === 'BLOCKED') return false;
         if (query) {
-            const hay = [job.title, job.company_name, job.location, job.match_reason].join(' ').toLowerCase();
+            const hay = [job.title, job.company_name, job.location, job.match_reasoning].join(' ').toLowerCase();
             if (!hay.includes(query)) return false;
         }
         return true;
+    });
+
+    // Sort: SAFE first, then POSSIBLE, then BLOCKED; within each group sort by match_score desc
+    const verdictOrder = { SAFE: 0, POSSIBLE: 1, BLOCKED: 2 };
+    filtered.sort((a, b) => {
+        const va = verdictOrder[a.experience_verdict] ?? 1;
+        const vb = verdictOrder[b.experience_verdict] ?? 1;
+        if (va !== vb) return va - vb;
+        return (b.match_score ?? 0) - (a.match_score ?? 0);
     });
 
     // Update result count
@@ -611,6 +655,23 @@ function renderJobs() {
     }
 
     container.innerHTML = html;
+}
+
+function verdictBadge(verdict) {
+    if (!verdict) return '';
+    const map = {
+        'SAFE':    ['verdict-safe',     '\u2705 Safe'],
+        'POSSIBLE':['verdict-possible',  '\u26a0\ufe0f Possible'],
+        'BLOCKED': ['verdict-blocked',   '\ud83d\udeab Blocked']
+    };
+    const [cls, label] = map[verdict] || ['verdict-possible', verdict];
+    return `<span class="${cls}">${label}</span>`;
+}
+
+function matchScoreBadge(score) {
+    if (score == null) return '';
+    const cls = score >= 70 ? 'score-high' : score >= 40 ? 'score-mid' : 'score-low';
+    return `<span class="match-score ${cls}">${score}% match</span>`;
 }
 
 function logoAvatar(company) {
@@ -644,7 +705,14 @@ function buildCard(job) {
     const cat      = (job.category || 'other').replace(/_/g, ' ');
     const ats      = job.ats_name || '';
 
-    const newTag = isNew(scraped) ? '<span class="tag-new">New</span>' : '';
+    const verdict     = job.experience_verdict || null;
+    const matchScore  = job.match_score != null ? job.match_score : null;
+    const isBlocked   = verdict === 'BLOCKED';
+    const newTag      = isNew(scraped) ? '<span class="tag-new">New</span>' : '';
+    const reason      = (job.match_reasoning || job.match_reason)
+                        ? `<div class="job-reason">${esc(job.match_reasoning || job.match_reason)}</div>` : '';
+    const gapHtml     = (job.skill_gaps && job.skill_gaps.length)
+                        ? `<div style="margin-top:3px;font-size:0.7rem;color:var(--muted)">Gaps: ${esc(job.skill_gaps.join(', '))}</div>` : '';
 
     const qDots = Array.from({length: 5}, (_, i) =>
         `<span class="qdot${i < q ? ' filled' : ''}"></span>`
@@ -654,15 +722,15 @@ function buildCard(job) {
         ? `<a href="${esc(link)}" class="apply-btn direct-btn" target="_blank" rel="noopener noreferrer">Apply &rarr;</a>`
         : `<a href="${esc(link)}" class="apply-btn browse-btn" target="_blank" rel="noopener noreferrer">Browse</a>`;
 
-    const reason = job.match_reason ? `<div class="job-reason">${esc(job.match_reason)}</div>` : '';
-
     return `
-    <div class="job-card">
+    <div class="job-card${isBlocked ? ' blocked' : ''}">
         ${logoAvatar(company)}
         <div class="job-left">
             <div class="job-title-row">
                 <div class="job-title">${esc(job.title || 'Untitled Position')}</div>
                 ${newTag}
+                ${verdictBadge(verdict)}
+                ${matchScoreBadge(matchScore)}
                 ${atsBadge(ats)}
             </div>
             <div class="job-meta">
@@ -672,6 +740,7 @@ function buildCard(job) {
                 ${cat ? `<span class="meta-sep">&middot;</span><span class="job-cat">${esc(cat)}</span>` : ''}
             </div>
             ${reason}
+            ${gapHtml}
         </div>
         <div class="job-right">
             <div class="quality-dots">${qDots}</div>
