@@ -28,6 +28,13 @@ def extract_slug(url: str, ats: str) -> str | None:
             match = re.search(r'lever\.co/([^/]+)', url)
             if match:
                 return match.group(1)
+        elif ats == "ashby":
+            api_match = re.search(r'api\.ashbyhq\.com/posting-api/job-board/([^/]+)', url)
+            if api_match:
+                return api_match.group(1)
+            match = re.search(r'ashbyhq\.com/([^/]+)', url)
+            if match:
+                return match.group(1)
     except Exception:
         return None
     return None
@@ -49,6 +56,31 @@ def extract_workday_params(url: str) -> tuple[str, str, str] | None:
     if site.startswith('job') or site.startswith('login'):
         return None
     return (tenant, domain, site)
+
+def fetch_ashby_jobs(slug: str) -> list[dict] | None:
+    """Fetches and normalizes Ashby jobs via their public API."""
+    api_url = f"https://api.ashbyhq.com/posting-api/job-board/{slug}"
+    try:
+        req = urllib.request.Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            jobs = data.get('jobs', [])
+            
+            normalized = []
+            for j in jobs:
+                normalized.append({
+                    "title": j.get('title', 'Unknown Title'),
+                    "location": j.get('location', 'Unknown Location'),
+                    "link": j.get('jobUrl', ''),
+                    "content": j.get('descriptionPlain', '')
+                })
+            return normalized
+    except urllib.error.HTTPError as e:
+        print(f"    [Ashby API Blocked or Missing for {slug}] HTTP {e.code}")
+        return None
+    except Exception as e:
+        print(f"    [Ashby API Error] {e}")
+        return []
 
 def fetch_greenhouse_jobs(slug: str) -> list[dict] | None:
     """Fetches all jobs from Greenhouse public API."""
@@ -280,6 +312,13 @@ def process_ats_url(url: str) -> tuple[bool, list[dict], str]:
             jobs = fetch_lever_jobs(slug)
             if jobs is not None:
                 return True, jobs, "Lever"
+                
+    elif "ashbyhq.com" in url:
+        slug = extract_slug(url, "ashby")
+        if slug:
+            jobs = fetch_ashby_jobs(slug)
+            if jobs is not None:
+                return True, jobs, "Ashby"
             
     elif "/api/apply/v2/jobs" in url:
         return True, fetch_eightfold_jobs(url), "Eightfold"
