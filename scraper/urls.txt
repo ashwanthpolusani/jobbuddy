@@ -6,6 +6,9 @@ https://boards-api.greenhouse.io/v1/boards/tenableinc/jobs
 https://explore.jobs.netflix.net/api/apply/v2/jobs?domain=netflix.com
 
 # ── JSON link with pagination support ───────────────────────────
+https://careers.cognizant.com/global-en/jobs/?page=[PAGE_OFFSET:1:5:1]
+https://careersatdoordash.com/wp-content/themes/external-job-board/theme/get-jobs.php?ajax=1&spage=[PAGE_OFFSET:1:5:1]
+https://careers.servicenow.com/jobs/?page=[PAGE_OFFSET:1:5:1]#results
 https://careers.snowflake.com/us/en/c/engineering-jobs?from=[PAGE_OFFSET:0:90:10]&s=1
 
 # ── Hidden JSON links found at runtime (ATS Auto-Detect) ────────
@@ -115,9 +118,6 @@ https://www.zscaler.com/careers
 https://zoom.us/careers
 
 # ── Links blocked by Anti-Bot Firewalls ─────────────────────────
-https://careers.cognizant.com/global/en/search-results?location=India
-https://careers.doordash.com/
-https://careers.servicenow.com/
 https://careers.twitter.com/
 https://github.com/about/careers
 https://global.sharp/corporate/careers/
