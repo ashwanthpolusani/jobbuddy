@@ -28,15 +28,16 @@ exports.handler = async (event, context) => {
                     runs: { $sum: 1 },
                     successful_fetches: { $sum: { $cond: ["$fetch_success", 1, 0] } },
                     total_quality_jobs: { $sum: "$quality_jobs_saved" },
-                    total_raw_jobs:     { $sum: "$raw_jobs_extracted" },
+                    total_jobs_seen:    { $sum: "$jobs_seen" },          // new: raw funnel count
                     avg_fetch_time_ms:  { $avg: "$fetch_time_ms" },
                     avg_quality:        { $avg: "$avg_quality" },
                     last_run:           { $first: "$run_date" },
                     last_error:         { $first: "$error" },
+                    last_ats_name:      { $first: "$ats_name" },         // new: ATS badge
+                    company_name:       { $first: "$company_name" },     // new: human-readable name
                     last_ats_replacement: { $first: "$ats_replacement_url" },
                     direct_apply_total: { $sum: "$link_types.direct_apply" },
                     filtered_list_total:{ $sum: "$link_types.filtered_list" },
-                    homepage_total:     { $sum: "$link_types.career_homepage" },
                 }
             },
             {

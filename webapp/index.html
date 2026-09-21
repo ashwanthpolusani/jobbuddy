@@ -226,36 +226,65 @@
         padding: 18px 0 8px;
     }
 
-    /* ── JOB ROW ─────────────────────────────────────────────────────── */
+    /* ── LOGO AVATAR ──────────────────────────────────────────────────── */
+    .logo-avatar {
+        width: 36px; height: 36px;
+        border-radius: 8px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--muted2);
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+    .logo-avatar img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+
+    /* ── ATS BADGE ───────────────────────────────────────────────────── */
+    .ats-badge {
+        font-size: 0.6rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 1px 6px;
+        border-radius: 3px;
+        flex-shrink: 0;
+    }
+    .ats-greenhouse { background: rgba(0,200,100,0.1);  color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
+    .ats-lever      { background: rgba(99,102,241,0.1); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
+    .ats-ashby      { background: rgba(236,72,153,0.1); color: #f472b6; border: 1px solid rgba(236,72,153,0.2); }
+    .ats-workday    { background: rgba(251,146,60,0.1); color: #fb923c; border: 1px solid rgba(251,146,60,0.2); }
+    .ats-other      { background: rgba(100,116,139,0.1);color: #94a3b8; border: 1px solid rgba(100,116,139,0.2); }
+
+    /* ── JOB ROW (updated layout) ────────────────────────────────────── */
     .job-card {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 36px 1fr auto;
         align-items: center;
-        gap: 16px;
-        padding: 16px 0;
+        gap: 14px;
+        padding: 14px 0;
         border-bottom: 1px solid var(--border);
         transition: background 0.12s;
         cursor: default;
     }
-    .job-card:hover { background: rgba(255,255,255,0.015); margin: 0 -12px; padding: 16px 12px; border-radius: 6px; border-bottom-color: transparent; }
-
+    .job-card:hover { background: rgba(255,255,255,0.015); margin: 0 -12px; padding: 14px 12px; border-radius: 8px; border-bottom-color: transparent; }
     .job-left { min-width: 0; }
-
     .job-title-row {
         display: flex;
-        align-items: baseline;
-        gap: 10px;
+        align-items: center;
+        gap: 8px;
         flex-wrap: wrap;
         margin-bottom: 4px;
     }
     .job-title {
-        font-size: 0.95rem;
+        font-size: 0.92rem;
         font-weight: 600;
         color: var(--text);
         line-height: 1.3;
     }
     .tag-new {
-        font-size: 0.63rem;
+        font-size: 0.6rem;
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -264,26 +293,24 @@
         border-radius: 3px;
         padding: 1px 5px;
         flex-shrink: 0;
+        animation: pulse-new 2s ease-in-out infinite;
+    }
+    @keyframes pulse-new {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
     }
     .job-meta {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         flex-wrap: wrap;
     }
-    .job-company {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--muted2);
-    }
+    .job-company { font-size: 0.8rem; font-weight: 600; color: var(--muted2); }
     .meta-sep { color: var(--border2); font-size: 0.75rem; }
-    .job-loc, .job-cat {
-        font-size: 0.78rem;
-        color: var(--muted);
-    }
+    .job-loc, .job-cat { font-size: 0.76rem; color: var(--muted); }
     .job-reason {
         margin-top: 5px;
-        font-size: 0.76rem;
+        font-size: 0.74rem;
         color: var(--muted);
         line-height: 1.5;
         max-width: 680px;
@@ -291,25 +318,15 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-
     .job-right {
         display: flex;
         align-items: center;
         gap: 10px;
         flex-shrink: 0;
     }
-    .quality-dots {
-        display: flex;
-        gap: 3px;
-        align-items: center;
-    }
-    .qdot {
-        width: 5px; height: 5px;
-        border-radius: 50%;
-        background: var(--border2);
-    }
+    .quality-dots { display: flex; gap: 3px; align-items: center; }
+    .qdot { width: 5px; height: 5px; border-radius: 50%; background: var(--border2); }
     .qdot.filled { background: var(--accent); }
-
     .apply-btn {
         display: inline-flex;
         align-items: center;
@@ -324,10 +341,7 @@
         white-space: nowrap;
         flex-shrink: 0;
     }
-    .apply-btn.direct-btn {
-        background: var(--accent);
-        color: #fff;
-    }
+    .apply-btn.direct-btn { background: var(--accent); color: #fff; }
     .apply-btn.direct-btn:hover { opacity: 0.88; }
     .apply-btn.browse-btn {
         background: var(--surface2);
@@ -425,8 +439,8 @@
     @media (max-width: 640px) {
         .header { padding: 24px 20px 0; }
         .panel { padding: 16px 20px 60px; }
-        .job-card { grid-template-columns: 1fr; gap: 10px; }
-        .job-right { justify-content: flex-start; }
+        .job-card { grid-template-columns: 36px 1fr; }
+        .job-right { display: none; }
         .header-stats { display: none; }
         .stats-summary { flex-direction: column; gap: 0; }
         .hstat { text-align: left; }
@@ -599,6 +613,26 @@ function renderJobs() {
     container.innerHTML = html;
 }
 
+function logoAvatar(company) {
+    const initials = (company || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    // Try Clearbit logo, fallback to colored initials
+    const domain = (company || '').toLowerCase().replace(/\s+/g, '') + '.com';
+    return `<div class="logo-avatar">
+        <img src="https://logo.clearbit.com/${esc(domain)}" alt="" loading="lazy"
+             onerror="this.parentElement.textContent='${initials}'">
+    </div>`;
+}
+
+function atsBadge(ats) {
+    if (!ats) return '';
+    const cls = ats.toLowerCase().includes('greenhouse') ? 'ats-greenhouse'
+              : ats.toLowerCase().includes('lever')      ? 'ats-lever'
+              : ats.toLowerCase().includes('ashby')      ? 'ats-ashby'
+              : ats.toLowerCase().includes('workday')    ? 'ats-workday'
+              : 'ats-other';
+    return `<span class="ats-badge ${cls}">${esc(ats)}</span>`;
+}
+
 function buildCard(job) {
     const lt       = linkTypeOfJob(job);
     const isDirect = lt === 'direct_apply';
@@ -608,6 +642,7 @@ function buildCard(job) {
     const link     = job.link || '#';
     const scraped  = job.scraped_at || '';
     const cat      = (job.category || 'other').replace(/_/g, ' ');
+    const ats      = job.ats_name || '';
 
     const newTag = isNew(scraped) ? '<span class="tag-new">New</span>' : '';
 
@@ -623,10 +658,12 @@ function buildCard(job) {
 
     return `
     <div class="job-card">
+        ${logoAvatar(company)}
         <div class="job-left">
             <div class="job-title-row">
                 <div class="job-title">${esc(job.title || 'Untitled Position')}</div>
                 ${newTag}
+                ${atsBadge(ats)}
             </div>
             <div class="job-meta">
                 ${company ? `<span class="job-company">${esc(company)}</span>` : ''}
@@ -726,6 +763,16 @@ async function loadSiteStats() {
             return '<span class="status-pill pill-green">Active</span>';
         };
 
+        const atsBadgeHtml = (name) => {
+            if (!name) return '<span style="color:var(--muted)">—</span>';
+            const cls = name.toLowerCase().includes('greenhouse') ? 'ats-greenhouse'
+                      : name.toLowerCase().includes('lever')      ? 'ats-lever'
+                      : name.toLowerCase().includes('ashby')      ? 'ats-ashby'
+                      : name.toLowerCase().includes('workday')    ? 'ats-workday'
+                      : 'ats-other';
+            return `<span class="ats-badge ${cls}">${esc(name)}</span>`;
+        };
+
         const html = `
         <div class="stats-summary">
             <div class="stat-box green"><div class="val">${summary.productive_sites}</div><div class="lbl">Productive Sites</div></div>
@@ -737,11 +784,12 @@ async function loadSiteStats() {
             <thead>
                 <tr>
                     <th>Status</th>
-                    <th>URL</th>
+                    <th>Company</th>
+                    <th>ATS</th>
                     <th>Runs</th>
-                    <th>Avg Quality/Run</th>
-                    <th>Avg Fetch Time</th>
-                    <th>ATS Replacement</th>
+                    <th>Seen</th>
+                    <th>Saved</th>
+                    <th>Avg ms</th>
                     <th>Last Error</th>
                 </tr>
             </thead>
@@ -749,16 +797,13 @@ async function loadSiteStats() {
                 ${sites.map(s => `
                 <tr>
                     <td>${statusLabel(s)}</td>
-                    <td class="url-cell" title="${esc(s._id)}">${esc(s._id)}</td>
+                    <td style="font-weight:600;color:var(--text)">${esc(s.company_name || s._id.split('/boards/')[1]?.split('/')[0] || s._id)}</td>
+                    <td>${atsBadgeHtml(s.last_ats_name)}</td>
                     <td>${s.runs}</td>
-                    <td>${s.jobs_per_run.toFixed(1)}</td>
-                    <td>${Math.round(s.avg_fetch_time_ms / 1000)}s</td>
-                    <td style="font-size:0.7rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                        ${s.last_ats_replacement
-                            ? `<a href="${esc(s.last_ats_replacement)}" target="_blank" rel="noopener" style="color:var(--green);text-decoration:none;" title="${esc(s.last_ats_replacement)}">↗ Use API link</a>`
-                            : `<span style="color:var(--muted)">—</span>`}
-                    </td>
-                    <td style="font-size:0.7rem;color:var(--red);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                    <td style="color:var(--muted2)">${s.total_jobs_seen ?? '—'}</td>
+                    <td style="color:var(--green);font-weight:600">${s.total_quality_jobs}</td>
+                    <td>${Math.round(s.avg_fetch_time_ms)}ms</td>
+                    <td style="font-size:0.7rem;color:var(--red);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
                         title="${esc(s.last_error || '')}">${s.last_error ? esc(s.last_error.slice(0, 60)) + '…' : '—'}</td>
                 </tr>`).join('')}
             </tbody>

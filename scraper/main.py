@@ -307,15 +307,60 @@ def extract_jobs_with_gemini(raw_data: str, profile_text: str, url: str, pool: M
         return []
 
 # ── MongoDB ────────────────────────────────────────────────────────────────────
-def get_db():
-    client = MongoClient(
-        MONGODB_URI,
-        serverSelectionTimeoutMS=10000,
-        tlsCAFile=certifi.where()
-    )
-    return client.job_aggregator
+# Singleton client — created once per process, reused across all 200+ URL iterations.
+# Prevents opening 400+ TCP connections per run.
+_mongo_client = None
+_mongo_db     = None
 
-def upsert_jobs(jobs: list[dict]) -> int:
+def get_db():
+    global _mongo_client, _mongo_db
+    if _mongo_client is None:
+        _mongo_client = MongoClient(
+            MONGODB_URI,
+            serverSelectionTimeoutMS=10000,
+            maxPoolSize=5,
+            tlsCAFile=certifi.where()
+        )
+        _mongo_db = _mongo_client.job_aggregator
+    return _mongo_db
+
+def create_indexes():
+    """Ensure optimal indexes exist. Safe to call on every startup (idempotent)."""
+    try:
+        db = get_db()
+        db.jobs.create_index("job_id",      unique=True,  background=True)
+        db.jobs.create_index("scraped_at",               background=True)
+        db.jobs.create_index("quality",                  background=True)
+        db.jobs.create_index("category",                 background=True)
+        db.jobs.create_index("company_name",             background=True)
+        db.jobs.create_index("ats_name",                 background=True)
+        db.site_stats.create_index("url",                background=True)
+        db.site_stats.create_index("run_date",           background=True)
+        print("  ✓ MongoDB indexes verified.")
+    except Exception as e:
+        print(f"  ⚠ Index creation warning: {e}")
+
+def slug_to_company(url: str) -> str:
+    """Best-effort company name from a URL or ATS API path."""
+    import re
+    # Greenhouse: boards-api.greenhouse.io/v1/boards/figma/jobs -> Figma
+    m = re.search(r'/boards/([^/]+)/jobs', url)
+    if m: return m.group(1).replace('-', ' ').title()
+    # Lever: api.lever.co/v0/postings/palantir -> Palantir
+    m = re.search(r'/postings/([^/?]+)', url)
+    if m: return m.group(1).replace('-', ' ').title()
+    # Ashby: api.ashbyhq.com/posting-api/job-board/linear -> Linear
+    m = re.search(r'/job-board/([^/?]+)', url)
+    if m: return m.group(1).replace('-', ' ').title()
+    # Generic careers subdomain: careers.stripe.com -> Stripe
+    m = re.search(r'(?:careers|jobs)\.([a-zA-Z0-9-]+)\.', url)
+    if m: return m.group(1).replace('-', ' ').title()
+    # Fallback: grab the main domain name
+    m = re.search(r'https?://(?:www\.)?([a-zA-Z0-9-]+)\.', url)
+    if m: return m.group(1).replace('-', ' ').title()
+    return ''
+
+def upsert_jobs(jobs: list[dict], ats_name: str = '') -> int:
     """Upsert jobs — update existing, insert new. Returns count saved."""
     if not jobs or not MONGODB_URI:
         return 0
@@ -328,7 +373,8 @@ def upsert_jobs(jobs: list[dict]) -> int:
             title   = job.get('title', '')
             link    = job.get('link', '')
             job_id  = make_job_id(company, title, link)
-            job['job_id'] = job_id
+            job['job_id']  = job_id
+            job['ats_name'] = ats_name  # store which system found this job
             result = collection.update_one(
                 {"job_id": job_id},
                 {
@@ -344,8 +390,13 @@ def upsert_jobs(jobs: list[dict]) -> int:
     return saved
 
 def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
-                      jobs: list[dict], error: str | None, ats_replacement_url: str | None = None):
-    """Write one performance record per URL visit to site_stats collection."""
+                      jobs: list[dict], error: str | None,
+                      ats_replacement_url: str | None = None,
+                      ats_name: str = 'Playwright',
+                      jobs_seen: int = 0,
+                      jobs_prefiltered: int = 0,
+                      jobs_gemini_kept: int = 0):
+    """Write one rich performance record per URL visit to site_stats collection."""
     if not MONGODB_URI:
         return
     link_types = {}
@@ -358,16 +409,25 @@ def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
             qualities.append(q)
 
     stat = {
-        "url":                url,
-        "run_date":           now_iso(),
-        "fetch_success":      fetch_success,
-        "fetch_time_ms":      fetch_time_ms,
-        "raw_jobs_extracted": len(jobs),
-        "quality_jobs_saved": len([j for j in jobs if j.get('quality', 0) >= 3]),
-        "link_types":         link_types,
-        "avg_quality":        round(sum(qualities) / len(qualities), 2) if qualities else 0,
-        "error":              error,
-        "ats_replacement_url": ats_replacement_url
+        # ── Core ──────────────────────────────────────────────────
+        "url":                  url,
+        "company_name":         slug_to_company(url),
+        "ats_name":             ats_name,
+        "run_date":             now_iso(),
+        # ── Fetch ─────────────────────────────────────────────────
+        "fetch_success":        fetch_success,
+        "fetch_time_ms":        fetch_time_ms,
+        # ── Job Funnel (store all, analyze later) ─────────────────
+        "jobs_seen":            jobs_seen,           # raw API/page count
+        "jobs_prefiltered":     jobs_prefiltered,    # after pre_filter_jobs()
+        "jobs_gemini_kept":     jobs_gemini_kept,    # after Gemini strict check
+        "quality_jobs_saved":   len([j for j in jobs if j.get('quality', 0) >= 3]),
+        # ── Quality breakdown ─────────────────────────────────────
+        "link_types":           link_types,
+        "avg_quality":          round(sum(qualities) / len(qualities), 2) if qualities else 0,
+        # ── Diagnostics ───────────────────────────────────────────
+        "error":                error,
+        "ats_replacement_url":  ats_replacement_url,
     }
     try:
         db = get_db()
@@ -396,6 +456,7 @@ def main():
     print(f"  Models: {GEMINI_MODELS[0]} (primary) + {GEMINI_MODELS[1]} (fallback)")
     print(f"  Rate limits: {RPM_LIMIT} RPM · {RPD_LIMIT} RPD per model (shared API key)\n")
 
+    create_indexes()  # Ensure DB indexes exist (idempotent)
     pool = ModelPool(api_key=GEMINI_API_KEY, models=GEMINI_MODELS)
     total_jobs_saved = 0
 
@@ -409,16 +470,19 @@ def main():
         if is_api:
             print(f"  ⚡ ATS Detected: {ats_name} API (bypassing Playwright)")
             start = time.time()
+            jobs_seen = len(api_jobs)
             if not api_jobs:
                 print(f"  → 0 total open roles found via {ats_name} API.")
-                record_site_stats(url, True, int((time.time()-start)*1000), [], None)
+                record_site_stats(url, True, int((time.time()-start)*1000), [], None,
+                                  ats_name=ats_name, jobs_seen=0)
                 continue
                 
             filtered = safe_ats.pre_filter_jobs(api_jobs)
-            print(f"  → API returned {len(api_jobs)} jobs. Pre-filtered to {len(filtered)} tech/junior roles.")
+            print(f"  → API returned {jobs_seen} jobs. Pre-filtered to {len(filtered)} tech/junior roles.")
             
             if not filtered:
-                record_site_stats(url, True, int((time.time()-start)*1000), [], None)
+                record_site_stats(url, True, int((time.time()-start)*1000), [], None,
+                                  ats_name=ats_name, jobs_seen=jobs_seen, jobs_prefiltered=0)
                 continue
                 
             # Send the JSON shortlist to Gemini to do the final strict experience-check (CHUNKED)
@@ -506,18 +570,30 @@ def main():
         error_jobs = [j for j in jobs if "error_type" in j]
         real_jobs  = [j for j in jobs if "error_type" not in j]
         
+        # Compute funnel counts for stats
+        _jobs_seen        = jobs_seen if is_api else 0
+        _jobs_prefiltered = len(filtered) if (is_api and filtered) else 0
+        _jobs_gemini_kept = len([j for j in jobs if "error_type" not in j])
+        _final_ats        = ats_name if is_api else (detected_ats_name if 'detected_ats_name' in dir() and detected_is_api else 'Playwright')
+
         if error_jobs and not real_jobs:
             issue = error_jobs[0].get("error_type")
             print(f"  ⚠ Gemini detected site issue: {issue}")
-            record_site_stats(url, True, fetch_time_ms, [], error=f"Gemini Analysis: {issue}", ats_replacement_url=api_link)
+            record_site_stats(url, True, fetch_time_ms, [], error=f"Gemini Analysis: {issue}",
+                              ats_replacement_url=api_link, ats_name=_final_ats,
+                              jobs_seen=_jobs_seen, jobs_prefiltered=_jobs_prefiltered, jobs_gemini_kept=0)
         elif not real_jobs:
             print(f"  → 0 valid jobs extracted (post-Gemini)")
-            record_site_stats(url, True, fetch_time_ms, [], None, ats_replacement_url=api_link)
+            record_site_stats(url, True, fetch_time_ms, [], None, ats_replacement_url=api_link,
+                              ats_name=_final_ats, jobs_seen=_jobs_seen,
+                              jobs_prefiltered=_jobs_prefiltered, jobs_gemini_kept=0)
         else:
-            saved = upsert_jobs(real_jobs)
+            saved = upsert_jobs(real_jobs, ats_name=_final_ats)
             total_jobs_saved += saved
             print(f"  ✓ {len(real_jobs)} jobs extracted, {saved} upserted to DB")
-            record_site_stats(url, True, fetch_time_ms, real_jobs, None, ats_replacement_url=api_link)
+            record_site_stats(url, True, fetch_time_ms, real_jobs, None, ats_replacement_url=api_link,
+                              ats_name=_final_ats, jobs_seen=_jobs_seen,
+                              jobs_prefiltered=_jobs_prefiltered, jobs_gemini_kept=_jobs_gemini_kept)
 
         # Shorter delay now that we have 2x rate limit headroom
         time.sleep(6)
