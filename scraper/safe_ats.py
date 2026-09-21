@@ -190,9 +190,11 @@ def fetch_workday_jobs(url: str) -> list[dict]:
     all_jobs = []
     offset = 0
     limit = 20
+    max_pages = 50  # Safety cap: ~1000 jobs max
+    page = 0
     
     try:
-        while True:
+        while page < max_pages:
             data = json.dumps({'limit': limit, 'offset': offset}).encode('utf-8')
             req = urllib.request.Request(api_url, data=data, headers=headers, method='POST')
             
@@ -217,8 +219,8 @@ def fetch_workday_jobs(url: str) -> list[dict]:
                     })
                 
                 offset += limit
+                page += 1
 
-                    
     except Exception as e:
         print(f"    [Workday API Error] {e}")
         

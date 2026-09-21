@@ -477,8 +477,8 @@ def main():
 
                 
                 # Log replacement recommendation
-                log_path = os.path.join(os.path.dirname(__file__), "..", "scratch", "ats_replacements.log")
-                os.makedirs(os.path.dirname(log_path), exist_ok=True)
+                # Log replacement recommendation to a file inside scraper/
+                log_path = os.path.join(os.path.dirname(__file__), "ats_replacements.log")
                 with open(log_path, "a") as f:
                     if api_link:
                          f.write(f"[{now_iso()}] {detected_ats_name} Detected: REPLACE {url} WITH {api_link}\n")
