@@ -47,7 +47,7 @@ jobs:
         python main.py
 
   # ── Stage 2: Deep Resume Matching ───────────────────────────────────────────
-  # Runs after ALL Stage 1 chunks finish. Processes up to 30 new jobs per day.
+  # Runs after ALL Stage 1 chunks finish. Processes up to 150 new jobs per day.
   deep-match:
     runs-on: ubuntu-latest
     needs: scrape-and-store   # Wait for all 4 Stage 1 chunks to complete
