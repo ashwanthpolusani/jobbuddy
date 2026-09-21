@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 import json
 import time
@@ -27,7 +27,7 @@ MONGODB_URI     = os.getenv("MONGODB_URI")
 PROFILE_PATH    = os.path.join(os.path.dirname(__file__), "profile.txt")
 GEMINI_MODELS   = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"]
 RPM_LIMIT       = 15
-BATCH_SIZE      = 30
+BATCH_SIZE      = 150
 SCORE_THRESHOLD = 40
 
 EXP_SAFE     = "SAFE"
@@ -215,7 +215,7 @@ def main():
 
     pending = list(
         db.jobs.find(
-            {"stage2_processed_at": {"": False}, "link": {"": True, "": ""}},
+            {"stage2_processed_at": {"$exists": False}, "link_type": "direct_apply", "link": {"$exists": True, "$ne": ""}},
             {"_id": 1, "title": 1, "company_name": 1, "link": 1, "quality": 1}
         )
         .sort("quality", -1)
@@ -242,7 +242,7 @@ def main():
         jd_text = fetch_job_description(link)
         if not jd_text:
             print(f"  Could not fetch JD")
-            db.jobs.update_one({"_id": job_id}, {"": {"stage2_processed_at": now_iso(), "experience_verdict": EXP_POSSIBLE, "match_score": None, "match_reasoning": "Could not fetch job description page.", "skill_gaps": [], "experience_required": "Unknown"}})
+            db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": EXP_POSSIBLE, "match_score": None, "match_reasoning": "Could not fetch job description page.", "skill_gaps": [], "experience_required": "Unknown"}})
             error_count += 1
             continue
 
@@ -266,7 +266,7 @@ def main():
         elif verdict == EXP_POSSIBLE: possible_count += 1
         else:                          blocked_count += 1
 
-        db.jobs.update_one({"_id": job_id}, {"": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "experience_required": exp_required, "match_score": match_score, "match_reasoning": reasoning, "skill_gaps": skill_gaps}})
+        db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "experience_required": exp_required, "match_score": match_score, "match_reasoning": reasoning, "skill_gaps": skill_gaps}})
 
         time.sleep(4)
 
