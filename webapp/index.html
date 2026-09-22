@@ -886,10 +886,7 @@ async function fetchJobs(append) {
     }
 
     try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 12000); // 12s hard timeout
-        const res  = await fetch('/.netlify/functions/getJobs?min_quality=0&limit='+PAGE+'&skip='+offset, { signal: controller.signal });
-        clearTimeout(tid);
+        const res  = await fetch('/.netlify/functions/getJobs?min_quality=0&limit='+PAGE+'&skip='+offset);
         const data = await res.json();
         if (!Array.isArray(data)) throw new Error(data.error || 'Bad response from server');
         if (!data.length && !append) {
@@ -917,7 +914,7 @@ async function fetchJobs(append) {
     } catch(e) {
         setSyncing(false);
         isLoading = false;
-        const msg = e.name === 'AbortError' ? 'Request timed out (MongoDB may be slow). ' : (e.message || 'Unknown error');
+        const msg = e.message || 'Unknown error';
         if (allJobs.length === 0) {
             document.getElementById('jobs-container').innerHTML =
                 '<div class="state">'+
