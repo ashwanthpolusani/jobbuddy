@@ -216,6 +216,23 @@ https://boards-api.greenhouse.io/v1/boards/zocdoc/jobs
 https://boards-api.greenhouse.io/v1/boards/zscaler/jobs
 https://explore.jobs.netflix.net/api/apply/v2/jobs?domain=netflix.com
 https://jobs.lever.co/plaid
+https://boards-api.greenhouse.io/v1/boards/arcesiumllc/jobs
+https://boards-api.greenhouse.io/v1/boards/coherehealth/jobs
+https://boards-api.greenhouse.io/v1/boards/commvault/jobs
+https://boards-api.greenhouse.io/v1/boards/freshprints/jobs
+https://boards-api.greenhouse.io/v1/boards/hackerrank/jobs
+https://boards-api.greenhouse.io/v1/boards/redwoodsoftware/jobs
+https://api.ashbyhq.com/posting-api/job-board/navi
+https://boards-api.greenhouse.io/v1/boards/clear/jobs
+https://boards-api.greenhouse.io/v1/boards/fourkites/jobs
+https://boards-api.greenhouse.io/v1/boards/nice/jobs
+https://boards-api.greenhouse.io/v1/boards/observeai/jobs
+https://boards-api.greenhouse.io/v1/boards/pubmatic/jobs
+https://boards-api.greenhouse.io/v1/boards/rubrik/jobs
+https://boards-api.greenhouse.io/v1/boards/slintel/jobs
+https://api.lever.co/v0/postings/zeta
+https://boards-api.greenhouse.io/v1/boards/verse/jobs
+https://api.lever.co/v0/postings/fi
 # ── JSON link with pagination support ───────────────────────────
 https://careers.cognizant.com/global-en/jobs/?page=[PAGE_OFFSET:1:5:1]
 https://careersatdoordash.com/wp-content/themes/external-job-board/theme/get-jobs.php?ajax=1&spage=[PAGE_OFFSET:1:5:1]
@@ -242,7 +259,6 @@ https://careers.qualcomm.com/
 https://careers.shopify.com/
 https://careers.snap.com/
 https://careers.squareup.com/
-https://careers.swiggy.com/
 https://careers.techmahindra.com/
 https://careers.tiktok.com/
 https://careers.wipro.com/careers-home/jobs

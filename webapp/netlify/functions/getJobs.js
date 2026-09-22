@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 const uri = process.env.MONGODB_URI;
 let cachedClient = null;
@@ -24,6 +24,8 @@ exports.handler = async (event, context) => {
     const min_quality = parseInt(params.min_quality ?? "3", 10);
     const limit      = Math.min(parseInt(params.limit ?? "100", 10), 200);
     const skip       = Math.max(parseInt(params.skip  ?? "0",   10), 0);
+    const last_scraped_at = params.last_scraped_at || null;
+    const last_id = params.last_id || null;
     
     const location   = params.location || "all";
     const exp        = params.exp      || "SAFE";
@@ -82,10 +84,38 @@ exports.handler = async (event, context) => {
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
         filter.scraped_at = { $gte: sevenDaysAgo };
 
+        
+        if (last_scraped_at && last_id) {
+            let cursorFilter = null;
+            try {
+                cursorFilter = {
+                    $or: [
+                        { scraped_at: { $lt: last_scraped_at } },
+                        { 
+                            scraped_at: last_scraped_at, 
+                            _id: { $lt: new ObjectId(last_id) } 
+                        }
+                    ]
+                };
+            } catch (e) {
+                // Invalid object id
+            }
+            if (cursorFilter) {
+                if (filter.$and) {
+                    filter.$and.push(cursorFilter);
+                } else if (filter.$or) {
+                    filter.$and = [{ $or: filter.$or }, cursorFilter];
+                    delete filter.$or;
+                } else {
+                    filter.$and = [cursorFilter];
+                }
+            }
+        }
+
         const jobs = await collection
             .find(filter)
             .sort({ scraped_at: -1, _id: -1 })
-            .skip(skip)
+            .skip(last_scraped_at ? 0 : skip)
             .limit(limit)
             .toArray();
 

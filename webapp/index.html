@@ -1089,6 +1089,8 @@
 
         // Fetch
         let offset = 0;
+        let lastScrapedAt = null;
+        let lastId = null;
         const PAGE = 200;
         async function fetchJobs(append) {
             append = !!append;
@@ -1096,6 +1098,8 @@
 
             if (!append) {
                 offset = 0;
+                lastScrapedAt = null;
+                lastId = null;
                 // Try cache first — show instantly, no spinner
                 const cached = loadCache();
                 if (cached && cached.length) {
@@ -1112,7 +1116,7 @@
             }
 
             try {
-                const url = `/.netlify/functions/getJobs?limit=${PAGE}&skip=${offset}&category=${activeCat === "all" ? "" : activeCat}&min_quality=${document.getElementById("quality-select").value}&link_type=${document.getElementById("type-select").value === "all" ? "" : document.getElementById("type-select").value}&location=${activeLoc}&exp=${activeExp}&search=${encodeURIComponent(document.getElementById("search-input").value || "")}`;
+                const url = `/.netlify/functions/getJobs?limit=${PAGE}&skip=${offset}&last_scraped_at=${encodeURIComponent(lastScrapedAt || "")}&last_id=${lastId || ""}&category=${activeCat === "all" ? "" : activeCat}&min_quality=${document.getElementById("quality-select").value}&link_type=${document.getElementById("type-select").value === "all" ? "" : document.getElementById("type-select").value}&location=${activeLoc}&exp=${activeExp}&search=${encodeURIComponent(document.getElementById("search-input").value || "")}`;
             CURRENT_CACHE_KEY = "jb_jobs_" + btoa(url);
             const res = await fetch(url);
                 const data = await res.json();
@@ -1126,6 +1130,11 @@
                     return;
                 }
                 allJobs = append ? allJobs.concat(data) : data;
+                if (data.length > 0) {
+                    const lastJob = data[data.length - 1];
+                    lastScrapedAt = lastJob.scraped_at;
+                    lastId = lastJob._id;
+                }
                 offset += data.length;
                 isLoading = false;
                 if (!append) saveCache(allJobs);
