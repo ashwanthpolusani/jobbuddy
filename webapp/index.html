@@ -839,7 +839,7 @@
                     <path d="m21 21-4.35-4.35" />
                 </svg>
                 <input class="search-input" id="search-input" type="text"
-                    placeholder="Search title, company, location&#8230;" oninput="renderJobs()">
+                    placeholder="Search title, company, location&#8230;" oninput="debounceSearch()">
             </div>
 
             <div class="filter-pills-row">
@@ -860,13 +860,13 @@
 
                 <div class="fdivider"></div>
 
-                <select class="mini-select" id="quality-select" onchange="renderJobs()">
+                <select class="mini-select" id="quality-select" onchange="fetchJobs(false)">
                     <option value="0">Any quality</option>
                     <option value="3" selected>Quality 3+</option>
                     <option value="4">Quality 4+</option>
                     <option value="5">Quality 5</option>
                 </select>
-                <select class="mini-select" id="type-select" onchange="renderJobs()">
+                <select class="mini-select" id="type-select" onchange="fetchJobs(false)">
                     <option value="all">All types</option>
                     <option value="direct_apply">Direct Apply</option>
                     <option value="filtered_list">Browse Lists</option>
@@ -903,25 +903,10 @@
         let cardIdx = 0;
         let isLoading = true;  // true until first real data is shown
 
-        const CACHE_KEY = 'jb_jobs_v1';
+        let CURRENT_CACHE_KEY = 'jb_jobs_v1';
         const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
-        // Location keywords
-        const INDIA_WORDS = ['india', 'hyderabad', 'hyd', 'bangalore', 'bengaluru', 'mumbai', 'delhi', 'new delhi', 'gurugram', 'gurgaon', 'pune', 'chennai', 'noida', 'kolkata', 'ahmedabad', 'jaipur', 'kochi', 'coimbatore', 'navi mumbai', 'thane'];
-        const REMOTE_WORDS = ['remote', 'work from home', 'wfh', 'anywhere', 'distributed', 'worldwide', 'global remote'];
-
-        function locMatch(job) {
-            const l = (job.location || '').toLowerCase();
-            if (activeLoc === 'all') return true;
-            if (activeLoc === 'remote') return REMOTE_WORDS.some(k => l.includes(k));
-            if (activeLoc === 'india') return INDIA_WORDS.some(k => l.includes(k));
-            if (activeLoc === 'global') {
-                // global = not India-specific (but remote is ok)
-                const isIndia = INDIA_WORDS.filter(k => k !== 'india').some(k => l.includes(k));
-                return !isIndia;
-            }
-            return true;
-        }
+        
 
         // Panel
         function switchPanel(p, btn) {
@@ -937,7 +922,7 @@
             activeCat = cat;
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            renderJobs();
+            fetchJobs(false);
         }
 
         // Exp filter
@@ -948,7 +933,7 @@
                 if (el) el.className = 'pill';
             });
             btn.className = val === 'SAFE' ? 'pill p-safe' : val === 'POSSIBLE' ? 'pill p-possible' : 'pill p-all';
-            renderJobs();
+            fetchJobs(false);
         }
 
         // Loc filter
@@ -959,7 +944,7 @@
                 if (el) el.className = 'pill';
             });
             btn.className = 'pill p-loc';
-            renderJobs();
+            fetchJobs(false);
         }
 
         // Helpers
@@ -969,35 +954,10 @@
         function ltOf(j) { return j.link_type || 'direct_apply'; }
 
         // Render
+        
         function renderJobs() {
-            // Don't let filter clicks wipe the spinner during initial hard load
             if (isLoading && allJobs.length === 0) return;
-            const q = (document.getElementById('search-input').value || '').toLowerCase();
-            const minQ = parseInt(document.getElementById('quality-select').value, 10);
-            const typeF = document.getElementById('type-select').value;
-
-            const filtered = allJobs.filter(job => {
-                if (activeCat !== 'all' && job.category !== activeCat) return false;
-                if (qOf(job) < minQ) return false;
-                if (typeF !== 'all' && ltOf(job) !== typeF) return false;
-                const v = job.experience_verdict || null;
-                if (activeExp === 'SAFE' && v !== 'SAFE') return false;
-                if (activeExp === 'POSSIBLE' && v !== 'POSSIBLE') return false;
-                if (!locMatch(job)) return false;
-                if (q) {
-                    const hay = [job.title, job.company_name, job.location, job.match_reasoning].join(' ').toLowerCase();
-                    if (!hay.includes(q)) return false;
-                }
-                return true;
-            });
-
-            const vo = { SAFE: 0, POSSIBLE: 1, BLOCKED: 2 };
-            filtered.sort((a, b) => {
-                const va = vo[a.experience_verdict] ?? 1, vb = vo[b.experience_verdict] ?? 1;
-                if (va !== vb) return va - vb;
-                return (b.match_score ?? 0) - (a.match_score ?? 0);
-            });
-
+            const filtered = allJobs;
             document.getElementById('result-count').textContent =
                 filtered.length + ' job' + (filtered.length !== 1 ? 's' : '') + ' match your filters';
 
@@ -1007,6 +967,7 @@
                 return;
             }
             cardIdx = 0;
+            const typeF = document.getElementById('type-select').value;
             const direct = filtered.filter(j => ltOf(j) === 'direct_apply');
             const browsable = filtered.filter(j => ltOf(j) !== 'direct_apply');
             let html = '';
@@ -1080,28 +1041,30 @@
 
         // Cat counts
         function updateCounts() {
-            const cats = ['software_engineering', 'data_ml', 'devops_cloud', 'cybersecurity', 'early_careers', 'product_design', 'other'];
-            const ab = document.querySelector('[data-cat="all"]');
-            if (ab) { let c = ab.querySelector('.count'); if (!c) { c = document.createElement('span'); c.className = 'count'; ab.appendChild(c); } c.textContent = allJobs.length; }
-            cats.forEach(cat => {
-                const btn = document.querySelector('[data-cat="' + cat + '"]');
-                if (!btn) return;
-                const n = allJobs.filter(j => j.category === cat).length;
-                let c = btn.querySelector('.count'); if (!c) { c = document.createElement('span'); c.className = 'count'; btn.appendChild(c); }
-                c.textContent = n;
-            });
-            document.getElementById('stat-matches').textContent = allJobs.length;
-            document.getElementById('stat-direct').textContent = allJobs.filter(j => ltOf(j) === 'direct_apply').length;
-            document.getElementById('stat-new').textContent = allJobs.filter(j => isNew(j.scraped_at)).length;
+            if (activeCat === 'all') {
+                const cats = ['software_engineering', 'data_ml', 'devops_cloud', 'cybersecurity', 'early_careers', 'product_design', 'other'];
+                const ab = document.querySelector('[data-cat="all"]');
+                if (ab) { let c = ab.querySelector('.count'); if (!c) { c = document.createElement('span'); c.className = 'count'; ab.appendChild(c); } c.textContent = allJobs.length; }
+                cats.forEach(cat => {
+                    const btn = document.querySelector('[data-cat="' + cat + '"]');
+                    if (!btn) return;
+                    const n = allJobs.filter(j => j.category === cat).length;
+                    let c = btn.querySelector('.count'); if (!c) { c = document.createElement('span'); c.className = 'count'; btn.appendChild(c); }
+                    c.textContent = n;
+                });
+            }
+            const sm = document.getElementById('stat-matches'); if (sm) sm.textContent = allJobs.length;
+            const sd = document.getElementById('stat-direct'); if (sd) sd.textContent = allJobs.filter(j => ltOf(j) === 'direct_apply').length;
+            const sn = document.getElementById('stat-new'); if (sn) sn.textContent = allJobs.filter(j => isNew(j.scraped_at)).length;
         }
 
         // Cache helpers
         function saveCache(jobs) {
-            try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), jobs })); } catch (e) { }
+            try { localStorage.setItem(CURRENT_CACHE_KEY, JSON.stringify({ ts: Date.now(), jobs })); } catch (e) { }
         }
         function loadCache() {
             try {
-                const raw = localStorage.getItem(CACHE_KEY);
+                const raw = localStorage.getItem(CURRENT_CACHE_KEY);
                 if (!raw) return null;
                 const { ts, jobs } = JSON.parse(raw);
                 if (Date.now() - ts > CACHE_TTL) return null; // expired
@@ -1149,7 +1112,9 @@
             }
 
             try {
-                const res = await fetch('/.netlify/functions/getJobs?min_quality=0&limit=' + PAGE + '&skip=' + offset);
+                const url = `/.netlify/functions/getJobs?limit=${PAGE}&skip=${offset}&category=${activeCat === "all" ? "" : activeCat}&min_quality=${document.getElementById("quality-select").value}&link_type=${document.getElementById("type-select").value === "all" ? "" : document.getElementById("type-select").value}&location=${activeLoc}&exp=${activeExp}&search=${encodeURIComponent(document.getElementById("search-input").value || "")}`;
+            CURRENT_CACHE_KEY = "jb_jobs_" + btoa(url);
+            const res = await fetch(url);
                 const data = await res.json();
                 if (!Array.isArray(data)) throw new Error(data.error || 'Bad response from server');
                 if (!data.length && !append) {

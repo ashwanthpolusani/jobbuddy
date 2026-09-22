@@ -24,6 +24,10 @@ exports.handler = async (event, context) => {
     const min_quality = parseInt(params.min_quality ?? "3", 10);
     const limit      = Math.min(parseInt(params.limit ?? "100", 10), 200);
     const skip       = Math.max(parseInt(params.skip  ?? "0",   10), 0);
+    
+    const location   = params.location || "all";
+    const exp        = params.exp      || "SAFE";
+    const search     = params.search   || "";
 
     try {
         const client = await connectToDatabase();
@@ -38,6 +42,41 @@ exports.handler = async (event, context) => {
                 { quality: { $gte: min_quality } },
                 { quality: { $exists: false } }
             ];
+        }
+
+        if (exp !== "all") {
+            filter.experience_verdict = exp;
+        }
+
+        if (location !== "all") {
+            const INDIA_WORDS = ['india', 'hyderabad', 'hyd', 'bangalore', 'bengaluru', 'mumbai', 'delhi', 'new delhi', 'gurugram', 'gurgaon', 'pune', 'chennai', 'noida', 'kolkata', 'ahmedabad', 'jaipur', 'kochi', 'coimbatore', 'navi mumbai', 'thane'];
+            const REMOTE_WORDS = ['remote', 'work from home', 'wfh', 'anywhere', 'distributed', 'worldwide', 'global remote'];
+            
+            if (location === 'remote') {
+                filter.location = { $regex: REMOTE_WORDS.join('|'), $options: 'i' };
+            } else if (location === 'india') {
+                filter.location = { $regex: INDIA_WORDS.join('|'), $options: 'i' };
+            } else if (location === 'global') {
+                const INDIA_ONLY = INDIA_WORDS.filter(k => k !== 'india');
+                filter.location = { $not: { $regex: INDIA_ONLY.join('|'), $options: 'i' } };
+            }
+        }
+
+        if (search) {
+            const searchRegex = { $regex: search, $options: "i" };
+            const searchClause = {
+                $or: [
+                    { title: searchRegex },
+                    { company_name: searchRegex },
+                    { location: searchRegex }
+                ]
+            };
+            if (filter.$or) {
+                filter.$and = [ { $or: filter.$or }, searchClause ];
+                delete filter.$or;
+            } else {
+                filter.$or = searchClause.$or;
+            }
         }
 
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
