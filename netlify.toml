@@ -1,4 +1,18 @@
 [build]
-  base = "webapp"
-  publish = "."
+  base      = "webapp"
+  publish   = "."
   functions = "netlify/functions"
+
+# Increase function timeout to 26s (max on free plan)
+[functions]
+  node_bundler = "esbuild"
+
+[functions."getJobs"]
+  timeout = 26
+
+[functions."getSiteStats"]
+  timeout = 26
+
+# Disable the Netlify badge/HUD injection
+[template.environment]
+  NETLIFY_DISABLE_ATTRIBUTION_BADGE = "true"
