@@ -642,20 +642,16 @@ let isLoading  = true;  // true until first real data is shown
 const CACHE_KEY = 'jb_jobs_v1';
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
-// Location keywords
-const INDIA_WORDS  = ['india','hyderabad','hyd','bangalore','bengaluru','mumbai','delhi','new delhi','gurugram','gurgaon','pune','chennai','noida','kolkata','ahmedabad','jaipur','kochi','coimbatore','navi mumbai','thane'];
-const REMOTE_WORDS = ['remote','work from home','wfh','anywhere','distributed','worldwide','global remote'];
+// Location RegExes (uses \b word boundaries to match "India" safely without matching "Indianapolis")
+const INDIA_REGEX = /\b(india|hyderabad|hyd|bangalore|bengaluru|mumbai|delhi|new delhi|gurugram|gurgaon|pune|chennai|noida|kolkata|ahmedabad|jaipur|kochi|coimbatore|navi mumbai|thane|trivandrum|thiruvananthapuram|mohali|chandigarh|indore|bhopal|vadodara|surat|nagpur|lucknow|kanpur|visakhapatnam|vizag|bhubaneswar|patna|guwahati|mysore|mysuru|hubli)\b/i;
+const REMOTE_REGEX = /\b(remote|work from home|wfh|anywhere|distributed|worldwide|global remote)\b/i;
 
 function locMatch(job) {
-    const l = (job.location||'').toLowerCase();
-    if (activeLoc==='all')    return true;
-    if (activeLoc==='remote') return REMOTE_WORDS.some(k=>l.includes(k));
-    if (activeLoc==='india')  return INDIA_WORDS.some(k=>l.includes(k));
-    if (activeLoc==='global') {
-        // global = not India-specific (but remote is ok)
-        const isIndia  = INDIA_WORDS.filter(k=>k!=='india').some(k=>l.includes(k));
-        return !isIndia;
-    }
+    const l = job.location || '';
+    if (activeLoc === 'all')    return true;
+    if (activeLoc === 'remote') return REMOTE_REGEX.test(l);
+    if (activeLoc === 'india')  return INDIA_REGEX.test(l);
+    if (activeLoc === 'global') return !INDIA_REGEX.test(l);
     return true;
 }
 
