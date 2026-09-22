@@ -5,6 +5,7 @@ import time
 import re
 import hashlib
 from datetime import datetime, timezone
+import urllib.parse
 
 # Fix Windows console encoding issues for printing unicode box-drawing characters
 if sys.stdout.encoding.lower() != 'utf-8':
@@ -295,6 +296,8 @@ def extract_jobs_with_gemini(raw_data: str, profile_text: str, url: str, pool: M
         for job in jobs:
             job['source_url']  = url
             job['scraped_at']  = now_iso()
+            if 'link' in job and job['link'] and not job['link'].startswith('http'):
+                job['link'] = urllib.parse.urljoin(url, job['link'])
         return jobs
     except json.JSONDecodeError as e:
         print(f"  ✗ JSON parse error: {e}")

@@ -266,7 +266,11 @@ def main():
         elif verdict == EXP_POSSIBLE: possible_count += 1
         else:                          blocked_count += 1
 
-        db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "experience_required": exp_required, "match_score": match_score, "match_reasoning": reasoning, "skill_gaps": skill_gaps}})
+        if verdict == EXP_BLOCKED:
+            db.jobs.delete_one({"_id": job_id})
+            print(f"  [Deleted] Removed from database to save space")
+        else:
+            db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "experience_required": exp_required, "match_score": match_score, "match_reasoning": reasoning, "skill_gaps": skill_gaps}})
 
         time.sleep(4)
 
