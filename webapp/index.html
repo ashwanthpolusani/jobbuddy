@@ -885,9 +885,12 @@ async function fetchJobs(append) {
     }
 
     try {
-        const res  = await fetch('/.netlify/functions/getJobs?min_quality=0&limit='+PAGE+'&skip='+offset);
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 12000); // 12s hard timeout
+        const res  = await fetch('/.netlify/functions/getJobs?min_quality=0&limit='+PAGE+'&skip='+offset, { signal: controller.signal });
+        clearTimeout(tid);
         const data = await res.json();
-        if (!Array.isArray(data)) throw new Error('Bad response');
+        if (!Array.isArray(data)) throw new Error(data.error || 'Bad response from server');
         if (!data.length && !append) {
             setSyncing(false);
             if (allJobs.length === 0) {
@@ -899,7 +902,7 @@ async function fetchJobs(append) {
         allJobs  = append ? allJobs.concat(data) : data;
         offset  += data.length;
         isLoading = false;
-        if (!append) saveCache(allJobs); // cache fresh results
+        if (!append) saveCache(allJobs);
         setSyncing(false);
         updateCounts();
         renderJobs();
@@ -912,10 +915,15 @@ async function fetchJobs(append) {
         }
     } catch(e) {
         setSyncing(false);
-        // Only show error if we have nothing to show
+        isLoading = false;
+        const msg = e.name === 'AbortError' ? 'Request timed out (MongoDB may be slow). ' : (e.message || 'Unknown error');
         if (allJobs.length === 0) {
             document.getElementById('jobs-container').innerHTML =
-                '<div class="state"><p style="font-size:1.4rem;margin-bottom:8px">&#9888;</p><p style="color:var(--red)">Failed to load jobs.<br><small style="color:var(--muted)">'+e.message+'</small></p></div>';
+                '<div class="state">'+
+                '<p style="font-size:1.4rem;margin-bottom:10px">&#9888;</p>'+
+                '<p style="color:var(--red);margin-bottom:14px">'+msg+'</p>'+
+                '<button onclick="fetchJobs(false)" style="padding:8px 22px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;">&#8635; Retry</button>'+
+                '</div>';
         }
     }
 }
