@@ -58,7 +58,8 @@
 
         /* Kill Netlify badge no matter how it's injected */
         a[href*="netlify.com"][style*="fixed"],
-        [data-netlify-deploy-id] {
+        [data-netlify-deploy-id],
+        #nl-badge-frame {
             display: none !important;
         }
 
@@ -1187,8 +1188,8 @@
 
         // Hide Netlify badge
         function hideNBadge() {
-            document.querySelectorAll('a[href*="netlify.com"]').forEach(el => {
-                if (getComputedStyle(el).position === 'fixed') el.style.setProperty('display', 'none', 'important');
+            document.querySelectorAll('a[href*="netlify.com"], #nl-badge-frame').forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
             });
         }
 
