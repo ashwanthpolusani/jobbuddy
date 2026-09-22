@@ -56,6 +56,8 @@ exports.handler = async (event, context) => {
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
+                // Cache at CDN edge for 5 min, allow stale for 10 min while revalidating
+                "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
             },
             body: JSON.stringify(jobs),
         };

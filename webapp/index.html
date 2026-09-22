@@ -636,6 +636,10 @@ let activeExp  = 'SAFE';
 let activeLoc  = 'all';
 let statsLoaded= false;
 let cardIdx    = 0;
+let isLoading  = true;  // true until first real data is shown
+
+const CACHE_KEY = 'jb_jobs_v1';
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 // Location keywords
 const INDIA_WORDS  = ['india','hyderabad','hyd','bangalore','bengaluru','mumbai','delhi','new delhi','gurugram','gurgaon','pune','chennai','noida','kolkata','ahmedabad','jaipur','kochi','coimbatore','navi mumbai','thane'];
@@ -701,6 +705,8 @@ function ltOf(j){ return j.link_type||'direct_apply'; }
 
 // Render
 function renderJobs() {
+    // Don't let filter clicks wipe the spinner during initial hard load
+    if (isLoading && allJobs.length === 0) return;
     const q     = (document.getElementById('search-input').value||'').toLowerCase();
     const minQ  = parseInt(document.getElementById('quality-select').value,10);
     const typeF = document.getElementById('type-select').value;
@@ -825,31 +831,92 @@ function updateCounts() {
     document.getElementById('stat-new').textContent=allJobs.filter(j=>isNew(j.scraped_at)).length;
 }
 
+// Cache helpers
+function saveCache(jobs) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), jobs })); } catch(e) {}
+}
+function loadCache() {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        const { ts, jobs } = JSON.parse(raw);
+        if (Date.now() - ts > CACHE_TTL) return null; // expired
+        return jobs;
+    } catch(e) { return null; }
+}
+
+// Sync indicator in header
+function setSyncing(on) {
+    let dot = document.getElementById('sync-dot');
+    if (on && !dot) {
+        dot = document.createElement('span');
+        dot.id = 'sync-dot';
+        dot.title = 'Refreshing from server\u2026';
+        dot.style.cssText = 'display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:8px;vertical-align:middle;animation:pnew 1.2s ease-in-out infinite;';
+        const sub = document.querySelector('.header-sub');
+        if (sub) sub.appendChild(dot);
+    } else if (!on && dot) {
+        dot.remove();
+    }
+}
+
 // Fetch
 let offset=0;
 const PAGE=200;
 async function fetchJobs(append) {
     append=!!append;
     cardIdx=0;
-    if(!append){ offset=0; document.getElementById('jobs-container').innerHTML='<div class="state"><div class="spinner"></div><p>Fetching your job matches&#8230;</p></div>'; }
+
+    if (!append) {
+        offset=0;
+        // Try cache first — show instantly, no spinner
+        const cached = loadCache();
+        if (cached && cached.length) {
+            allJobs = cached;
+            isLoading = false;
+            updateCounts();
+            renderJobs();
+            setSyncing(true); // show subtle dot while refreshing
+        } else {
+            isLoading = true;
+            document.getElementById('jobs-container').innerHTML =
+                '<div class="state"><div class="spinner"></div><p>Fetching your job matches&#8230;</p></div>';
+        }
+    }
+
     try {
-        const res=await fetch('/.netlify/functions/getJobs?min_quality=0&limit='+PAGE+'&skip='+offset);
-        const data=await res.json();
-        if(!Array.isArray(data)) throw new Error('Bad response');
-        if(!data.length&&!append){ document.getElementById('jobs-container').innerHTML='<div class="state"><p style="font-size:1.4rem;margin-bottom:8px">&#128336;</p><p>No matches yet. Scraper may still be running.</p></div>'; return; }
-        allJobs=append?allJobs.concat(data):data;
-        offset+=data.length;
+        const res  = await fetch('/.netlify/functions/getJobs?min_quality=0&limit='+PAGE+'&skip='+offset);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error('Bad response');
+        if (!data.length && !append) {
+            setSyncing(false);
+            if (allJobs.length === 0) {
+                document.getElementById('jobs-container').innerHTML =
+                    '<div class="state"><p style="font-size:1.4rem;margin-bottom:8px">&#128336;</p><p>No matches yet. Scraper may still be running.</p></div>';
+            }
+            return;
+        }
+        allJobs  = append ? allJobs.concat(data) : data;
+        offset  += data.length;
+        isLoading = false;
+        if (!append) saveCache(allJobs); // cache fresh results
+        setSyncing(false);
         updateCounts();
         renderJobs();
-        const ex=document.getElementById('lmb'); if(ex) ex.remove();
-        if(data.length===PAGE) {
-            const d=document.createElement('div');
-            d.style.cssText='text-align:center;margin-top:28px;'; d.id='lmb';
-            d.innerHTML='<button onclick="fetchJobs(true)" style="padding:9px 26px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;color:var(--muted2);font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;">Load more jobs</button>';
+        const ex = document.getElementById('lmb'); if (ex) ex.remove();
+        if (data.length === PAGE) {
+            const d = document.createElement('div');
+            d.style.cssText = 'text-align:center;margin-top:28px;'; d.id = 'lmb';
+            d.innerHTML = '<button onclick="fetchJobs(true)" style="padding:9px 26px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;color:var(--muted2);font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;">Load more jobs</button>';
             document.getElementById('jobs-container').appendChild(d);
         }
     } catch(e) {
-        document.getElementById('jobs-container').innerHTML='<div class="state"><p style="font-size:1.4rem;margin-bottom:8px">&#9888;</p><p style="color:var(--red)">Failed to load jobs.<br><small style="color:var(--muted)">'+e.message+'</small></p></div>';
+        setSyncing(false);
+        // Only show error if we have nothing to show
+        if (allJobs.length === 0) {
+            document.getElementById('jobs-container').innerHTML =
+                '<div class="state"><p style="font-size:1.4rem;margin-bottom:8px">&#9888;</p><p style="color:var(--red)">Failed to load jobs.<br><small style="color:var(--muted)">'+e.message+'</small></p></div>';
+        }
     }
 }
 
