@@ -41,7 +41,15 @@ _mongo_db     = None
 def get_db():
     global _mongo_client, _mongo_db
     if _mongo_client is None:
-        _mongo_client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=10000, maxPoolSize=5, tlsCAFile=certifi.where())
+        _mongo_client = MongoClient(
+            MONGODB_URI,
+            serverSelectionTimeoutMS=10000,
+            socketTimeoutMS=30000,
+            connectTimeoutMS=20000,
+            maxIdleTimeMS=45000,
+            maxPoolSize=5,
+            tlsCAFile=certifi.where()
+        )
         _mongo_db = _mongo_client.job_aggregator
     return _mongo_db
 
@@ -229,8 +237,14 @@ def main():
         return
 
     safe_count = possible_count = blocked_count = error_count = 0
+    start_time = time.time()
+    MAX_RUNTIME_SECONDS = 80 * 60  # 80 minutes fail-safe
 
     for i, job in enumerate(pending, 1):
+        if time.time() - start_time > MAX_RUNTIME_SECONDS:
+            print("  [FAIL-SAFE] Approaching global time limit (80 minutes). Shutting down gracefully to prevent GitHub Actions cancellation...")
+            break
+            
         title   = job.get("title", "?")
         company = job.get("company_name", "?")
         link    = job.get("link", "")
@@ -266,11 +280,14 @@ def main():
         elif verdict == EXP_POSSIBLE: possible_count += 1
         else:                          blocked_count += 1
 
-        if verdict == EXP_BLOCKED:
-            db.jobs.delete_one({"_id": job_id})
-            print(f"  [Deleted] Removed from database to save space")
-        else:
-            db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "experience_required": exp_required, "match_score": match_score, "match_reasoning": reasoning, "skill_gaps": skill_gaps}})
+        try:
+            if verdict == EXP_BLOCKED:
+                db.jobs.delete_one({"_id": job_id})
+                print(f"  [Deleted] Removed from database to save space")
+            else:
+                db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "experience_required": exp_required, "match_score": match_score, "match_reasoning": reasoning, "skill_gaps": skill_gaps}})
+        except Exception as e:
+            print(f"  [Error] Failed to update MongoDB for {job_id}: {e}")
 
         time.sleep(4)
 

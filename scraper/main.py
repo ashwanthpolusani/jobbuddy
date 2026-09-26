@@ -321,6 +321,9 @@ def get_db():
         _mongo_client = MongoClient(
             MONGODB_URI,
             serverSelectionTimeoutMS=10000,
+            socketTimeoutMS=30000,
+            connectTimeoutMS=20000,
+            maxIdleTimeMS=45000,
             maxPoolSize=5,
             tlsCAFile=certifi.where()
         )
@@ -468,8 +471,14 @@ def main():
     create_indexes()  # Ensure DB indexes exist (idempotent)
     pool = ModelPool(api_key=GEMINI_API_KEY, models=GEMINI_MODELS)
     total_jobs_saved = 0
+    start_time = time.time()
+    MAX_RUNTIME_SECONDS = 80 * 60  # 80 minutes fail-safe (leaves 10 min buffer before 90m hard timeout)
 
     for i, url in enumerate(urls, 1):
+        if time.time() - start_time > MAX_RUNTIME_SECONDS:
+            print("  [FAIL-SAFE] Approaching global time limit (80 minutes). Shutting down gracefully to prevent GitHub Actions cancellation...")
+            break
+            
         print(f"\n[{i}/{len(urls)}] {url}")
         api_link = None  # Reset per-URL to prevent leak across iterations
 

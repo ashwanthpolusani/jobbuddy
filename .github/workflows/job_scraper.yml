@@ -10,6 +10,7 @@ jobs:
   # ── Stage 1: Scrape & Store ─────────────────────────────────────────────────
   scrape-and-store:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     strategy:
       matrix:
         chunk: [0, 1, 2, 3] # Spawns 4 parallel runners
@@ -50,6 +51,7 @@ jobs:
   # Runs after ALL Stage 1 chunks finish. Processes up to 150 new jobs per day.
   deep-match:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     needs: scrape-and-store   # Wait for all 4 Stage 1 chunks to complete
     if: always()              # Run even if some Stage 1 chunks failed
 
