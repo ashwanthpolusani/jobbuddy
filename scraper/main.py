@@ -277,15 +277,12 @@ STRICT RULES — follow exactly:
 7. Extract company_name accurately.
 
 8. Return ONLY a valid JSON array. Each element must have exactly these keys:
-   "title", "company_name", "location", "requirements", "link",
-   "link_type", "category", "quality", "experience_verdict", "why_entry_level"
+   "title", "company_name", "location", "core_requirements", "link",
+   "link_type", "category", "quality", "experience_verdict"
 
-   - "requirements":     brief factual summary of what the job states it needs (skills, degree, etc.)
-                         Use empty string if the posting states nothing.
-   - "why_entry_level":  1–2 sentences stating the specific evidence that this is a 0-experience role
-                         (e.g., "Posting says 'freshers welcome, 0–1 years'. Direct application form for
-                         a Graduate Software Engineer role at Company X.")
-                         Do NOT write about skills fit — only about the experience level evidence.
+   - "core_requirements": 1 short sentence summarizing the core tech stack, degree, or critical skills required. 
+                          Keep it extremely brief and factual (e.g., 'Python, React, and B.Tech in CS'). 
+                          Use empty string if the posting states nothing.
    - All links must be absolute URLs.
    - If no valid jobs found → return []
    - IF the raw data appears to be a CAPTCHA, Cloudflare challenge, Access Denied, or a generic

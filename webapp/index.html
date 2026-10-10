@@ -792,7 +792,8 @@
     function setCat(cat, btn) {
         activeCat = cat;
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        if (btn) btn.classList.add('active');
+        updateURL();
         fetchJobs(false);
     }
 
@@ -808,8 +809,20 @@
             const el = document.getElementById(id);
             if (el) el.className = 'filt-btn';
         });
-        btn.className = 'filt-btn active-blue';
+        if (btn) btn.className = 'filt-btn active-blue';
+        updateURL();
         fetchJobs(false);
+    }
+
+    // Update URL for Programmatic SEO
+    function updateURL() {
+        let path = '/';
+        if (activeLoc !== 'all' || activeCat !== 'all') {
+            const locPart = activeLoc !== 'all' ? activeLoc : 'anywhere';
+            const catPart = activeCat !== 'all' ? activeCat : 'all-roles';
+            path = '/' + locPart + '/' + catPart;
+        }
+        window.history.pushState({ loc: activeLoc, cat: activeCat }, '', path);
     }
 
     // Helpers
@@ -852,22 +865,14 @@
     function buildCard(job) {
         const id = 'c' + (cardIdx++);
         const isDirect = ltOf(job) === 'direct_apply';
-        const verdict = job.experience_verdict || null;
         const newTag = isNew(job.scraped_at) ? '<span class="tag-new">New</span>' : '';
-        // why_entry_level: factual note on WHY this qualifies as 0-exp (not skills matching)
-        const reason = job.why_entry_level || job.match_reasoning || job.match_reason || '';
+        const reason = job.core_requirements || job.why_entry_level || job.match_reasoning || '';
         const cat = (job.category || 'other').replace(/_/g, ' ');
 
-        let vbadge = '';
-        if (verdict === 'SAFE') vbadge = '<span class="badge badge-confirmed">Confirmed</span>';
-        else if (verdict === 'POSSIBLE') vbadge = '<span class="badge badge-likely">Likely</span>';
-
-        // No match_score badge — score was personal-skill-based, which we no longer do
-
         const reasonHtml = reason
-            ? '<div class="job-reason" id="r' + id + '">' + esc(reason) + '</div>'
+            ? '<div class="job-reason" id="r' + id + '"><strong>Core Requirements:</strong> ' + esc(reason) + '</div>'
               + '<button class="expand-btn" id="b' + id + '" onclick="toggle(\'' + id + '\')">'
-              + '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> why entry-level</button>'
+              + '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view requirements</button>'
             : '';
 
         const applyBtn = isDirect
@@ -886,7 +891,6 @@
             + reasonHtml
             + '</div>'
             + '<div class="job-right">'
-            + '<div class="job-badges">' + vbadge + '</div>'
             + applyBtn
             + '</div>'
             + '</div>';
@@ -899,7 +903,7 @@
         const ex = r.classList.toggle('expanded');
         b.innerHTML = ex
             ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg> less'
-            : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> why entry-level';
+            : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view requirements';
     }
 
     // Cache
@@ -1021,6 +1025,32 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Parse URL for programmatic SEO / initial state
+        const path = window.location.pathname;
+        if (path && path !== '/' && path !== '/index.html') {
+            const parts = path.split('/').filter(p => p);
+            if (parts.length === 2) {
+                const urlLoc = parts[0];
+                const urlCat = parts[1];
+                
+                if (urlLoc !== 'anywhere') activeLoc = urlLoc;
+                if (urlCat !== 'all-roles') activeCat = urlCat;
+
+                // visually update buttons
+                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                const cBtn = document.querySelector(`[data-cat="${activeCat}"]`);
+                if (cBtn) cBtn.classList.add('active');
+
+                ['loc-all', 'loc-remote', 'loc-india', 'loc-global'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.className = 'filt-btn';
+                });
+                const locBtnId = activeLoc === 'all' ? 'loc-all' : `loc-${activeLoc}`;
+                const lBtn = document.getElementById(locBtnId);
+                if (lBtn) lBtn.className = 'filt-btn active-blue';
+            }
+        }
+
         fetchJobs(false);
         setTimeout(hideNBadge, 500);
         setTimeout(hideNBadge, 2000);
