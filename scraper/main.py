@@ -231,71 +231,88 @@ def fetch_html_with_playwright(url: str) -> tuple[str, int, str | None]:
         return "", elapsed, str(e)
 
 # ── Gemini ─────────────────────────────────────────────────────────────────────
+# NOTE: We deliberately do NOT pass candidate skills/profile to this prompt.
+# The scraper's only job is to find genuine 0-experience openings — not to
+# match against a personal skill set. Skill-based filtering is not done here.
 GEMINI_PROMPT_TEMPLATE = """
-You are a strict job-listing extractor helping a candidate find jobs.
-
-{profile_text}
+You are a strict job-listing extractor. Your sole purpose is to identify
+genuine entry-level / no-experience-required tech job openings.
 
 ──────────────────────────────────────────
-TASK: Extract and evaluate job listings from the raw data below.
+TASK: Extract qualifying job listings from the raw data below.
 
 STRICT RULES — follow exactly:
 
-1. REJECT any job that requires any work experience, any internships, or any years on the job.
-   This includes "1+ year preferred", "some experience", etc.
-   ONLY include jobs explicitly labeled: fresher, entry-level, new grad, trainee,
-   associate, 0–1 years, or no experience required.
+1. EXPERIENCE GATE — the most important rule:
+   REJECT any job that requires work experience, internships, or any years on the job.
+   This includes "1+ year preferred", "some experience helpful", "junior with 2 years", etc.
+   ONLY include jobs that are explicitly labelled OR clearly intended for:
+     fresher | entry-level | new grad | trainee | associate | graduate hire
+     | 0 years | 0–1 years | no experience required | campus hire
    When in doubt about experience requirements → EXCLUDE the job.
 
-2. SKIP link_type "career_homepage": If a link goes to a generic careers homepage
-   (not filtered to specific roles or a specific department) → do NOT include it.
+2. SKIP generic career homepages: If a link goes to a root careers page with no
+   role/department filter → do NOT include it.
 
-3. For each valid job, determine link_type:
-   - "direct_apply": URL leads directly to one specific job application form
-   - "filtered_list": URL leads to a pre-filtered list (e.g., by city, department, or team)
+3. Assign experience_verdict for each included job:
+   - "SAFE"     — the posting explicitly and unambiguously states no experience required
+                  (e.g., "Freshers only", "0 years", "Entry-level, no prior exp needed")
+   - "POSSIBLE" — the posting is likely entry-level but does not explicitly say so
+                  (e.g., title is "Junior Developer" with no stated requirements)
 
-4. Assign category (pick ONE):
+4. For each valid job, determine link_type:
+   - "direct_apply":   URL leads directly to one specific job application form
+   - "filtered_list":  URL leads to a pre-filtered list (e.g., by city, department, or team)
+
+5. Assign category (pick ONE):
    software_engineering | data_ml | devops_cloud | cybersecurity | early_careers | product_design | other
 
-5. Assign quality (integer 1–5):
-   5 = Specific title + real requirements stated + direct apply link + strong skills match
-   4 = Specific title + some requirements + good match
-   3 = Specific title + filtered list link + limited info
-   2 = Vague title + filtered list + partial info
+6. Assign quality (integer 1–5):
+   5 = Clear entry-level title + explicit requirements stated + direct apply link
+   4 = Clear entry-level title + some requirements + good posting quality
+   3 = Entry-level title + filtered list link or limited info
+   2 = Vague but plausible entry-level role + filtered list + sparse info
    1 = Do not include (skip)
 
-6. Extract company_name accurately.
+7. Extract company_name accurately.
 
-7. Return ONLY a valid JSON array. Each element must have exactly these keys:
+8. Return ONLY a valid JSON array. Each element must have exactly these keys:
    "title", "company_name", "location", "requirements", "link",
-   "link_type", "category", "quality", "match_reason"
+   "link_type", "category", "quality", "experience_verdict", "why_entry_level"
 
-   - "requirements": brief summary of what the job needs (empty string if truly unknown)
-   - "match_reason": 1–2 sentences explaining WHY this is a good fit for the candidate
-   - All links must be absolute URLs
+   - "requirements":     brief factual summary of what the job states it needs (skills, degree, etc.)
+                         Use empty string if the posting states nothing.
+   - "why_entry_level":  1–2 sentences stating the specific evidence that this is a 0-experience role
+                         (e.g., "Posting says 'freshers welcome, 0–1 years'. Direct application form for
+                         a Graduate Software Engineer role at Company X.")
+                         Do NOT write about skills fit — only about the experience level evidence.
+   - All links must be absolute URLs.
    - If no valid jobs found → return []
-   - IF the raw data appears to be a Captcha, Cloudflare challenge, Access Denied, or a generic homepage/video page instead of a careers portal, return EXACTLY this: [{{"error_type": "site_blocked_or_invalid"}}]
+   - IF the raw data appears to be a CAPTCHA, Cloudflare challenge, Access Denied, or a generic
+     homepage/video page instead of a careers portal, return EXACTLY:
+     [{{"error_type": "site_blocked_or_invalid"}}]
 
 RAW DATA TO EVALUATE:
 {raw_data}
 """
 
-def extract_jobs_with_gemini(raw_data: str, profile_text: str, url: str, pool: ModelPool) -> list[dict]:
+def extract_jobs_with_gemini(raw_data: str, url: str, pool: ModelPool) -> list[dict]:
+    """Extract 0-experience jobs using Gemini. No personal profile is passed — purely experience-gated."""
     if not GEMINI_API_KEY or not raw_data:
         return []
 
-    prompt = GEMINI_PROMPT_TEMPLATE.format(profile_text=profile_text, raw_data=raw_data)
+    prompt = GEMINI_PROMPT_TEMPLATE.format(raw_data=raw_data)
     
     try:
         text = pool.generate(prompt)
         jobs = json.loads(text)
         if not isinstance(jobs, list):
             return []
-        # Defensive: only keep actual dicts (guards against Gemini returning ["error_type"] strings)
+        # Defensive: only keep actual dicts
         jobs = [job for job in jobs if isinstance(job, dict)]
         for job in jobs:
-            job['source_url']  = url
-            job['scraped_at']  = now_iso()
+            job['source_url'] = url
+            job['scraped_at'] = now_iso()
             if 'link' in job and job['link'] and not job['link'].startswith('http'):
                 job['link'] = urllib.parse.urljoin(url, job['link'])
         return jobs
@@ -461,7 +478,8 @@ def main():
         print("  ✗ FATAL: MONGODB_URI is not set. Add it to .env or GitHub Secrets.")
         return
 
-    profile_text = get_profile_text()
+    # Profile text is no longer sent to Gemini — the scraper is purely experience-gated.
+    # Skill matching was removed. profile.txt is kept as a reference only.
 
     urls = get_target_urls()
     print(f"  Loaded {len(urls)} target URLs.")
@@ -503,12 +521,12 @@ def main():
                                   ats_name=ats_name, jobs_seen=jobs_seen, jobs_prefiltered=0)
                 continue
                 
-            # Send the JSON shortlist to Gemini to do the final strict experience-check (CHUNKED)
+            # Send the JSON shortlist to Gemini for strict experience-level checking (CHUNKED)
             jobs = []
             for j in range(0, len(filtered), GEMINI_CHUNK_SIZE):
                 chunk = filtered[j:j + GEMINI_CHUNK_SIZE]
                 raw_data_for_gemini = json.dumps(chunk, indent=2)
-                chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, profile_text, url, pool)
+                chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, url, pool)
                 jobs.extend(chunk_jobs)
             fetch_time_ms = int((time.time()-start)*1000)
 
@@ -578,10 +596,10 @@ def main():
                 for j in range(0, len(filtered), GEMINI_CHUNK_SIZE):
                     chunk = filtered[j:j + GEMINI_CHUNK_SIZE]
                     raw_data_for_gemini = json.dumps(chunk, indent=2)
-                    chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, profile_text, url, pool)
+                    chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, url, pool)
                     jobs.extend(chunk_jobs)
             else:
-                jobs = extract_jobs_with_gemini(html, profile_text, url, pool)
+                jobs = extract_jobs_with_gemini(html, url, pool)
 
         # 3. SAVE RESULTS
         # Filter out any error_type sentinel objects that may have leaked through from any chunk
