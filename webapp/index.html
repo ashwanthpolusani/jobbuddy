@@ -13,8 +13,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <!-- Google AdSense — replace ca-pub-XXXXXXXXXXXXXXXXX with your publisher ID when approved -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXXX"
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3809813018120427"
         crossorigin="anonymous"></script>
     <style>
         *,
@@ -144,7 +144,7 @@
 
         .header-sub {
             font-size: 0.67rem;
-            color: var(--muted2);
+            color: var(--text2);
             margin-top: 2px;
         }
 
@@ -175,7 +175,7 @@
             background: transparent;
             border: none;
             border-radius: var(--radius);
-            color: var(--muted2);
+            color: var(--text2);
             font-size: 0.79rem;
             font-weight: 500;
             font-family: inherit;
@@ -293,7 +293,7 @@
             cursor: pointer;
             border: 1px solid var(--border2);
             background: var(--surface2);
-            color: var(--muted2);
+            color: var(--text2);
             transition: all 0.13s;
             white-space: nowrap;
             line-height: 1;
@@ -329,7 +329,7 @@
         /* ── RESULT META ──────────────────────────────────────────── */
         .result-count {
             font-size: 0.72rem;
-            color: var(--muted);
+            color: var(--text2);
             padding: 8px 0 4px;
         }
 
@@ -339,7 +339,7 @@
             font-weight: 700;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: var(--muted);
+            color: var(--text2);
             padding: 20px 0 8px;
         }
 
@@ -592,7 +592,7 @@
 
         .header-links a {
             font-size: 0.75rem;
-            color: var(--muted2);
+            color: var(--text2);
             text-decoration: none;
             transition: color 0.15s;
         }
@@ -748,7 +748,7 @@
                 <div class="sidebar-ad-label">Sponsored</div>
                 <!-- Google AdSense 300x250 — replace data-ad-client and data-ad-slot with your real values -->
                 <ins class="adsbygoogle sidebar-ad-slot"
-                    data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
+                    data-ad-client="ca-pub-3809813018120427"
                     data-ad-slot="XXXXXXXXXX"
                     data-ad-format="rectangle"
                     data-full-width-responsive="false"></ins>
@@ -958,13 +958,16 @@
         append = !!append;
         cardIdx = 0;
 
-        const url = `/.netlify/functions/getJobs?limit=${PAGE}&skip=${offset}&last_scraped_at=${encodeURIComponent(lastScrapedAt || "")}&last_id=${lastId || ""}&category=${activeCat === "all" ? "" : activeCat}&link_type=${activeType === "all" ? "" : activeType}&location=${activeLoc}&verdict=${activeConf}&search=${encodeURIComponent(document.getElementById("search-input").value || "")}`;
-        CURRENT_CACHE_KEY = "jb_jobs_" + btoa(url);
-
         if (!append) {
             offset = 0;
             lastScrapedAt = null;
             lastId = null;
+        }
+
+        const url = `/.netlify/functions/getJobs?limit=${PAGE}&skip=${offset}&last_scraped_at=${encodeURIComponent(lastScrapedAt || "")}&last_id=${lastId || ""}&category=${activeCat === "all" ? "" : activeCat}&link_type=${activeType === "all" ? "" : activeType}&location=${activeLoc}&verdict=${activeConf}&search=${encodeURIComponent(document.getElementById("search-input").value || "")}`;
+        CURRENT_CACHE_KEY = "jb_jobs_" + btoa(url);
+
+        if (!append) {
             const cached = loadCache();
             if (cached && cached.length) {
                 allJobs = cached;
