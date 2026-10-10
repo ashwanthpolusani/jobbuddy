@@ -1,0 +1,16 @@
+<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="#0a66c2" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="#0a66c2"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="#0a66c2"/>
+    <circle cx="23" cy="20" r="1.5" fill="#0a66c2"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
