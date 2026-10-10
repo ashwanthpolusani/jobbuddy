@@ -146,29 +146,6 @@
             margin-top: 2px;
         }
 
-        .header-stats {
-            display: flex;
-            gap: 28px;
-        }
-
-        .hstat { text-align: right; }
-
-        .hstat-val {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--text);
-            line-height: 1;
-            letter-spacing: -0.04em;
-        }
-
-        .hstat-lbl {
-            font-size: 0.60rem;
-            color: var(--muted);
-            margin-top: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-        }
-
         /* ── PANEL ────────────────────────────────────────────────── */
         .panel-main { padding: 20px 0 80px; }
 
@@ -346,75 +323,6 @@
             color: #93c5fd;
             font-weight: 600;
         }
-
-        .conf-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            display: inline-block;
-            flex-shrink: 0;
-        }
-
-        .dot-green { background: var(--green); }
-        .dot-amber { background: var(--amber); }
-
-        /* Tooltip */
-        .tooltip-wrap {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .tooltip-icon {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--surface3);
-            border: 1px solid var(--border2);
-            color: var(--muted);
-            font-size: 0.6rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: help;
-            flex-shrink: 0;
-            margin-left: 2px;
-        }
-
-        .tooltip-box {
-            display: none;
-            position: absolute;
-            bottom: calc(100% + 8px);
-            left: 0;
-            background: var(--surface3);
-            border: 1px solid var(--border2);
-            border-radius: var(--radius);
-            padding: 12px 14px;
-            width: 290px;
-            font-size: 0.73rem;
-            color: var(--text2);
-            line-height: 1.6;
-            z-index: 200;
-            pointer-events: none;
-            white-space: normal;
-        }
-
-        .tooltip-wrap:hover .tooltip-box { display: block; }
-
-        .mini-select {
-            padding: 5px 10px;
-            background: var(--surface2);
-            border: 1px solid var(--border2);
-            border-radius: var(--radius);
-            color: var(--muted2);
-            font-size: 0.74rem;
-            font-family: inherit;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .mini-select option { background: var(--surface2); }
 
         /* ── RESULT META ──────────────────────────────────────────── */
         .result-count {
@@ -719,8 +627,6 @@
             .sidebar-col { display: none; }
 
             .header { padding: 0 16px; }
-
-            .header-stats { display: none; }
         }
 
         @media (max-width: 600px) {
@@ -772,23 +678,9 @@
                 </svg>
                 <div>
                     <div class="wordmark">Job<span class="accent">Buddy</span></div>
-                    <div class="header-sub">150+ career pages scraped daily &middot; Entry-level only</div>
+                    <div class="header-sub">Daily tech jobs for freshers &middot; No experience required</div>
                 </div>
             </a>
-            <div class="header-stats" aria-label="Summary stats">
-                <div class="hstat">
-                    <div class="hstat-val" id="stat-matches">&#8212;</div>
-                    <div class="hstat-lbl">Listings</div>
-                </div>
-                <div class="hstat">
-                    <div class="hstat-val" id="stat-direct">&#8212;</div>
-                    <div class="hstat-lbl">Direct Apply</div>
-                </div>
-                <div class="hstat">
-                    <div class="hstat-val" id="stat-new">&#8212;</div>
-                    <div class="hstat-lbl">Last 48h</div>
-                </div>
-            </div>
         </div>
     </header>
 
@@ -827,33 +719,6 @@
                     </div>
 
                     <div class="filter-row">
-                        <!-- AI Confidence filter — replaces vague Safe/Possible labels -->
-                        <div class="filter-group">
-                            <span class="filter-label">AI Confidence</span>
-                            <div class="tooltip-wrap">
-                                <span class="tooltip-icon" tabindex="0" aria-describedby="conf-tooltip">?</span>
-                                <div class="tooltip-box" id="conf-tooltip" role="tooltip">
-                                    All jobs here are scraped specifically for 0-experience candidates. The AI labels
-                                    each listing based on how clearly the posting says no experience is needed.
-                                    <br><br>
-                                    <strong style="color:var(--green)">Confirmed</strong> — The posting explicitly says fresher, entry-level, or 0 years required.
-                                    <br><br>
-                                    <strong style="color:var(--amber)">Likely</strong> — The AI thinks it qualifies but the posting was not explicit. Verify before applying.
-                                    <br><br>
-                                    <strong style="color:var(--text2)">Show all</strong> — Includes both.
-                                </div>
-                            </div>
-                        </div>
-                        <button class="filt-btn active-green" id="exp-safe" onclick="setExp('SAFE',this)">
-                            <span class="conf-dot dot-green" aria-hidden="true"></span>Confirmed
-                        </button>
-                        <button class="filt-btn" id="exp-possible" onclick="setExp('POSSIBLE',this)">
-                            <span class="conf-dot dot-amber" aria-hidden="true"></span>Likely
-                        </button>
-                        <button class="filt-btn" id="exp-all" onclick="setExp('all',this)">Show all</button>
-
-                        <div class="filter-divider" aria-hidden="true"></div>
-
                         <span class="filter-label">Location</span>
                         <button class="filt-btn active-blue" id="loc-all" onclick="setLoc('all',this)">All</button>
                         <button class="filt-btn" id="loc-remote" onclick="setLoc('remote',this)">Remote</button>
@@ -861,18 +726,11 @@
                         <button class="filt-btn" id="loc-global" onclick="setLoc('global',this)">Global</button>
 
                         <div class="filter-divider" aria-hidden="true"></div>
-
-                        <select class="mini-select" id="quality-select" onchange="fetchJobs(false)" aria-label="Minimum quality">
-                            <option value="0">Any quality</option>
-                            <option value="3" selected>Quality 3+</option>
-                            <option value="4">Quality 4+</option>
-                            <option value="5">Quality 5</option>
-                        </select>
-                        <select class="mini-select" id="type-select" onchange="fetchJobs(false)" aria-label="Listing type">
-                            <option value="all">All types</option>
-                            <option value="direct_apply">Direct Apply</option>
-                            <option value="filtered_list">Browse Lists</option>
-                        </select>
+                        
+                        <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text);cursor:pointer;user-select:none;">
+                            <input type="checkbox" id="direct-apply-chk" onchange="toggleDirectApply()" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;">
+                            Direct Apply Only
+                        </label>
                     </div>
                 </div>
 
@@ -922,12 +780,12 @@
     // State
     let allJobs = [];
     let activeCat = 'all';
-    let activeExp = 'SAFE';
+    let activeType = 'all';
     let activeLoc = 'all';
     let cardIdx = 0;
     let isLoading = true;
 
-    let CURRENT_CACHE_KEY = 'jb_jobs_v2';
+    let CURRENT_CACHE_KEY = 'jb_jobs_v3';
     const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
     // Category
@@ -938,16 +796,8 @@
         fetchJobs(false);
     }
 
-    // Confidence/experience filter
-    function setExp(val, btn) {
-        activeExp = val;
-        ['exp-safe', 'exp-possible', 'exp-all'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.className = 'filt-btn';
-        });
-        if (val === 'SAFE') btn.className = 'filt-btn active-green';
-        else if (val === 'POSSIBLE') btn.className = 'filt-btn active-amber';
-        else btn.className = 'filt-btn active-blue';
+    function toggleDirectApply() {
+        activeType = document.getElementById('direct-apply-chk').checked ? 'direct_apply' : 'all';
         fetchJobs(false);
     }
 
@@ -978,7 +828,7 @@
         if (isLoading && allJobs.length === 0) return;
 
         const countEl = document.getElementById('result-count');
-        countEl.textContent = allJobs.length + ' listing' + (allJobs.length !== 1 ? 's' : '') + ' match your filters';
+        countEl.textContent = 'Showing the latest listings matching your search';
 
         const cnt = document.getElementById('jobs-container');
         if (!allJobs.length) {
@@ -986,15 +836,14 @@
             return;
         }
         cardIdx = 0;
-        const typeF = document.getElementById('type-select').value;
         const direct = allJobs.filter(j => ltOf(j) === 'direct_apply');
         const browsable = allJobs.filter(j => ltOf(j) !== 'direct_apply');
         let html = '';
         if (direct.length)
-            html += '<div class="section-label">Direct Apply &mdash; ' + direct.length + '</div>'
+            html += '<div class="section-label">Direct Apply</div>'
                   + direct.map(buildCard).join('');
-        if (browsable.length && typeF !== 'direct_apply')
-            html += '<div class="section-label" style="margin-top:' + (direct.length ? '8px' : '0') + '">Browse Lists &mdash; ' + browsable.length + '</div>'
+        if (browsable.length && activeType !== 'direct_apply')
+            html += '<div class="section-label" style="margin-top:' + (direct.length ? '8px' : '0') + '">Browse Lists</div>'
                   + browsable.map(buildCard).join('');
         cnt.innerHTML = html;
     }
@@ -1053,33 +902,6 @@
             : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> why entry-level';
     }
 
-    // Update category counts and header stats
-    function updateCounts() {
-        if (activeCat === 'all') {
-            const cats = ['software_engineering','data_ml','devops_cloud','cybersecurity','early_careers','product_design','other'];
-            const ab = document.querySelector('[data-cat="all"]');
-            if (ab) {
-                let c = ab.querySelector('.count');
-                if (!c) { c = document.createElement('span'); c.className = 'count'; ab.appendChild(c); }
-                c.textContent = allJobs.length;
-            }
-            cats.forEach(cat => {
-                const btn = document.querySelector('[data-cat="' + cat + '"]');
-                if (!btn) return;
-                const n = allJobs.filter(j => j.category === cat).length;
-                let c = btn.querySelector('.count');
-                if (!c) { c = document.createElement('span'); c.className = 'count'; btn.appendChild(c); }
-                c.textContent = n;
-            });
-        }
-        const sm = document.getElementById('stat-matches');
-        if (sm) sm.textContent = allJobs.length;
-        const sd = document.getElementById('stat-direct');
-        if (sd) sd.textContent = allJobs.filter(j => ltOf(j) === 'direct_apply').length;
-        const sn = document.getElementById('stat-new');
-        if (sn) sn.textContent = allJobs.filter(j => isNew(j.scraped_at)).length;
-    }
-
     // Cache
     function saveCache(jobs) {
         try { localStorage.setItem(CURRENT_CACHE_KEY, JSON.stringify({ ts: Date.now(), jobs })); } catch (e) {}
@@ -1134,7 +956,6 @@
             if (cached && cached.length) {
                 allJobs = cached;
                 isLoading = false;
-                updateCounts();
                 renderJobs();
                 setSyncing(true);
             } else {
@@ -1145,7 +966,7 @@
         }
 
         try {
-            const url = `/.netlify/functions/getJobs?limit=${PAGE}&skip=${offset}&last_scraped_at=${encodeURIComponent(lastScrapedAt || "")}&last_id=${lastId || ""}&category=${activeCat === "all" ? "" : activeCat}&min_quality=${document.getElementById("quality-select").value}&link_type=${document.getElementById("type-select").value === "all" ? "" : document.getElementById("type-select").value}&location=${activeLoc}&exp=${activeExp}&search=${encodeURIComponent(document.getElementById("search-input").value || "")}`;
+            const url = `/.netlify/functions/getJobs?limit=${PAGE}&skip=${offset}&last_scraped_at=${encodeURIComponent(lastScrapedAt || "")}&last_id=${lastId || ""}&category=${activeCat === "all" ? "" : activeCat}&link_type=${activeType === "all" ? "" : activeType}&location=${activeLoc}&search=${encodeURIComponent(document.getElementById("search-input").value || "")}`;
             CURRENT_CACHE_KEY = "jb_jobs_" + btoa(url);
             const res = await fetch(url);
             const data = await res.json();
@@ -1168,7 +989,6 @@
             isLoading = false;
             if (!append) saveCache(allJobs);
             setSyncing(false);
-            updateCounts();
             renderJobs();
             const ex = document.getElementById('lmb');
             if (ex) ex.remove();

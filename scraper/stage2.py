@@ -56,11 +56,8 @@ def get_db():
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
-def get_profile_text() -> str:
-    if not os.path.exists(PROFILE_PATH):
-        return ""
-    with open(PROFILE_PATH, 'r') as f:
-        return f.read()
+def now_iso():
+    return datetime.now(timezone.utc).isoformat()
 
 # -- Model Pool
 class ModelPool:
@@ -157,9 +154,6 @@ STAGE2_PROMPT = '''
 You are an expert job eligibility screener. The candidate is a COMPLETELY FRESH GRADUATE with
 0 years of experience and 0 internships. Your #1 job is detecting experience requirements.
 
-CANDIDATE PROFILE:
-{profile_text}
-
 JOB DESCRIPTION:
 {job_description}
 
@@ -178,27 +172,19 @@ Return a JSON object with exactly these keys:
 
 2. "experience_required": exact quote from the JD about experience, or "Not stated"
 
-3. "match_score": integer 0-100 on SKILLS match only (not experience):
-   100 = every tech requirement matches candidate profile
-   70+ = most requirements match
-   40-69 = partial match
-   0-39 = major skills mismatch
-
-4. "match_reasoning": 2-3 sentences. First sentence must state the experience verdict and why.
-
-5. "skill_gaps": list of specific tools/languages/frameworks the JD requires that the candidate lacks. [] if none.
+3. "why_entry_level": 2-3 sentences. First sentence must state the experience verdict and why.
 
 Return ONLY valid JSON. No markdown.
 '''
 
-def score_job_with_gemini(jd_text, profile_text, pool):
+def score_job_with_gemini(jd_text, pool):
     if not jd_text:
         return None
-    prompt = STAGE2_PROMPT.format(profile_text=profile_text, job_description=jd_text)
+    prompt = STAGE2_PROMPT.format(job_description=jd_text)
     try:
         text = pool.generate(prompt)
         result = json.loads(text)
-        if isinstance(result, dict) and "match_score" in result:
+        if isinstance(result, dict) and "experience_verdict" in result:
             return result
     except Exception as e:
         print(f"    [Stage 2 Gemini Error] {e}")
@@ -217,7 +203,6 @@ def main():
         print("  FATAL: MONGODB_URI not set.")
         return
 
-    profile_text = get_profile_text()
     db           = get_db()
     pool         = ModelPool(api_key=GEMINI_API_KEY, models=GEMINI_MODELS)
 
@@ -256,25 +241,23 @@ def main():
         jd_text = fetch_job_description(link)
         if not jd_text:
             print(f"  Could not fetch JD")
-            db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": EXP_POSSIBLE, "match_score": None, "match_reasoning": "Could not fetch job description page.", "skill_gaps": [], "experience_required": "Unknown"}})
+            db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": EXP_POSSIBLE, "why_entry_level": "Could not fetch job description page.", "experience_required": "Unknown"}})
             error_count += 1
             continue
 
-        result = score_job_with_gemini(jd_text, profile_text, pool)
+        result = score_job_with_gemini(jd_text, pool)
         if not result:
             print(f"  Gemini scoring failed")
             error_count += 1
             continue
 
         verdict      = result.get("experience_verdict", EXP_POSSIBLE)
-        match_score  = result.get("match_score", 0)
-        reasoning    = result.get("match_reasoning", "")
-        skill_gaps   = result.get("skill_gaps", [])
+        reasoning    = result.get("why_entry_level", "")
         exp_required = result.get("experience_required", "Not stated")
 
         icons = {"SAFE": "[OK]", "POSSIBLE": "[?]", "BLOCKED": "[X]"}
         print(f"  {icons.get(verdict,'?')} Experience: {verdict} | Quote: {exp_required}")
-        print(f"  Score: {match_score}/100 | Gaps: {', '.join(skill_gaps) if skill_gaps else 'None'}")
+        print(f"  Reasoning: {reasoning}")
 
         if verdict == EXP_SAFE:      safe_count += 1
         elif verdict == EXP_POSSIBLE: possible_count += 1
@@ -285,7 +268,7 @@ def main():
                 db.jobs.delete_one({"_id": job_id})
                 print(f"  [Deleted] Removed from database to save space")
             else:
-                db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "experience_required": exp_required, "match_score": match_score, "match_reasoning": reasoning, "skill_gaps": skill_gaps}})
+                db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "experience_required": exp_required, "why_entry_level": reasoning}})
         except Exception as e:
             print(f"  [Error] Failed to update MongoDB for {job_id}: {e}")
 

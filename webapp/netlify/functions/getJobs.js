@@ -21,14 +21,12 @@ exports.handler = async (event, context) => {
     const params = event.queryStringParameters || {};
     const category   = params.category   || null;
     const link_type  = params.link_type  || null;
-    const min_quality = parseInt(params.min_quality ?? "3", 10);
     const limit      = Math.min(parseInt(params.limit ?? "100", 10), 200);
     const skip       = Math.max(parseInt(params.skip  ?? "0",   10), 0);
     const last_scraped_at = params.last_scraped_at || null;
     const last_id = params.last_id || null;
     
     const location   = params.location || "all";
-    const exp        = params.exp      || "SAFE";
     const search     = params.search   || "";
 
     try {
@@ -39,16 +37,11 @@ exports.handler = async (event, context) => {
         if (category)  filter.category  = category;
         if (link_type) filter.link_type = link_type;
 
-        if (min_quality > 0) {
-            filter.$or = [
-                { quality: { $gte: min_quality } },
-                { quality: { $exists: false } }
-            ];
-        }
-
-        if (exp !== "all") {
-            filter.experience_verdict = exp;
-        }
+        // Always enforce a minimum quality of 3 (good entry-level match)
+        filter.$or = [
+            { quality: { $gte: 3 } },
+            { quality: { $exists: false } }
+        ];
 
         if (location !== "all") {
             const INDIA_WORDS = ['india', 'hyderabad', 'hyd', 'bangalore', 'bengaluru', 'mumbai', 'delhi', 'new delhi', 'gurugram', 'gurgaon', 'pune', 'chennai', 'noida', 'kolkata', 'ahmedabad', 'jaipur', 'kochi', 'coimbatore', 'navi mumbai', 'thane'];
