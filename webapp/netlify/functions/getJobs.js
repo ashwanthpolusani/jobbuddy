@@ -25,6 +25,7 @@ exports.handler = async (event, context) => {
     const skip       = Math.max(parseInt(params.skip  ?? "0",   10), 0);
     const last_scraped_at = params.last_scraped_at || null;
     const last_id = params.last_id || null;
+    const verdict = params.verdict || null;
     
     const location   = params.location || "all";
     const search     = params.search   || "";
@@ -36,6 +37,7 @@ exports.handler = async (event, context) => {
         const filter = {};
         if (category)  filter.category  = category;
         if (link_type) filter.link_type = link_type;
+        if (verdict && verdict !== "all") filter.experience_verdict = verdict;
 
         // Always enforce a minimum quality of 3 (good entry-level match)
         filter.$or = [
