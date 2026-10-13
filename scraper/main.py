@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import urllib.parse
 
 # Fix Windows console encoding issues for printing unicode box-drawing characters
-if sys.stdout.encoding.lower() != 'utf-8':
+if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
     try:
         sys.stdout.reconfigure(encoding='utf-8')
     except AttributeError:
@@ -21,12 +21,12 @@ import certifi
 from playwright.sync_api import sync_playwright
 import safe_ats  # v3 Safe API Router
 
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 load_dotenv()
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 MONGODB_URI    = os.getenv("MONGODB_URI")
-PROFILE_PATH   = os.path.join(os.path.dirname(__file__), "profile.txt")
 URLS_FILE      = os.path.join(os.path.dirname(__file__), "urls.txt")
 
 # Both models share the same free-tier limits: 15 RPM, 500 RPD, 250K TPM
@@ -38,7 +38,8 @@ GEMINI_MODELS = [
 ]
 RPM_LIMIT = 15          # Per-model per-minute limit
 RPD_LIMIT = 500         # Per-model per-day limit
-GEMINI_CHUNK_SIZE = 50  # Max jobs per Gemini API call (prevents Payload Too Large)
+GEMINI_CHUNK_SIZE   = 50  # Max jobs per Gemini API call (prevents Payload Too Large)
+MAX_CHUNKS_PER_SITE = 4   # Max 4 chunks (200 jobs) per site to prevent single-company runner bottlenecks
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -76,14 +77,6 @@ def get_target_urls():
         return sharded_urls
         
     return urls
-
-def get_profile_text():
-    """Reads the static profile.txt file to avoid PDF parsing overhead."""
-    if not os.path.exists(PROFILE_PATH):
-        print("[WARN] profile.txt not found. AI matching quality will be reduced.")
-        return ""
-    with open(PROFILE_PATH, 'r') as f:
-        return f.read()
 
 def clean_html(html):
     """Strip scripts, styles, SVG, comments to cut token count ~80%."""
@@ -208,10 +201,11 @@ def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
 # ── Playwright ─────────────────────────────────────────────────────────────────
-def fetch_html_with_playwright(url: str) -> tuple[str, int, str | None]:
+def fetch_html_with_playwright(url: str) -> tuple[str, str, int, str | None]:
     """
-    Returns (html, fetch_time_ms, error_message).
+    Returns (html, final_url, fetch_time_ms, error_message).
     html is empty string on failure.
+    final_url tracks the redirected URL (e.g., jobs.company.com) so relative links resolve accurately.
     """
     print(f"  ↳ Fetching {url} …")
     start = time.time()
@@ -221,14 +215,15 @@ def fetch_html_with_playwright(url: str) -> tuple[str, int, str | None]:
             page = browser.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=45000)
             time.sleep(3)
+            final_url = page.url or url
             raw_html = page.content()
             html = extract_text_and_links(raw_html)
             browser.close()
         elapsed = int((time.time() - start) * 1000)
-        return html, elapsed, None
+        return html, final_url, elapsed, None
     except Exception as e:
         elapsed = int((time.time() - start) * 1000)
-        return "", elapsed, str(e)
+        return "", url, elapsed, str(e)
 
 # ── Gemini ─────────────────────────────────────────────────────────────────────
 # NOTE: We deliberately do NOT pass candidate skills/profile to this prompt.
@@ -251,34 +246,32 @@ STRICT RULES — follow exactly:
      | 0 years | 0–1 years | no experience required | campus hire
    When in doubt about experience requirements → EXCLUDE the job.
 
-2. SKIP generic career homepages: If a link goes to a root careers page with no
+2. WORK AUTHORIZATION & CITIZENSHIP GATE:
+   REJECT any job that requires active government security clearance, domestic citizenship (e.g., US/UK citizen only),
+   or explicitly states "no visa sponsorship", "must be authorized without sponsorship", or "permanent right to work required".
+   Do NOT include jobs that foreign candidates cannot legally apply to.
+
+3. SKIP generic career homepages: If a link goes to a root careers page with no
    role/department filter → do NOT include it.
 
-3. Assign experience_verdict for each included job:
+4. Assign experience_verdict for each included job:
    - "SAFE"     — the posting explicitly and unambiguously states no experience required
                   (e.g., "Freshers only", "0 years", "Entry-level, no prior exp needed")
    - "POSSIBLE" — the posting is likely entry-level but does not explicitly say so
                   (e.g., title is "Junior Developer" with no stated requirements)
 
-4. For each valid job, determine link_type:
+5. For each valid job, determine link_type:
    - "direct_apply":   URL leads directly to one specific job application form
    - "filtered_list":  URL leads to a pre-filtered list (e.g., by city, department, or team)
 
-5. Assign category (pick ONE):
+6. Assign category (pick ONE):
    software_engineering | data_ml | devops_cloud | cybersecurity | early_careers | product_design | other
-
-6. Assign quality (integer 1–5):
-   5 = Clear entry-level title + explicit requirements stated + direct apply link
-   4 = Clear entry-level title + some requirements + good posting quality
-   3 = Entry-level title + filtered list link or limited info
-   2 = Vague but plausible entry-level role + filtered list + sparse info
-   1 = Do not include (skip)
 
 7. Extract company_name accurately.
 
 8. Return ONLY a valid JSON array. Each element must have exactly these keys:
    "title", "company_name", "location", "core_requirements", "link",
-   "link_type", "category", "quality", "experience_verdict"
+   "link_type", "category", "experience_verdict"
 
    - "core_requirements": 1 short sentence summarizing the core tech stack, degree, or critical skills required. 
                           Keep it extremely brief and factual (e.g., 'Python, React, and B.Tech in CS'). 
@@ -293,7 +286,7 @@ RAW DATA TO EVALUATE:
 {raw_data}
 """
 
-def extract_jobs_with_gemini(raw_data: str, url: str, pool: ModelPool) -> list[dict]:
+def extract_jobs_with_gemini(raw_data: str, url: str, pool: ModelPool, base_url: str = "") -> list[dict]:
     """Extract 0-experience jobs using Gemini. No personal profile is passed — purely experience-gated."""
     if not GEMINI_API_KEY or not raw_data:
         return []
@@ -307,11 +300,20 @@ def extract_jobs_with_gemini(raw_data: str, url: str, pool: ModelPool) -> list[d
             return []
         # Defensive: only keep actual dicts
         jobs = [job for job in jobs if isinstance(job, dict)]
+        resolve_url = base_url or url
         for job in jobs:
             job['source_url'] = url
             job['scraped_at'] = now_iso()
+            if not job.get('company_name'):
+                job['company_name'] = slug_to_company(url)
+            job.setdefault('link_type', 'direct_apply')
+            job.setdefault('category', 'other')
+            job.setdefault('experience_verdict', 'POSSIBLE')
+            job.setdefault('core_requirements', '')
+            job.setdefault('location', '')
+
             if 'link' in job and job['link'] and not job['link'].startswith('http'):
-                job['link'] = urllib.parse.urljoin(url, job['link'])
+                job['link'] = urllib.parse.urljoin(resolve_url, job['link'])
         return jobs
     except json.JSONDecodeError as e:
         print(f"  ✗ JSON parse error: {e}")
@@ -322,6 +324,40 @@ def extract_jobs_with_gemini(raw_data: str, url: str, pool: ModelPool) -> list[d
     except Exception as e:
         print(f"  ✗ Gemini error: {e}")
         return []
+
+def is_eligible_for_jobbuddy(job: dict) -> tuple[bool, str]:
+    """
+    Ensures jobs align with JobBuddy's mission: Indian candidates with Indian passports,
+    no pre-existing foreign visas.
+    Rejects:
+    1. US/UK Security Clearance, defense, or citizenship requirements.
+    2. Explicit 'No visa sponsorship' / 'Must be authorized without sponsorship' clauses.
+    3. Overseas student worker contract roles requiring local US campus enrollment.
+    """
+    text = (
+        str(job.get('title', '')) + ' ' +
+        str(job.get('location', '')) + ' ' +
+        str(job.get('core_requirements', '')) + ' ' +
+        str(job.get('requirements', ''))
+    ).lower()
+
+    # Clearance / Citizenship restriction
+    if any(k in text for k in ['security clearance', 'us citizen', 'uk government vetting', 'active clearance']):
+        return False, "Requires government/defense security clearance or citizenship"
+
+    # Explicit no-sponsorship clause
+    if any(k in text for k in [
+        'without sponsorship', 'no visa sponsorship', 'will not sponsor',
+        'not able to sponsor', 'permanent right to work in the uk',
+        'authorized to work in the u.k', 'must have right to work in the uk'
+    ]):
+        return False, "Explicitly states no visa sponsorship or local right to work required"
+
+    # Domestic student worker contract roles
+    if 'contract student worker' in text:
+        return False, "Domestic student worker contract requiring local US campus enrollment"
+
+    return True, "OK"
 
 # ── MongoDB ────────────────────────────────────────────────────────────────────
 # Singleton client — created once per process, reused across all 200+ URL iterations.
@@ -350,7 +386,7 @@ def create_indexes():
         db = get_db()
         # 1. Search/Filter Indexes
         db.jobs.create_index("job_id",      unique=True,  background=True)
-        db.jobs.create_index("quality",                  background=True)
+
         db.jobs.create_index("category",                 background=True)
         db.jobs.create_index("company_name",             background=True)
         db.jobs.create_index("ats_name",                 background=True)
@@ -368,7 +404,6 @@ def create_indexes():
 
 def slug_to_company(url: str) -> str:
     """Best-effort company name from a URL or ATS API path."""
-    import re
     # Greenhouse: boards-api.greenhouse.io/v1/boards/figma/jobs -> Figma
     m = re.search(r'/boards/([^/]+)/jobs', url)
     if m: return m.group(1).replace('-', ' ').title()
@@ -426,13 +461,9 @@ def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
     if not MONGODB_URI:
         return
     link_types = {}
-    qualities  = []
     for j in jobs:
         lt = j.get('link_type', 'unknown')
         link_types[lt] = link_types.get(lt, 0) + 1
-        q = j.get('quality', 0)
-        if q:
-            qualities.append(q)
 
     stat = {
         # ── Core ──────────────────────────────────────────────────
@@ -447,10 +478,9 @@ def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
         "jobs_seen":            jobs_seen,           # raw API/page count
         "jobs_prefiltered":     jobs_prefiltered,    # after pre_filter_jobs()
         "jobs_gemini_kept":     jobs_gemini_kept,    # after Gemini strict check
-        "quality_jobs_saved":   len([j for j in jobs if j.get('quality', 0) >= 3]),
+        "quality_jobs_saved":   len(jobs),
         # ── Quality breakdown ─────────────────────────────────────
         "link_types":           link_types,
-        "avg_quality":          round(sum(qualities) / len(qualities), 2) if qualities else 0,
         # ── Diagnostics ───────────────────────────────────────────
         "error":                error,
         "ats_replacement_url":  ats_replacement_url,
@@ -495,7 +525,11 @@ def main():
             break
             
         print(f"\n[{i}/{len(urls)}] {url}")
-        api_link = None  # Reset per-URL to prevent leak across iterations
+        api_link          = None   # Reset per-URL to prevent leak across iterations
+        jobs_seen         = 0      # Raw count from ATS API
+        filtered          = []     # Pre-filtered list
+        detected_is_api   = False  # Set to True if auto-detected mid-Playwright
+        detected_ats_name = 'Playwright'
 
         # 1. ATS API ROUTER (The fast/safe path)
         is_api, api_jobs, ats_name = safe_ats.process_ats_url(url)
@@ -520,16 +554,21 @@ def main():
                 
             # Send the JSON shortlist to Gemini for strict experience-level checking (CHUNKED)
             jobs = []
+            chunks_processed = 0
             for j in range(0, len(filtered), GEMINI_CHUNK_SIZE):
+                if chunks_processed >= MAX_CHUNKS_PER_SITE:
+                    print(f"  ℹ Reached max evaluation cap ({MAX_CHUNKS_PER_SITE * GEMINI_CHUNK_SIZE} jobs) for this site.")
+                    break
                 chunk = filtered[j:j + GEMINI_CHUNK_SIZE]
                 raw_data_for_gemini = json.dumps(chunk, indent=2)
                 chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, url, pool)
                 jobs.extend(chunk_jobs)
+                chunks_processed += 1
             fetch_time_ms = int((time.time()-start)*1000)
 
         # 2. PLAYWRIGHT FALLBACK (The safe HTML path)
         else:
-            html, fetch_time_ms, fetch_error = fetch_html_with_playwright(url)
+            html, final_url, fetch_time_ms, fetch_error = fetch_html_with_playwright(url)
             fetch_success = bool(html and not fetch_error)
 
             if not fetch_success:
@@ -572,9 +611,7 @@ def main():
                         if slug:
                             api_link = f"https://boards.greenhouse.io/{slug}" if detected_ats_name == "Greenhouse" else f"https://jobs.lever.co/{slug}"
 
-                
-                # Log replacement recommendation
-                # Log replacement recommendation to a file inside scraper/
+                # Log ATS replacement recommendation to a file inside scraper/
                 log_path = os.path.join(os.path.dirname(__file__), "ats_replacements.log")
                 with open(log_path, "a") as f:
                     if api_link:
@@ -582,32 +619,49 @@ def main():
                     else:
                          f.write(f"[{now_iso()}] {detected_ats_name} Detected: Consider replacing {url} with direct ATS link in urls.txt for faster runs.\n")
                 
+                jobs_seen = len(detected_api_jobs)
                 filtered = safe_ats.pre_filter_jobs(detected_api_jobs)
                 print(f"  → {detected_ats_name} API returned {len(detected_api_jobs)} jobs. Pre-filtered to {len(filtered)} roles.")
                 
                 if not filtered:
-                    record_site_stats(url, True, fetch_time_ms, [], None, ats_replacement_url=api_link)
+                    record_site_stats(url, True, fetch_time_ms, [], None, ats_replacement_url=api_link,
+                                      ats_name=detected_ats_name, jobs_seen=jobs_seen, jobs_prefiltered=0, jobs_gemini_kept=0)
                     continue
                 
                 jobs = []
+                chunks_processed = 0
                 for j in range(0, len(filtered), GEMINI_CHUNK_SIZE):
+                    if chunks_processed >= MAX_CHUNKS_PER_SITE:
+                        print(f"  ℹ Reached max evaluation cap ({MAX_CHUNKS_PER_SITE * GEMINI_CHUNK_SIZE} jobs) for this site.")
+                        break
                     chunk = filtered[j:j + GEMINI_CHUNK_SIZE]
                     raw_data_for_gemini = json.dumps(chunk, indent=2)
                     chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, url, pool)
                     jobs.extend(chunk_jobs)
+                    chunks_processed += 1
             else:
-                jobs = extract_jobs_with_gemini(html, url, pool)
+                jobs = extract_jobs_with_gemini(html, url, pool, base_url=final_url)
 
         # 3. SAVE RESULTS
         # Filter out any error_type sentinel objects that may have leaked through from any chunk
         error_jobs = [j for j in jobs if "error_type" in j]
         real_jobs  = [j for j in jobs if "error_type" not in j]
+
+        # Apply deterministic JobBuddy eligibility filter (citizenship/clearance/no-sponsorship)
+        eligible_jobs = []
+        for rj in real_jobs:
+            ok, reason = is_eligible_for_jobbuddy(rj)
+            if ok:
+                eligible_jobs.append(rj)
+            else:
+                print(f"  ⊘ Filtered out '{rj.get('title')}' ({rj.get('location')}): {reason}")
+        real_jobs = eligible_jobs
         
         # Compute funnel counts for stats
-        _jobs_seen        = jobs_seen if is_api else 0
-        _jobs_prefiltered = len(filtered) if (is_api and filtered) else 0
+        _jobs_seen        = jobs_seen if (is_api or detected_is_api) else 0
+        _jobs_prefiltered = len(filtered) if ((is_api or detected_is_api) and filtered) else 0
         _jobs_gemini_kept = len([j for j in jobs if "error_type" not in j])
-        _final_ats        = ats_name if is_api else (detected_ats_name if 'detected_ats_name' in dir() and detected_is_api else 'Playwright')
+        _final_ats        = ats_name if is_api else (detected_ats_name if detected_is_api else 'Playwright')
 
         if error_jobs and not real_jobs:
             issue = error_jobs[0].get("error_type")

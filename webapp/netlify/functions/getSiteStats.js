@@ -6,7 +6,10 @@ let cachedClient = null;
 async function connectToDatabase() {
     if (cachedClient) return cachedClient;
     if (!uri) throw new Error("MONGODB_URI environment variable is not defined");
-    const client = new MongoClient(uri);
+    const client = new MongoClient(uri, {
+        maxPoolSize: 5,
+        serverSelectionTimeoutMS: 5000
+    });
     await client.connect();
     cachedClient = client;
     return client;
@@ -19,7 +22,7 @@ exports.handler = async (event, context) => {
         const client = await connectToDatabase();
         const db = client.db("job_aggregator");
 
-        // Aggregate site_stats: per URL, get last 10 runs
+        // Aggregate site_stats per URL
         const pipeline = [
             { $sort: { run_date: -1 } },
             {
@@ -30,7 +33,6 @@ exports.handler = async (event, context) => {
                     total_quality_jobs: { $sum: "$quality_jobs_saved" },
                     total_jobs_seen:    { $sum: "$jobs_seen" },          // new: raw funnel count
                     avg_fetch_time_ms:  { $avg: "$fetch_time_ms" },
-                    avg_quality:        { $avg: "$avg_quality" },
                     last_run:           { $first: "$run_date" },
                     last_error:         { $first: "$error" },
                     last_ats_name:      { $first: "$ats_name" },         // new: ATS badge

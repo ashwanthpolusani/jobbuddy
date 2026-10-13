@@ -19,16 +19,15 @@ from google import genai
 import certifi
 from playwright.sync_api import sync_playwright
 
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 load_dotenv()
 
 # -- Configuration
 GEMINI_API_KEY  = os.getenv("GEMINI_API_KEY")
 MONGODB_URI     = os.getenv("MONGODB_URI")
-PROFILE_PATH    = os.path.join(os.path.dirname(__file__), "profile.txt")
 GEMINI_MODELS   = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"]
 RPM_LIMIT       = 15
 BATCH_SIZE      = 150
-SCORE_THRESHOLD = 40
 
 EXP_SAFE     = "SAFE"
 EXP_POSSIBLE = "POSSIBLE"
@@ -52,9 +51,6 @@ def get_db():
         )
         _mongo_db = _mongo_client.job_aggregator
     return _mongo_db
-
-def now_iso():
-    return datetime.now(timezone.utc).isoformat()
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
@@ -141,7 +137,35 @@ def extract_text_from_html(html):
     html = re.sub(r'\s{3,}', '\n\n', html)
     return html.strip()[:8000]
 
+def fetch_workday_jd(url):
+    """Fetches job description directly from Workday CXS JSON API."""
+    try:
+        match = re.search(r'https://([a-zA-Z0-9\-]+)\.([^/]+myworkdayjobs\.com)/(?:[a-zA-Z]{2}-[a-zA-Z]{2}/)?([^/]+)/job/(.+)', url)
+        if match:
+            tenant = match.group(1)
+            domain = f"{tenant}.{match.group(2)}"
+            site = match.group(3)
+            job_path = match.group(4)
+            api_url = f"https://{domain}/wday/cxs/{tenant}/{site}/job/{job_path}"
+            headers = {
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+            req = urllib.request.Request(api_url, headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                jd_html = data.get('jobPostingInfo', {}).get('jobDescription', '')
+                if jd_html:
+                    return extract_text_from_html(jd_html)
+    except Exception:
+        pass
+    return ""
+
 def fetch_job_description(url):
+    if "myworkdayjobs.com" in url:
+        wd_text = fetch_workday_jd(url)
+        if wd_text:
+            return wd_text
     html = fetch_jd_http(url)
     if not html:
         html = fetch_jd_playwright(url)
@@ -170,9 +194,8 @@ Return a JSON object with exactly these keys:
    - "experience preferred but not required" -> POSSIBLE
    - No mention of experience at all -> POSSIBLE
 
-2. "experience_required": exact quote from the JD about experience, or "Not stated"
-
-3. "why_entry_level": 2-3 sentences. First sentence must state the experience verdict and why.
+2. "core_requirements": 2-3 sentences. First sentence must state the experience verdict and why.
+   If experience details are quoted from the JD, include them.
 
 Return ONLY valid JSON. No markdown.
 '''
@@ -193,7 +216,7 @@ def score_job_with_gemini(jd_text, pool):
 # -- Main
 def main():
     print("=" * 60)
-    print("  JobBuddy Stage 2 - Deep Resume Matching")
+    print("  JobBuddy Stage 2 — Experience-Level Verification")
     print("=" * 60)
 
     if not GEMINI_API_KEY:
@@ -209,9 +232,9 @@ def main():
     pending = list(
         db.jobs.find(
             {"stage2_processed_at": {"$exists": False}, "link_type": "direct_apply", "link": {"$exists": True, "$ne": ""}},
-            {"_id": 1, "title": 1, "company_name": 1, "link": 1, "quality": 1}
+            {"_id": 1, "title": 1, "company_name": 1, "link": 1}
         )
-        .sort("quality", -1)
+        .sort("scraped_at", -1)
         .limit(BATCH_SIZE)
     )
 
@@ -241,7 +264,7 @@ def main():
         jd_text = fetch_job_description(link)
         if not jd_text:
             print(f"  Could not fetch JD")
-            db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": EXP_POSSIBLE, "why_entry_level": "Could not fetch job description page.", "experience_required": "Unknown"}})
+            db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": EXP_POSSIBLE, "core_requirements": "Could not fetch job description page."}})
             error_count += 1
             continue
 
@@ -252,11 +275,10 @@ def main():
             continue
 
         verdict      = result.get("experience_verdict", EXP_POSSIBLE)
-        reasoning    = result.get("why_entry_level", "")
-        exp_required = result.get("experience_required", "Not stated")
+        reasoning    = result.get("core_requirements", "")
 
         icons = {"SAFE": "[OK]", "POSSIBLE": "[?]", "BLOCKED": "[X]"}
-        print(f"  {icons.get(verdict,'?')} Experience: {verdict} | Quote: {exp_required}")
+        print(f"  {icons.get(verdict,'?')} Experience: {verdict}")
         print(f"  Reasoning: {reasoning}")
 
         if verdict == EXP_SAFE:      safe_count += 1
@@ -268,7 +290,7 @@ def main():
                 db.jobs.delete_one({"_id": job_id})
                 print(f"  [Deleted] Removed from database to save space")
             else:
-                db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "experience_required": exp_required, "why_entry_level": reasoning}})
+                db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "core_requirements": reasoning}})
         except Exception as e:
             print(f"  [Error] Failed to update MongoDB for {job_id}: {e}")
 

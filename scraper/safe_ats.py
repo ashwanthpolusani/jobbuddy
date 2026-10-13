@@ -285,7 +285,9 @@ def pre_filter_jobs(jobs: list[dict]) -> list[dict]:
     senior_keywords = ['senior', 'staff', 'principal', 'lead', 'manager', 'director', 'vp', 'head', 'architect']
 
     for j in jobs:
-        t = j['title'].lower()
+        t = str(j.get('title') or '').lower()
+        if not t:
+            continue
         
         # Must be tech related (using regex word boundaries to safely match acronyms like 'it', 'qa', 'swe')
         if not re.search(r'\b(?:' + '|'.join(map(re.escape, tech_keywords)) + r')\b', t):
@@ -296,6 +298,10 @@ def pre_filter_jobs(jobs: list[dict]) -> list[dict]:
             continue
             
         good_roles.append(j)
+
+    # Sort early-career titles to the top so chunk-capped evaluations prioritize them
+    fresher_regex = re.compile(r'\b(?:' + '|'.join(map(re.escape, fresher_keywords)) + r')\b', re.IGNORECASE)
+    good_roles.sort(key=lambda item: 0 if fresher_regex.search(item.get('title', '')) else 1)
             
     return good_roles
 
@@ -351,27 +357,43 @@ def process_html_for_ats(html: str) -> tuple[bool, list[dict], str]:
     if gh_match:
         slug = gh_match.group(1)
         if slug.lower() not in ('jobs', 'v1'): # safety check against generic paths
-            return True, fetch_greenhouse_jobs(slug), "Greenhouse"
+            jobs = fetch_greenhouse_jobs(slug)
+            if jobs is not None:
+                return True, jobs, "Greenhouse"
 
     # 2. Check for Lever links embedded in HTML
     # Example matches: href="https://jobs.lever.co/netflix/..."
     lv_match = re.search(r'jobs\.lever\.co/([^/\"\'\?\>]+)', html)
     if lv_match:
         slug = lv_match.group(1)
-        return True, fetch_lever_jobs(slug), "Lever"
+        jobs = fetch_lever_jobs(slug)
+        if jobs is not None:
+            return True, jobs, "Lever"
+
+    # 3. Check for Ashby links embedded in HTML
+    ashby_match = re.search(r'jobs\.ashbyhq\.com/([^/\"\'\?\>]+)', html)
+    if ashby_match:
+        slug = ashby_match.group(1)
+        jobs = fetch_ashby_jobs(slug)
+        if jobs is not None:
+            return True, jobs, "Ashby"
         
-    # 3. Check for MyNextHire links
+    # 4. Check for MyNextHire links
     mnh_match = re.search(r'(https://[^/\"\'\?\>]+\.mynexthire\.com)', html)
     if mnh_match:
         domain = mnh_match.group(1).replace('https://', '')
-        return True, fetch_mynexthire_jobs(domain), "MyNextHire"
+        jobs = fetch_mynexthire_jobs(domain)
+        if jobs:
+            return True, jobs, "MyNextHire"
         
-    # 4. Check for Workday links embedded in HTML
+    # 5. Check for Workday links embedded in HTML
     wd_match = re.search(r'(https://[a-zA-Z0-9\-]+\.[^/]+myworkdayjobs\.com/(?:[a-zA-Z]{2}-[a-zA-Z]{2}/)?[^/\"\'\?\>]+)', html)
     if wd_match:
         wd_url = wd_match.group(1)
         if not wd_url.endswith('/login'):
-            return True, fetch_workday_jobs(wd_url), "Workday"
+            jobs = fetch_workday_jobs(wd_url)
+            if jobs:
+                return True, jobs, "Workday"
 
     return False, [], "Unknown"
 

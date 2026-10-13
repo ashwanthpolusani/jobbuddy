@@ -16,14 +16,12 @@ https://api.ashbyhq.com/posting-api/job-board/fullstory
 https://api.ashbyhq.com/posting-api/job-board/gorgias
 https://api.ashbyhq.com/posting-api/job-board/helpscout
 https://api.ashbyhq.com/posting-api/job-board/hopper
-https://api.ashbyhq.com/posting-api/job-board/iceye
 https://api.ashbyhq.com/posting-api/job-board/kustomer
 https://api.ashbyhq.com/posting-api/job-board/linear
 https://api.ashbyhq.com/posting-api/job-board/miro
 https://api.ashbyhq.com/posting-api/job-board/mollie
 https://api.ashbyhq.com/posting-api/job-board/mural
 https://api.ashbyhq.com/posting-api/job-board/notion
-https://api.ashbyhq.com/posting-api/job-board/plaid
 https://api.ashbyhq.com/posting-api/job-board/prefect
 https://api.ashbyhq.com/posting-api/job-board/ramp
 https://api.ashbyhq.com/posting-api/job-board/redis
@@ -37,7 +35,6 @@ https://api.ashbyhq.com/posting-api/job-board/strava
 https://api.ashbyhq.com/posting-api/job-board/supabase
 https://api.ashbyhq.com/posting-api/job-board/supercell
 https://api.ashbyhq.com/posting-api/job-board/take2
-https://api.ashbyhq.com/posting-api/job-board/tekion
 https://api.ashbyhq.com/posting-api/job-board/tonal
 https://api.ashbyhq.com/posting-api/job-board/trainline
 https://api.ashbyhq.com/posting-api/job-board/vanta
@@ -50,7 +47,6 @@ https://api.lever.co/v0/postings/cred
 https://api.lever.co/v0/postings/crypto
 https://api.lever.co/v0/postings/dlocal
 https://api.lever.co/v0/postings/freshworks
-https://api.lever.co/v0/postings/gopuff
 https://api.lever.co/v0/postings/jumpcloud
 https://api.lever.co/v0/postings/kraken
 https://api.lever.co/v0/postings/lodgify
@@ -62,7 +58,6 @@ https://api.lever.co/v0/postings/mirror
 https://api.lever.co/v0/postings/netomi
 https://api.lever.co/v0/postings/omnisend
 https://api.lever.co/v0/postings/palantir
-https://api.lever.co/v0/postings/paytm
 https://api.lever.co/v0/postings/plivo
 https://api.lever.co/v0/postings/revenueanalytics
 https://api.lever.co/v0/postings/ro
@@ -72,7 +67,6 @@ https://api.lever.co/v0/postings/spotify
 https://api.lever.co/v0/postings/thunkable
 https://api.lever.co/v0/postings/vogo
 https://api.lever.co/v0/postings/wealthfront
-https://api.lever.co/v0/postings/zoox
 https://boards-api.greenhouse.io/v1/boards/adyen/jobs
 https://boards-api.greenhouse.io/v1/boards/affirm/jobs
 https://boards-api.greenhouse.io/v1/boards/agoda/jobs
@@ -83,18 +77,13 @@ https://boards-api.greenhouse.io/v1/boards/align/jobs
 https://boards-api.greenhouse.io/v1/boards/amplitude/jobs
 https://boards-api.greenhouse.io/v1/boards/amwell/jobs
 https://boards-api.greenhouse.io/v1/boards/anthropic/jobs
-https://boards-api.greenhouse.io/v1/boards/asana/jobs
 https://boards-api.greenhouse.io/v1/boards/bandwidth/jobs
-https://boards-api.greenhouse.io/v1/boards/betterhelp/jobs
 https://boards-api.greenhouse.io/v1/boards/betterment/jobs
 https://boards-api.greenhouse.io/v1/boards/beyondtrust/jobs
 https://boards-api.greenhouse.io/v1/boards/binance/jobs
-https://boards-api.greenhouse.io/v1/boards/blacksky/jobs
-https://boards-api.greenhouse.io/v1/boards/braze/jobs
 https://boards-api.greenhouse.io/v1/boards/breezeway/jobs
 https://boards-api.greenhouse.io/v1/boards/brex/jobs
 https://boards-api.greenhouse.io/v1/boards/byd/jobs
-https://boards-api.greenhouse.io/v1/boards/cabify/jobs
 https://boards-api.greenhouse.io/v1/boards/calm/jobs
 https://boards-api.greenhouse.io/v1/boards/candid/jobs
 https://boards-api.greenhouse.io/v1/boards/careem/jobs
@@ -136,15 +125,11 @@ https://boards-api.greenhouse.io/v1/boards/gitlab/jobs
 https://boards-api.greenhouse.io/v1/boards/glance/jobs
 https://boards-api.greenhouse.io/v1/boards/glide/jobs
 https://boards-api.greenhouse.io/v1/boards/groww/jobs
-https://boards-api.greenhouse.io/v1/boards/gusto/jobs
 https://boards-api.greenhouse.io/v1/boards/highradius/jobs
 https://boards-api.greenhouse.io/v1/boards/hubspot/jobs
 https://boards-api.greenhouse.io/v1/boards/inmobi/jobs
-https://boards-api.greenhouse.io/v1/boards/instacart/jobs
-https://boards-api.greenhouse.io/v1/boards/intercom/jobs
 https://boards-api.greenhouse.io/v1/boards/iterable/jobs
 https://boards-api.greenhouse.io/v1/boards/kayak/jobs
-https://boards-api.greenhouse.io/v1/boards/klaviyo/jobs
 https://boards-api.greenhouse.io/v1/boards/kodiak/jobs
 https://boards-api.greenhouse.io/v1/boards/lattice/jobs
 https://boards-api.greenhouse.io/v1/boards/launchdarkly/jobs
@@ -154,15 +139,12 @@ https://boards-api.greenhouse.io/v1/boards/make/jobs
 https://boards-api.greenhouse.io/v1/boards/masterclass/jobs
 https://boards-api.greenhouse.io/v1/boards/mcafee/jobs
 https://boards-api.greenhouse.io/v1/boards/mercari/jobs
-https://boards-api.greenhouse.io/v1/boards/mirakl/jobs
 https://boards-api.greenhouse.io/v1/boards/mixpanel/jobs
 https://boards-api.greenhouse.io/v1/boards/mongodb/jobs
-https://boards-api.greenhouse.io/v1/boards/monzo/jobs
 https://boards-api.greenhouse.io/v1/boards/myfitnesspal/jobs
 https://boards-api.greenhouse.io/v1/boards/n26/jobs
 https://boards-api.greenhouse.io/v1/boards/neo4j/jobs
 https://boards-api.greenhouse.io/v1/boards/netlify/jobs
-https://boards-api.greenhouse.io/v1/boards/netskope/jobs
 https://boards-api.greenhouse.io/v1/boards/newrelic/jobs
 https://boards-api.greenhouse.io/v1/boards/nextiva/jobs
 https://boards-api.greenhouse.io/v1/boards/nintendo/jobs
@@ -175,13 +157,9 @@ https://boards-api.greenhouse.io/v1/boards/peloton/jobs
 https://boards-api.greenhouse.io/v1/boards/pendo/jobs
 https://boards-api.greenhouse.io/v1/boards/pingidentity/jobs
 https://boards-api.greenhouse.io/v1/boards/pinterest/jobs
-https://boards-api.greenhouse.io/v1/boards/planetscale/jobs
 https://boards-api.greenhouse.io/v1/boards/quip/jobs
-https://boards-api.greenhouse.io/v1/boards/reddit/jobs
-https://boards-api.greenhouse.io/v1/boards/relativity/jobs
 https://boards-api.greenhouse.io/v1/boards/robinhood/jobs
 https://boards-api.greenhouse.io/v1/boards/roblox/jobs
-https://boards-api.greenhouse.io/v1/boards/rocketlab/jobs
 https://boards-api.greenhouse.io/v1/boards/scaleai/jobs
 https://boards-api.greenhouse.io/v1/boards/scopely/jobs
 https://boards-api.greenhouse.io/v1/boards/sezzle/jobs
@@ -189,13 +167,10 @@ https://boards-api.greenhouse.io/v1/boards/sigmoid/jobs
 https://boards-api.greenhouse.io/v1/boards/slice/jobs
 https://boards-api.greenhouse.io/v1/boards/smartsheet/jobs
 https://boards-api.greenhouse.io/v1/boards/sofi/jobs
-https://boards-api.greenhouse.io/v1/boards/spacex/jobs
-https://boards-api.greenhouse.io/v1/boards/spire/jobs
 https://boards-api.greenhouse.io/v1/boards/stone/jobs
 https://boards-api.greenhouse.io/v1/boards/stripe/jobs
 https://boards-api.greenhouse.io/v1/boards/sumologic/jobs
 https://boards-api.greenhouse.io/v1/boards/talkspace/jobs
-https://boards-api.greenhouse.io/v1/boards/tcs/jobs
 https://boards-api.greenhouse.io/v1/boards/tenableinc/jobs
 https://boards-api.greenhouse.io/v1/boards/tripadvisor/jobs
 https://boards-api.greenhouse.io/v1/boards/trivago/jobs
@@ -215,7 +190,6 @@ https://boards-api.greenhouse.io/v1/boards/zenoti/jobs
 https://boards-api.greenhouse.io/v1/boards/zocdoc/jobs
 https://boards-api.greenhouse.io/v1/boards/zscaler/jobs
 https://explore.jobs.netflix.net/api/apply/v2/jobs?domain=netflix.com
-https://jobs.lever.co/plaid
 https://boards-api.greenhouse.io/v1/boards/arcesiumllc/jobs
 https://boards-api.greenhouse.io/v1/boards/coherehealth/jobs
 https://boards-api.greenhouse.io/v1/boards/commvault/jobs
@@ -269,7 +243,6 @@ https://jobs.hp.com/
 https://jobs.netflix.com/
 https://monday.com/careers
 https://postmarkapp.com/about/careers
-https://sendgrid.com/careers/
 https://slack.com/careers
 https://www.accenture.com/in-en/careers/jobsearch
 https://www.adobe.com/careers.html
@@ -277,7 +250,6 @@ https://www.amazon.jobs/
 https://www.atlassian.com/company/careers
 https://www.avaya.com/en/about-avaya/careers/
 https://www.barracuda.com/company/careers
-https://www.bigcommerce.com/careers/
 https://www.capgemini.com/in-en/careers/job-search/
 https://www.crowdstrike.com/careers/
 https://www.cyberark.com/careers/
@@ -312,15 +284,12 @@ https://www.splunk.com/en_us/careers.html
 https://www.squarespace.com/about/careers
 https://www.synopsys.com/careers.html
 https://www.tcl.com/global/en/about-tcl/careers
-https://www.toshiba.com/tai/careers/
 https://www.trendmicro.com/en_us/about/careers.html
 https://www.varonis.com/careers/
 https://www.verisign.com/en_US/company-information/careers/index.xhtml
 https://www.weebly.com/careers
 https://www.wix.com/jobs/home
 https://www.zoho.com/careers/
-https://www.zomato.com/careers
-https://zoom.us/careers
 
 # ── Links blocked by Anti-Bot Firewalls ─────────────────────────
 https://careers.twitter.com/
@@ -366,6 +335,4 @@ https://www.vizio.com/en/careers
 https://www.webex.com/about/careers.html
 
 # ── Links that are irresponsive or failed ───────────────────────
-https://careers.vmware.com/
-https://jobs2.deloitte.com/ui/en/search-results?location=India
 

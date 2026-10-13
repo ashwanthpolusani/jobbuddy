@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JobBuddy — Entry-Level Tech Jobs, Daily</title>
     <meta name="description"
-        content="JobBuddy scrapes 150+ company career pages every day and surfaces only genuine entry-level and fresher tech roles. No experience required.">
+        content="JobBuddy scrapes 300+ company career pages every day and surfaces only genuine entry-level and fresher tech roles. No experience required.">
     <meta property="og:title" content="JobBuddy — Entry-Level Tech Jobs, Daily">
-    <meta property="og:description" content="150+ company career pages scraped daily. Only genuine 0-experience tech roles.">
+    <meta property="og:description"
+        content="300+ company career pages scraped daily. Only genuine 0-experience tech roles.">
     <meta property="og:url" content="https://buddyjob.netlify.app/">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -50,7 +51,9 @@
             --radius: 8px;
         }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -87,7 +90,9 @@
             align-items: start;
         }
 
-        .main-col { min-width: 0; }
+        .main-col {
+            min-width: 0;
+        }
 
         .sidebar-col {
             padding-top: 24px;
@@ -140,7 +145,9 @@
             line-height: 1;
         }
 
-        .wordmark .accent { color: var(--accent); }
+        .wordmark .accent {
+            color: var(--accent);
+        }
 
         .header-sub {
             font-size: 0.67rem;
@@ -149,19 +156,23 @@
         }
 
         /* ── PANEL ────────────────────────────────────────────────── */
-        .panel-main { padding: 20px 0 80px; }
+        .panel-main {
+            padding: 20px 0 80px;
+        }
 
         /* ── CATEGORY TABS ────────────────────────────────────────── */
         .cat-scroll-wrap {
             overflow-x: auto;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            padding: 16px 0 12px;
+            padding: 0 0 12px;
             border-bottom: 1px solid var(--border);
             margin-bottom: 16px;
         }
 
-        .cat-scroll-wrap::-webkit-scrollbar { display: none; }
+        .cat-scroll-wrap::-webkit-scrollbar {
+            display: none;
+        }
 
         .cat-tabs {
             display: flex;
@@ -201,7 +212,10 @@
             font-size: 0.68rem;
         }
 
-        .cat-btn.active .count { color: var(--accent); opacity: 0.7; }
+        .cat-btn.active .count {
+            color: var(--accent);
+            opacity: 0.7;
+        }
 
         /* ── FILTERS ──────────────────────────────────────────────── */
         .filter-section {
@@ -243,7 +257,9 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.07);
         }
 
-        .search-input::placeholder { color: var(--muted); }
+        .search-input::placeholder {
+            color: var(--muted);
+        }
 
         .filter-row {
             display: flex;
@@ -326,21 +342,149 @@
             font-weight: 600;
         }
 
-        /* ── RESULT META ──────────────────────────────────────────── */
-        .result-count {
-            font-size: 0.72rem;
-            color: var(--text2);
-            padding: 8px 0 4px;
+        /* ── VIEW SWITCHER BAR ────────────────────────────────────── */
+        .view-switcher-bar {
+            margin-top: 2px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
         }
 
-        /* ── SECTION LABEL ────────────────────────────────────────── */
-        .section-label {
-            font-size: 0.63rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
+        .conf-filter-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-tabs {
+            display: inline-flex;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 3px;
+            gap: 3px;
+        }
+
+        .view-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 13px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.77rem;
+            font-weight: 600;
             color: var(--text2);
-            padding: 20px 0 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .view-tab:hover {
+            color: var(--text);
+            background: var(--surface3);
+        }
+
+        .view-tab.active {
+            background: var(--surface);
+            color: var(--accent);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .tab-badge {
+            background: rgba(10, 102, 194, 0.12);
+            color: var(--accent);
+            font-size: 0.67rem;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .view-tab:not(.active) .tab-badge {
+            background: var(--border);
+            color: var(--muted);
+        }
+
+        /* ── RESULT META & PAGINATION ─────────────────────────────── */
+        .result-meta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0 6px;
+            font-size: 0.74rem;
+            color: var(--text2);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .result-count strong {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .page-indicator {
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 24px 0 16px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 9px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border2);
+            background: var(--surface);
+            color: var(--text2);
+            font-family: inherit;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.13s ease;
+        }
+
+        .page-btn:hover:not(:disabled):not(.active) {
+            background: var(--surface3);
+            color: var(--text);
+            border-color: var(--muted);
+        }
+
+        .page-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #ffffff;
+            cursor: default;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .page-ellipsis {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 32px;
+            font-size: 0.76rem;
+            color: var(--muted2);
         }
 
         /* ── JOB CARD ─────────────────────────────────────────────── */
@@ -354,16 +498,18 @@
             align-items: start;
             justify-content: space-between;
             gap: 14px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
             transition: box-shadow 0.15s, border-color 0.15s;
         }
 
         .job-card:hover {
             border-color: var(--border2);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
         }
 
-        .job-left { min-width: 0; }
+        .job-left {
+            min-width: 0;
+        }
 
         .job-title-row {
             display: flex;
@@ -399,8 +545,15 @@
         }
 
         @keyframes pnew {
-            0%, 100% { opacity: 1 }
-            50% { opacity: .4 }
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
         }
 
         .job-meta {
@@ -464,7 +617,9 @@
             transition: color 0.14s;
         }
 
-        .expand-btn:hover { color: var(--text2); }
+        .expand-btn:hover {
+            color: var(--text2);
+        }
 
         .job-right {
             display: flex;
@@ -499,6 +654,12 @@
             background: var(--amber-dim);
             color: var(--amber);
             border: 1px solid var(--amber-border);
+        }
+
+        .badge-portal {
+            background: rgba(99, 102, 241, 0.10);
+            color: #4f46e5;
+            border: 1px solid rgba(99, 102, 241, 0.28);
         }
 
         .apply-btn {
@@ -577,7 +738,11 @@
             margin: 0 auto 16px;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         .state p {
             color: var(--muted);
@@ -597,7 +762,9 @@
             transition: color 0.15s;
         }
 
-        .header-links a:hover { color: var(--text); }
+        .header-links a:hover {
+            color: var(--text);
+        }
 
         /* ── MOBILE ───────────────────────────────────────────────── */
         @media (max-width: 880px) {
@@ -606,15 +773,23 @@
                 padding: 0 16px;
             }
 
-            .sidebar-col { display: none; }
+            .sidebar-col {
+                display: none;
+            }
 
-            .header { padding: 0 16px; }
+            .header {
+                padding: 0 16px;
+            }
         }
 
         @media (max-width: 600px) {
-            .job-card { flex-direction: column; }
+            .job-card {
+                flex-direction: column;
+            }
 
-            .job-left { width: 100%; }
+            .job-left {
+                width: 100%;
+            }
 
             .job-right {
                 width: 100%;
@@ -624,9 +799,11 @@
                 padding-left: 0;
             }
 
-            .filter-label { display: none; }
-            
-            .header-links { 
+            .filter-label {
+                display: none;
+            }
+
+            .header-links {
                 margin-top: 10px;
                 width: 100%;
                 justify-content: flex-start;
@@ -634,439 +811,630 @@
         }
 
         @media (max-width: 400px) {
-            .job-title { white-space: normal; }
+            .job-title {
+                white-space: normal;
+            }
         }
     </style>
 </head>
 
 <body>
-<div class="page-wrap">
+    <div class="page-wrap">
 
-    <!-- HEADER -->
-    <header class="header">
-        <div class="header-inner">
-            <a class="brand-block" href="/" aria-label="JobBuddy home">
-                <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-                    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
-                    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-                    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-                    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-                    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-                    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-                    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-                    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
-                    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
-                    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
-                    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
-                    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
-                    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-                <div>
-                    <div class="wordmark">Job<span class="accent">Buddy</span></div>
-                    <div class="header-sub">Daily tech jobs for freshers &middot; No experience required</div>
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-inner">
+                <a class="brand-block" href="/" aria-label="JobBuddy home">
+                    <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)"
+                            stroke-width="3" stroke-linecap="round" />
+                        <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)" />
+                        <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round" />
+                        <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round" />
+                        <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round" />
+                        <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2"
+                            stroke-linecap="round" />
+                        <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2"
+                            stroke-linecap="round" />
+                        <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2"
+                            stroke-linecap="round" />
+                        <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white" />
+                        <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white" />
+                        <circle cx="17" cy="20" r="1.5" fill="var(--accent)" />
+                        <circle cx="23" cy="20" r="1.5" fill="var(--accent)" />
+                        <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white" />
+                        <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white"
+                            stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                    <div>
+                        <div class="wordmark">Job<span class="accent">Buddy</span></div>
+                        <div class="header-sub">Daily tech jobs for freshers &middot; No experience required</div>
+                    </div>
+                </a>
+                <nav class="header-links" aria-label="Legal links">
+                    <a href="/privacy.html">Privacy</a>
+                    <a href="/terms.html">Terms</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <div class="content-area">
+
+            <!-- JOB LIST COLUMN -->
+            <main class="main-col" id="panel-jobs">
+                <div class="panel-main">
+
+                    <!-- 1. View Switcher (Job Openings vs Company Career Pages) -->
+                    <div class="view-switcher-bar">
+                        <div class="view-tabs" role="tablist" aria-label="Job listing view">
+                            <button class="view-tab active" id="tab-direct" onclick="setViewType('direct_apply')"
+                                role="tab" aria-selected="true">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                </svg>
+                                Direct Job Links <span class="tab-badge" id="badge-direct">...</span>
+                            </button>
+                            <button class="view-tab" id="tab-portals" onclick="setViewType('filtered_list')" role="tab"
+                                aria-selected="false">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+                                    <line x1="9" y1="22" x2="9" y2="22.01" />
+                                    <line x1="15" y1="22" x2="15" y2="22.01" />
+                                    <line x1="9" y1="6" x2="9" y2="6.01" />
+                                    <line x1="15" y1="6" x2="15" y2="6.01" />
+                                    <line x1="9" y1="10" x2="9" y2="10.01" />
+                                    <line x1="15" y1="10" x2="15" y2="10.01" />
+                                    <line x1="9" y1="14" x2="9" y2="14.01" />
+                                    <line x1="15" y1="14" x2="15" y2="14.01" />
+                                    <line x1="9" y1="18" x2="9" y2="18.01" />
+                                    <line x1="15" y1="18" x2="15" y2="18.01" />
+                                </svg>
+                                Company Fresher Portals <span class="tab-badge" id="badge-portals">...</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Category tabs -->
+                    <div class="cat-scroll-wrap" id="cat-scroll-wrap">
+                        <div class="cat-tabs" id="cat-tabs" role="tablist" aria-label="Job categories">
+                            <button class="cat-btn active" data-cat="all" id="cat-all"
+                                onclick="setCat('all',this)">All</button>
+                            <button class="cat-btn" data-cat="software_engineering" id="cat-swe"
+                                onclick="setCat('software_engineering',this)">Software Eng</button>
+                            <button class="cat-btn" data-cat="data_ml" id="cat-dataml"
+                                onclick="setCat('data_ml',this)">Data / ML</button>
+                            <button class="cat-btn" data-cat="devops_cloud" id="cat-devops"
+                                onclick="setCat('devops_cloud',this)">DevOps</button>
+                            <button class="cat-btn" data-cat="cybersecurity" id="cat-cyber"
+                                onclick="setCat('cybersecurity',this)">Security</button>
+                            <button class="cat-btn" data-cat="early_careers" id="cat-early"
+                                onclick="setCat('early_careers',this)">Early Careers</button>
+                            <button class="cat-btn" data-cat="product_design" id="cat-product"
+                                onclick="setCat('product_design',this)">Product</button>
+                            <button class="cat-btn" data-cat="other" id="cat-other"
+                                onclick="setCat('other',this)">Other</button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filter-section">
+                        <div class="search-wrap">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                            <input class="search-input" id="search-input" type="text"
+                                placeholder="Search title, company, location&#8230;" oninput="debounceSearch()"
+                                autocomplete="off" aria-label="Search jobs">
+                        </div>
+
+                        <div class="filter-row" id="filter-row">
+                            <span class="filter-label">Location</span>
+                            <button class="filt-btn active-blue" id="loc-all" onclick="setLoc('all',this)">All</button>
+                            <button class="filt-btn" id="loc-remote" onclick="setLoc('remote',this)">Remote</button>
+                            <button class="filt-btn" id="loc-india" onclick="setLoc('india',this)">India</button>
+                            <button class="filt-btn" id="loc-global" onclick="setLoc('global',this)">Global</button>
+
+                            <div class="conf-filter-wrap" id="conf-filter-wrap">
+                                <div class="filter-divider" aria-hidden="true"></div>
+                                <span class="filter-label">Confidence</span>
+                                <button class="filt-btn active-blue" id="conf-all"
+                                    onclick="setConf('all',this)">All</button>
+                                <button class="filt-btn" id="conf-safe"
+                                    onclick="setConf('SAFE',this)">Confirmed</button>
+                                <button class="filt-btn" id="conf-possible"
+                                    onclick="setConf('POSSIBLE',this)">Likely</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Result Meta Bar with Visible Counts & Page Info -->
+                    <div class="result-meta-bar" id="result-meta-bar">
+                        <div class="result-count" id="result-count" aria-live="polite">Loading listings...</div>
+                        <div class="page-indicator" id="page-indicator"></div>
+                    </div>
+
+                    <div id="jobs-container">
+                        <div class="state">
+                            <div class="spinner" role="status" aria-label="Loading"></div>
+                            <p>Loading job listings&#8230;</p>
+                        </div>
+                    </div>
+
+                    <!-- Numbered Pagination Controls -->
+                    <nav class="pagination-bar" id="pagination-bar" aria-label="Job listings pagination"
+                        style="display:none;"></nav>
+
                 </div>
-            </a>
-            <nav class="header-links" aria-label="Legal links">
-                <a href="/privacy.html">Privacy</a>
-                <a href="/terms.html">Terms</a>
-            </nav>
+            </main>
+
+            <!-- SIDEBAR — AdSense (hidden on mobile via CSS) -->
+            <aside class="sidebar-col" aria-label="Sponsored content">
+                <div class="sidebar-ad-wrap">
+                    <div class="sidebar-ad-label">Sponsored</div>
+                    <!-- Google AdSense 300x250 — replace data-ad-client and data-ad-slot with your real values -->
+                    <ins class="adsbygoogle sidebar-ad-slot" data-ad-client="ca-pub-3809813018120427"
+                        data-ad-slot="XXXXXXXXXX" data-ad-format="rectangle" data-full-width-responsive="false"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+            </aside>
+
         </div>
-    </header>
-
-    <!-- MAIN CONTENT -->
-    <div class="content-area">
-
-        <!-- JOB LIST COLUMN -->
-        <main class="main-col" id="panel-jobs">
-            <div class="panel-main">
-
-                <!-- Category tabs -->
-                <div class="cat-scroll-wrap">
-                    <div class="cat-tabs" id="cat-tabs">
-                        <button class="cat-btn active" data-cat="all" id="cat-all" onclick="setCat('all',this)">All</button>
-                        <button class="cat-btn" data-cat="software_engineering" id="cat-swe" onclick="setCat('software_engineering',this)">Software Eng</button>
-                        <button class="cat-btn" data-cat="data_ml" id="cat-dataml" onclick="setCat('data_ml',this)">Data / ML</button>
-                        <button class="cat-btn" data-cat="devops_cloud" id="cat-devops" onclick="setCat('devops_cloud',this)">DevOps</button>
-                        <button class="cat-btn" data-cat="cybersecurity" id="cat-cyber" onclick="setCat('cybersecurity',this)">Security</button>
-                        <button class="cat-btn" data-cat="early_careers" id="cat-early" onclick="setCat('early_careers',this)">Early Careers</button>
-                        <button class="cat-btn" data-cat="product_design" id="cat-product" onclick="setCat('product_design',this)">Product</button>
-                        <button class="cat-btn" data-cat="other" id="cat-other" onclick="setCat('other',this)">Other</button>
-                    </div>
-                </div>
-
-                <!-- Filters -->
-                <div class="filter-section">
-                    <div class="search-wrap">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="11" cy="11" r="8" />
-                            <path d="m21 21-4.35-4.35" />
-                        </svg>
-                        <input class="search-input" id="search-input" type="text"
-                            placeholder="Search title, company, location&#8230;" oninput="debounceSearch()"
-                            autocomplete="off" aria-label="Search jobs">
-                    </div>
-
-                    <div class="filter-row">
-                        <span class="filter-label">Location</span>
-                        <button class="filt-btn active-blue" id="loc-all" onclick="setLoc('all',this)">All</button>
-                        <button class="filt-btn" id="loc-remote" onclick="setLoc('remote',this)">Remote</button>
-                        <button class="filt-btn" id="loc-india" onclick="setLoc('india',this)">India</button>
-                        <button class="filt-btn" id="loc-global" onclick="setLoc('global',this)">Global</button>
-
-                        <div class="filter-divider" aria-hidden="true"></div>
-                        
-                        <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text);cursor:pointer;user-select:none;">
-                            <input type="checkbox" id="direct-apply-chk" onchange="toggleDirectApply()" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;">
-                            Direct Apply Only
-                        </label>
-                    </div>
-
-                    <div class="filter-row" style="margin-top: 10px;">
-                        <span class="filter-label">Confidence</span>
-                        <button class="filt-btn active-blue" id="conf-all" onclick="setConf('all',this)">All</button>
-                        <button class="filt-btn" id="conf-safe" onclick="setConf('SAFE',this)">Confirmed</button>
-                        <button class="filt-btn" id="conf-possible" onclick="setConf('POSSIBLE',this)">Likely</button>
-                    </div>
-                </div>
-
-                <div class="result-count" id="result-count" aria-live="polite"></div>
-                <div id="jobs-container">
-                    <div class="state">
-                        <div class="spinner" role="status" aria-label="Loading"></div>
-                        <p>Loading job listings&#8230;</p>
-                    </div>
-                </div>
-
-            </div>
-        </main>
-
-        <!-- SIDEBAR — AdSense (hidden on mobile via CSS) -->
-        <aside class="sidebar-col" aria-label="Sponsored content">
-            <div class="sidebar-ad-wrap">
-                <div class="sidebar-ad-label">Sponsored</div>
-                <!-- Google AdSense 300x250 — replace data-ad-client and data-ad-slot with your real values -->
-                <ins class="adsbygoogle sidebar-ad-slot"
-                    data-ad-client="ca-pub-3809813018120427"
-                    data-ad-slot="XXXXXXXXXX"
-                    data-ad-format="rectangle"
-                    data-full-width-responsive="false"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            </div>
-        </aside>
 
     </div>
 
-    </div>
+    <script>
+        // State
+        let allJobs = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        let totalJobs = 0;
+        let directTotal = 0;
+        let portalTotal = 0;
+        const PAGE_SIZE = 25;
 
-</div>
+        let activeViewType = 'direct_apply'; // 'direct_apply' or 'filtered_list'
+        let activeCat = 'all';
+        let activeLoc = 'all';
+        let activeConf = 'all';
+        let cardIdx = 0;
+        let isLoading = true;
 
-<script>
-    // State
-    let allJobs = [];
-    let activeCat = 'all';
-    let activeType = 'all';
-    let activeLoc = 'all';
-    let activeConf = 'all';
-    let cardIdx = 0;
-    let isLoading = true;
+        let CURRENT_CACHE_KEY = 'jb_jobs_v5';
+        const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
-    let CURRENT_CACHE_KEY = 'jb_jobs_v3';
-    const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+        // View Switcher (Job Openings vs Company Career Pages)
+        function setViewType(type) {
+            if (activeViewType === type) return;
+            activeViewType = type;
+            const isDirect = type === 'direct_apply';
 
-    // Category
-    function setCat(cat, btn) {
-        activeCat = cat;
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-        updateURL();
-        fetchJobs(false);
-    }
+            document.getElementById('tab-direct').classList.toggle('active', isDirect);
+            document.getElementById('tab-portals').classList.toggle('active', !isDirect);
+            document.getElementById('tab-direct').setAttribute('aria-selected', isDirect);
+            document.getElementById('tab-portals').setAttribute('aria-selected', !isDirect);
 
-    function toggleDirectApply() {
-        activeType = document.getElementById('direct-apply-chk').checked ? 'direct_apply' : 'all';
-        fetchJobs(false);
-    }
+            // Category, Location, and Confidence filters apply to individual Job Openings
+            const catWrap = document.getElementById('cat-scroll-wrap');
+            const filterRow = document.getElementById('filter-row');
+            const searchInput = document.getElementById('search-input');
 
-    // Location filter
-    function setLoc(val, btn) {
-        activeLoc = val;
-        ['loc-all', 'loc-remote', 'loc-india', 'loc-global'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.className = 'filt-btn';
-        });
-        if (btn) btn.className = 'filt-btn active-blue';
-        updateURL();
-        fetchJobs(false);
-    }
+            if (catWrap) catWrap.style.display = isDirect ? 'block' : 'none';
+            if (filterRow) filterRow.style.display = isDirect ? 'flex' : 'none';
 
-    // Confidence filter
-    function setConf(val, btn) {
-        activeConf = val;
-        ['conf-all', 'conf-safe', 'conf-possible'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.className = 'filt-btn';
-        });
-        if (btn) btn.className = 'filt-btn active-blue';
-        fetchJobs(false);
-    }
+            if (searchInput) {
+                searchInput.placeholder = isDirect
+                    ? 'Search title, company, location, skills\u2026'
+                    : 'Search company fresher portals (e.g. Google, Amazon, Meta, Swiggy)\u2026';
+            }
 
-    // Update URL for Programmatic SEO
-    function updateURL() {
-        let path = '/';
-        if (activeLoc !== 'all' || activeCat !== 'all') {
-            const locPart = activeLoc !== 'all' ? activeLoc : 'anywhere';
-            const catPart = activeCat !== 'all' ? activeCat : 'all-roles';
-            path = '/' + locPart + '/' + catPart;
-        }
-        window.history.pushState({ loc: activeLoc, cat: activeCat }, '', path);
-    }
-
-    // Helpers
-    function isNew(d) { return d && (Date.now() - new Date(d).getTime()) < 48 * 3600 * 1000; }
-    function esc(s) {
-        return String(s || '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
-    function ltOf(j) { return j.link_type || 'direct_apply'; }
-
-    // Render
-    function renderJobs() {
-        if (isLoading && allJobs.length === 0) return;
-
-        const countEl = document.getElementById('result-count');
-        countEl.textContent = 'Showing the latest listings matching your search';
-
-        const cnt = document.getElementById('jobs-container');
-        if (!allJobs.length) {
-            cnt.innerHTML = '<div class="state"><p>No jobs match these filters.</p></div>';
-            return;
-        }
-        cardIdx = 0;
-        const direct = allJobs.filter(j => ltOf(j) === 'direct_apply');
-        const browsable = allJobs.filter(j => ltOf(j) !== 'direct_apply');
-        let html = '';
-        if (direct.length)
-            html += '<div class="section-label">Direct Apply</div>'
-                  + direct.map(buildCard).join('');
-        if (browsable.length && activeType !== 'direct_apply')
-            html += '<div class="section-label" style="margin-top:' + (direct.length ? '8px' : '0') + '">Browse Lists</div>'
-                  + browsable.map(buildCard).join('');
-        cnt.innerHTML = html;
-    }
-
-    // Build a job card
-    function buildCard(job) {
-        const id = 'c' + (cardIdx++);
-        const isDirect = ltOf(job) === 'direct_apply';
-        const verdict = job.experience_verdict || null;
-        const newTag = isNew(job.scraped_at) ? '<span class="tag-new">New</span>' : '';
-        const reason = job.core_requirements || job.why_entry_level || job.match_reasoning || '';
-        const cat = (job.category || 'other').replace(/_/g, ' ');
-
-        let vbadge = '';
-        if (verdict === 'SAFE') vbadge = '<span class="badge badge-confirmed">Confirmed</span>';
-        else if (verdict === 'POSSIBLE') vbadge = '<span class="badge badge-likely">Likely</span>';
-
-        const reasonHtml = reason
-            ? '<div class="job-reason" id="r' + id + '"><strong>Core Requirements:</strong> ' + esc(reason) + '</div>'
-              + '<button class="expand-btn" id="b' + id + '" onclick="toggle(\'' + id + '\')">'
-              + '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view requirements</button>'
-            : '';
-
-        const applyBtn = isDirect
-            ? '<a href="' + esc(job.link || '#') + '" class="apply-btn direct-btn" target="_blank" rel="noopener noreferrer">Apply &#8594;</a>'
-            : '<a href="' + esc(job.link || '#') + '" class="apply-btn browse-btn" target="_blank" rel="noopener noreferrer">Browse &#8594;</a>';
-
-        return '<div class="job-card">'
-            + '<div class="job-left">'
-            + '<div class="job-title-row"><div class="job-title">' + esc(job.title || 'Untitled') + '</div>' + newTag + '</div>'
-            + '<div class="job-meta">'
-            + (job.company_name ? '<span class="job-company">' + esc(job.company_name) + '</span>' : '')
-            + (job.company_name && job.location ? '<span class="meta-sep">/</span>' : '')
-            + (job.location ? '<span class="job-loc">' + esc(job.location) + '</span>' : '')
-            + (cat ? '<span class="meta-sep">&middot;</span><span class="job-cat">' + esc(cat) + '</span>' : '')
-            + '</div>'
-            + reasonHtml
-            + '</div>'
-            + '<div class="job-right">'
-            + '<div class="job-badges">' + vbadge + '</div>'
-            + applyBtn
-            + '</div>'
-            + '</div>';
-    }
-
-    function toggle(id) {
-        const r = document.getElementById('r' + id);
-        const b = document.getElementById('b' + id);
-        if (!r) return;
-        const ex = r.classList.toggle('expanded');
-        b.innerHTML = ex
-            ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg> less'
-            : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view requirements';
-    }
-
-    // Cache
-    function saveCache(jobs) {
-        try { localStorage.setItem(CURRENT_CACHE_KEY, JSON.stringify({ ts: Date.now(), jobs })); } catch (e) {}
-    }
-    function loadCache() {
-        try {
-            const raw = localStorage.getItem(CURRENT_CACHE_KEY);
-            if (!raw) return null;
-            const { ts, jobs } = JSON.parse(raw);
-            if (Date.now() - ts > CACHE_TTL) return null;
-            return jobs;
-        } catch (e) { return null; }
-    }
-
-    // Background sync indicator
-    function setSyncing(on) {
-        let dot = document.getElementById('sync-dot');
-        if (on && !dot) {
-            dot = document.createElement('span');
-            dot.id = 'sync-dot';
-            dot.title = 'Refreshing\u2026';
-            dot.style.cssText = 'display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin-left:7px;vertical-align:middle;animation:pnew 1.2s ease-in-out infinite;';
-            const sub = document.querySelector('.header-sub');
-            if (sub) sub.appendChild(dot);
-        } else if (!on && dot) {
-            dot.remove();
-        }
-    }
-
-    // Search debounce
-    let searchTimer = null;
-    function debounceSearch() {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => fetchJobs(false), 280);
-    }
-
-    // Fetch jobs from API
-    let offset = 0;
-    let lastScrapedAt = null;
-    let lastId = null;
-    const PAGE = 200;
-
-    async function fetchJobs(append) {
-        append = !!append;
-        cardIdx = 0;
-
-        if (!append) {
-            offset = 0;
-            lastScrapedAt = null;
-            lastId = null;
+            updateURL();
+            currentPage = 1;
+            fetchJobs(1);
         }
 
-        const url = `/.netlify/functions/getJobs?limit=${PAGE}&skip=${offset}&last_scraped_at=${encodeURIComponent(lastScrapedAt || "")}&last_id=${lastId || ""}&category=${activeCat === "all" ? "" : activeCat}&link_type=${activeType === "all" ? "" : activeType}&location=${activeLoc}&verdict=${activeConf}&search=${encodeURIComponent(document.getElementById("search-input").value || "")}`;
-        CURRENT_CACHE_KEY = "jb_jobs_" + btoa(url);
+        // Category
+        function setCat(cat, btn) {
+            activeCat = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            updateURL();
+            currentPage = 1;
+            fetchJobs(1);
+        }
 
-        if (!append) {
+        // Location filter
+        function setLoc(val, btn) {
+            activeLoc = val;
+            ['loc-all', 'loc-remote', 'loc-india', 'loc-global'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.className = 'filt-btn';
+            });
+            if (btn) btn.className = 'filt-btn active-blue';
+            updateURL();
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        // Confidence filter
+        function setConf(val, btn) {
+            activeConf = val;
+            ['conf-all', 'conf-safe', 'conf-possible'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.className = 'filt-btn';
+            });
+            if (btn) btn.className = 'filt-btn active-blue';
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        // Update URL for Programmatic SEO
+        function updateURL() {
+            let path = '/';
+            const prefix = activeViewType === 'filtered_list' ? '/portals' : '';
+            if (activeLoc !== 'all' || activeCat !== 'all') {
+                const locPart = activeLoc !== 'all' ? activeLoc : 'anywhere';
+                const catPart = activeCat !== 'all' ? activeCat : 'all-roles';
+                path = (prefix ? prefix : '') + '/' + locPart + '/' + catPart;
+            } else if (prefix) {
+                path = prefix;
+            }
+            window.history.pushState({ loc: activeLoc, cat: activeCat, view: activeViewType }, '', path);
+        }
+
+        // Helpers
+        function isNew(d) { return d && (Date.now() - new Date(d).getTime()) < 48 * 3600 * 1000; }
+        function esc(s) {
+            return String(s || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+        function ltOf(j) { return j.link_type || 'direct_apply'; }
+
+        // Render Jobs
+        function renderJobs() {
+            const countEl = document.getElementById('result-count');
+            const pageInd = document.getElementById('page-indicator');
+            const cnt = document.getElementById('jobs-container');
+
+            // Update badge counts on switcher tabs
+            const badgeDir = document.getElementById('badge-direct');
+            const badgePort = document.getElementById('badge-portals');
+            if (badgeDir) badgeDir.textContent = directTotal;
+            if (badgePort) badgePort.textContent = portalTotal;
+
+            const viewLabel = activeViewType === 'direct_apply' ? 'Direct Job Links' : 'Company Fresher Portals';
+
+            if (!allJobs.length) {
+                countEl.innerHTML = `No <strong>${esc(viewLabel.toLowerCase())}</strong> matching current filters`;
+                pageInd.textContent = '';
+                cnt.innerHTML = '<div class="state"><p>No listings match your search criteria. Try adjusting the filters above.</p></div>';
+                renderPagination();
+                return;
+            }
+
+            const startNum = totalJobs === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+            const endNum = Math.min(currentPage * PAGE_SIZE, totalJobs);
+            countEl.innerHTML = `Showing <strong>${startNum}–${endNum}</strong> of <strong>${totalJobs}</strong> ${esc(viewLabel)}`;
+            pageInd.textContent = totalPages > 1 ? `Page ${currentPage} of ${totalPages}` : '';
+
+            cardIdx = 0;
+            cnt.innerHTML = allJobs.map(buildCard).join('');
+            renderPagination();
+        }
+
+        // Build a job card
+        function buildCard(job) {
+            const id = 'c' + (cardIdx++);
+            const isDirect = ltOf(job) === 'direct_apply';
+            const verdict = job.experience_verdict || null;
+            const newTag = isNew(job.first_seen || job.scraped_at) ? '<span class="tag-new">New</span>' : '';
+            const rawReason = job.core_requirements || '';
+            const portalFallback = 'Curated company portal for early-career, graduate & fresher opportunities.';
+            const reason = rawReason || (!isDirect ? portalFallback : '');
+            const cat = (job.category || 'other').replace(/_/g, ' ');
+
+            let vbadge = '';
+            if (isDirect) {
+                // Actual individual openings get verification badges
+                if (verdict === 'SAFE') vbadge = '<span class="badge badge-confirmed">Confirmed</span>';
+                else if (verdict === 'POSSIBLE') vbadge = '<span class="badge badge-likely">Likely</span>';
+            } else {
+                // Curated company fresher directory pages get clean portal badge
+                vbadge = '<span class="badge badge-portal">Fresher Portal</span>';
+            }
+
+            const reasonLabel = isDirect ? 'Core Requirements:' : 'Overview:';
+            const reasonHtml = reason
+                ? '<div class="job-reason" id="r' + id + '"><strong>' + reasonLabel + '</strong> ' + esc(reason) + '</div>'
+                + '<button class="expand-btn" id="b' + id + '" onclick="toggle(\'' + id + '\')">'
+                + '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view details</button>'
+                : '';
+
+            const applyBtn = isDirect
+                ? '<a href="' + esc(job.link || '#') + '" class="apply-btn direct-btn" target="_blank" rel="noopener noreferrer">Apply &#8594;</a>'
+                : '<a href="' + esc(job.link || '#') + '" class="apply-btn browse-btn" target="_blank" rel="noopener noreferrer">Explore Portal &#8594;</a>';
+
+            return '<div class="job-card">'
+                + '<div class="job-left">'
+                + '<div class="job-title-row"><div class="job-title">' + esc(job.title || 'Untitled') + '</div>' + newTag + '</div>'
+                + '<div class="job-meta">'
+                + (job.company_name ? '<span class="job-company">' + esc(job.company_name) + '</span>' : '')
+                + (job.company_name && job.location ? '<span class="meta-sep">/</span>' : '')
+                + (job.location ? '<span class="job-loc">' + esc(job.location) + '</span>' : '')
+                + (cat ? '<span class="meta-sep">&middot;</span><span class="job-cat">' + esc(cat) + '</span>' : '')
+                + '</div>'
+                + reasonHtml
+                + '</div>'
+                + '<div class="job-right">'
+                + '<div class="job-badges">' + vbadge + '</div>'
+                + applyBtn
+                + '</div>'
+                + '</div>';
+        }
+
+        function toggle(id) {
+            const r = document.getElementById('r' + id);
+            const b = document.getElementById('b' + id);
+            if (!r) return;
+            const ex = r.classList.toggle('expanded');
+            b.innerHTML = ex
+                ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg> less'
+                : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view details';
+        }
+
+        // Numbered Pagination
+        function renderPagination() {
+            const pag = document.getElementById('pagination-bar');
+            if (!pag) return;
+            if (totalPages <= 1) {
+                pag.style.display = 'none';
+                pag.innerHTML = '';
+                return;
+            }
+
+            pag.style.display = 'flex';
+            let html = '';
+
+            // Previous button
+            const prevDisabled = currentPage <= 1 ? 'disabled' : '';
+            html += `<button class="page-btn page-nav-btn" ${prevDisabled} onclick="goToPage(${currentPage - 1})" aria-label="Previous page">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> Prev
+        </button>`;
+
+            // Page number range logic
+            const pages = [];
+            const maxShown = 5;
+            let start = Math.max(1, currentPage - 2);
+            let end = Math.min(totalPages, start + maxShown - 1);
+            if (end - start < maxShown - 1) {
+                start = Math.max(1, end - maxShown + 1);
+            }
+
+            if (start > 1) {
+                pages.push(1);
+                if (start > 2) pages.push('...');
+            }
+
+            for (let p = start; p <= end; p++) {
+                pages.push(p);
+            }
+
+            if (end < totalPages) {
+                if (end < totalPages - 1) pages.push('...');
+                pages.push(totalPages);
+            }
+
+            pages.forEach(p => {
+                if (p === '...') {
+                    html += '<span class="page-ellipsis">&hellip;</span>';
+                } else if (p === currentPage) {
+                    html += `<button class="page-btn active" aria-current="page">${p}</button>`;
+                } else {
+                    html += `<button class="page-btn" onclick="goToPage(${p})">${p}</button>`;
+                }
+            });
+
+            // Next button
+            const nextDisabled = currentPage >= totalPages ? 'disabled' : '';
+            html += `<button class="page-btn page-nav-btn" ${nextDisabled} onclick="goToPage(${currentPage + 1})" aria-label="Next page">
+            Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>`;
+
+            pag.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > totalPages || page === currentPage) return;
+            fetchJobs(page);
+            const panel = document.getElementById('panel-jobs');
+            if (panel) {
+                window.scrollTo({ top: panel.offsetTop - 75, behavior: 'smooth' });
+            }
+        }
+
+        // Cache
+        function saveCache(data) {
+            try { localStorage.setItem(CURRENT_CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch (e) { }
+        }
+        function loadCache() {
+            try {
+                const raw = localStorage.getItem(CURRENT_CACHE_KEY);
+                if (!raw) return null;
+                const { ts, data } = JSON.parse(raw);
+                if (Date.now() - ts > CACHE_TTL) return null;
+                return data;
+            } catch (e) { return null; }
+        }
+
+        // Background sync indicator
+        function setSyncing(on) {
+            let dot = document.getElementById('sync-dot');
+            if (on && !dot) {
+                dot = document.createElement('span');
+                dot.id = 'sync-dot';
+                dot.title = 'Refreshing\u2026';
+                dot.style.cssText = 'display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin-left:7px;vertical-align:middle;animation:pnew 1.2s ease-in-out infinite;';
+                const sub = document.querySelector('.header-sub');
+                if (sub) sub.appendChild(dot);
+            } else if (!on && dot) {
+                dot.remove();
+            }
+        }
+
+        // Search debounce
+        let searchTimer = null;
+        function debounceSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                currentPage = 1;
+                fetchJobs(1);
+            }, 280);
+        }
+
+        // Fetch jobs from API
+        async function fetchJobs(page) {
+            page = Math.max(1, parseInt(page || 1, 10));
+            currentPage = page;
+            cardIdx = 0;
+
+            const searchVal = document.getElementById("search-input") ? document.getElementById("search-input").value : "";
+            const catParam = activeViewType === 'direct_apply' ? (activeCat === 'all' ? '' : activeCat) : '';
+            const locParam = activeViewType === 'direct_apply' ? activeLoc : 'all';
+            const confParam = activeViewType === 'direct_apply' ? activeConf : 'all';
+            const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}`;
+            CURRENT_CACHE_KEY = "jb_v5_" + encodeURIComponent(url);
+
             const cached = loadCache();
-            if (cached && cached.length) {
-                allJobs = cached;
+            if (cached && cached.jobs) {
+                allJobs = cached.jobs;
+                totalJobs = cached.total || 0;
+                totalPages = cached.totalPages || 1;
+                directTotal = cached.directCount || 0;
+                portalTotal = cached.portalCount || 0;
                 isLoading = false;
                 renderJobs();
                 setSyncing(true);
             } else {
-                allJobs = [];
                 isLoading = true;
                 document.getElementById('jobs-container').innerHTML =
                     '<div class="state"><div class="spinner" role="status" aria-label="Loading"></div><p>Fetching listings&#8230;</p></div>';
+                const pag = document.getElementById('pagination-bar');
+                if (pag) pag.style.display = 'none';
             }
-        }
 
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            if (!Array.isArray(data)) throw new Error(data.error || 'Bad response from server');
-            if (!data.length && !append) {
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+
+                // Seamlessly handle both new metadata response and legacy array response
+                if (Array.isArray(data)) {
+                    allJobs = data;
+                    totalJobs = data.length;
+                    totalPages = 1;
+                    directTotal = data.filter(j => ltOf(j) === 'direct_apply').length;
+                    portalTotal = data.filter(j => ltOf(j) !== 'direct_apply').length;
+                } else if (data && Array.isArray(data.jobs)) {
+                    allJobs = data.jobs;
+                    totalJobs = data.total ?? data.jobs.length;
+                    totalPages = data.totalPages ?? 1;
+                    currentPage = data.page ?? page;
+                    directTotal = data.directCount ?? directTotal;
+                    portalTotal = data.portalCount ?? portalTotal;
+                } else {
+                    throw new Error(data.error || 'Bad response from server');
+                }
+
+                isLoading = false;
+                saveCache({ jobs: allJobs, total: totalJobs, totalPages, directCount: directTotal, portalCount: portalTotal });
                 setSyncing(false);
+                renderJobs();
+            } catch (e) {
+                setSyncing(false);
+                isLoading = false;
+                const msg = e.message || 'Unknown error';
                 if (allJobs.length === 0) {
                     document.getElementById('jobs-container').innerHTML =
-                        '<div class="state"><p>No listings yet. Scraper may still be running.</p></div>';
+                        '<div class="state">'
+                        + '<p style="color:var(--red);margin-bottom:14px">' + msg + '</p>'
+                        + '<button onclick="fetchJobs(' + page + ')" style="padding:8px 22px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;">Retry</button>'
+                        + '</div>';
                 }
-                return;
-            }
-            allJobs = append ? allJobs.concat(data) : data;
-            if (data.length > 0) {
-                const lastJob = data[data.length - 1];
-                lastScrapedAt = lastJob.scraped_at;
-                lastId = lastJob._id;
-            }
-            offset += data.length;
-            isLoading = false;
-            if (!append) saveCache(allJobs);
-            setSyncing(false);
-            renderJobs();
-            const ex = document.getElementById('lmb');
-            if (ex) ex.remove();
-            if (data.length === PAGE) {
-                const d = document.createElement('div');
-                d.style.cssText = 'text-align:center;margin-top:28px;';
-                d.id = 'lmb';
-                d.innerHTML = '<button onclick="fetchJobs(true)" style="padding:8px 24px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-family:inherit;font-size:0.8rem;font-weight:600;cursor:pointer;">Load more</button>';
-                document.getElementById('jobs-container').appendChild(d);
-            }
-        } catch (e) {
-            setSyncing(false);
-            isLoading = false;
-            const msg = e.message || 'Unknown error';
-            if (allJobs.length === 0) {
-                document.getElementById('jobs-container').innerHTML =
-                    '<div class="state">'
-                    + '<p style="color:var(--red);margin-bottom:14px">' + msg + '</p>'
-                    + '<button onclick="fetchJobs(false)" style="padding:8px 22px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;">Retry</button>'
-                    + '</div>';
             }
         }
-    }
 
-    // Suppress Netlify badge
-    function hideNBadge() {
-        document.querySelectorAll('a[href*="netlify.com"], #nl-badge-frame').forEach(el => {
-            el.style.setProperty('display', 'none', 'important');
-        });
-    }
+        // Suppress Netlify badge
+        function hideNBadge() {
+            document.querySelectorAll('a[href*="netlify.com"], #nl-badge-frame').forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+            });
+        }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        // Parse URL for programmatic SEO / initial state
-        const path = window.location.pathname;
-        if (path && path !== '/' && path !== '/index.html') {
-            const parts = path.split('/').filter(p => p);
-            if (parts.length === 2) {
-                const urlLoc = parts[0];
-                const urlCat = parts[1];
-                
-                if (urlLoc !== 'anywhere') activeLoc = urlLoc;
-                if (urlCat !== 'all-roles') activeCat = urlCat;
-
-                // visually update buttons
-                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                const cBtn = document.querySelector(`[data-cat="${activeCat}"]`);
-                if (cBtn) cBtn.classList.add('active');
-
-                ['loc-all', 'loc-remote', 'loc-india', 'loc-global'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.className = 'filt-btn';
+        document.addEventListener('DOMContentLoaded', () => {
+            // Clean up legacy localStorage cache keys
+            try {
+                Object.keys(localStorage).forEach(k => {
+                    if (k.startsWith('jb_jobs_') && k !== CURRENT_CACHE_KEY) localStorage.removeItem(k);
+                    if (k.startsWith('jb_v4_') || k.startsWith('jb_v3_') || k.startsWith('jb_v2_') || k.startsWith('jb_v1_')) {
+                        localStorage.removeItem(k);
+                    }
                 });
-                const locBtnId = activeLoc === 'all' ? 'loc-all' : `loc-${activeLoc}`;
-                const lBtn = document.getElementById(locBtnId);
-                if (lBtn) lBtn.className = 'filt-btn active-blue';
-            }
-        }
+            } catch (e) { }
 
-        fetchJobs(false);
-        setTimeout(hideNBadge, 500);
-        setTimeout(hideNBadge, 2000);
-        setTimeout(hideNBadge, 5000);
-    });
-</script>
+            // Parse URL for programmatic SEO / initial state
+            const path = window.location.pathname;
+            if (path && path !== '/' && path !== '/index.html') {
+                let cleanPath = path;
+                if (cleanPath.startsWith('/portals')) {
+                    activeViewType = 'filtered_list';
+                    cleanPath = cleanPath.replace('/portals', '') || '/';
+                    const tabDir = document.getElementById('tab-direct');
+                    const tabPort = document.getElementById('tab-portals');
+                    if (tabDir) { tabDir.classList.remove('active'); tabDir.setAttribute('aria-selected', 'false'); }
+                    if (tabPort) { tabPort.classList.add('active'); tabPort.setAttribute('aria-selected', 'true'); }
+                    const catWrap = document.getElementById('cat-scroll-wrap');
+                    const filterRow = document.getElementById('filter-row');
+                    if (catWrap) catWrap.style.display = 'none';
+                    if (filterRow) filterRow.style.display = 'none';
+                }
+                const parts = cleanPath.split('/').filter(p => p);
+                if (parts.length === 2) {
+                    const urlLoc = parts[0];
+                    const urlCat = parts[1];
+
+                    if (urlLoc !== 'anywhere') activeLoc = urlLoc;
+                    if (urlCat !== 'all-roles') activeCat = urlCat;
+
+                    // visually update buttons
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    const cBtn = document.querySelector(`[data-cat="${activeCat}"]`);
+                    if (cBtn) cBtn.classList.add('active');
+
+                    ['loc-all', 'loc-remote', 'loc-india', 'loc-global'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.className = 'filt-btn';
+                    });
+                    const locBtnId = activeLoc === 'all' ? 'loc-all' : `loc-${activeLoc}`;
+                    const lBtn = document.getElementById(locBtnId);
+                    if (lBtn) lBtn.className = 'filt-btn active-blue';
+                }
+            }
+
+            fetchJobs(1);
+            setTimeout(hideNBadge, 500);
+            setTimeout(hideNBadge, 2000);
+            setTimeout(hideNBadge, 5000);
+        });
+    </script>
 </body>
+
 </html>
