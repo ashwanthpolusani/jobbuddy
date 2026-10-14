@@ -33,75 +33,8 @@ EXP_SAFE     = "SAFE"
 EXP_POSSIBLE = "POSSIBLE"
 EXP_BLOCKED  = "BLOCKED"
 
-# -- MongoDB Singleton
-_mongo_client = None
-_mongo_db     = None
-
-def get_db():
-    global _mongo_client, _mongo_db
-    if _mongo_client is None:
-        _mongo_client = MongoClient(
-            MONGODB_URI,
-            serverSelectionTimeoutMS=10000,
-            socketTimeoutMS=30000,
-            connectTimeoutMS=20000,
-            maxIdleTimeMS=45000,
-            maxPoolSize=5,
-            tlsCAFile=certifi.where()
-        )
-        _mongo_db = _mongo_client.job_aggregator
-    return _mongo_db
-
-def now_iso():
-    return datetime.now(timezone.utc).isoformat()
-
-# -- Model Pool
-class ModelPool:
-    def __init__(self, api_key, models):
-        self.client = genai.Client(api_key=api_key)
-        self.models = models
-        self._current = 0
-        self._stats = {m: {"minute_count": 0, "day_count": 0, "minute_start": time.time()} for m in models}
-
-    def _is_available(self, model):
-        s = self._stats[model]
-        if time.time() - s["minute_start"] > 60:
-            s["minute_count"] = 0
-            s["minute_start"] = time.time()
-        return s["minute_count"] < RPM_LIMIT and s["day_count"] < 500
-
-    def _record_use(self, model):
-        self._stats[model]["minute_count"] += 1
-        self._stats[model]["day_count"]    += 1
-
-    def _mark_limited(self, model):
-        self._stats[model]["minute_count"] = RPM_LIMIT
-
-    def generate(self, prompt):
-        ordered = [self.models[(self._current + i) % len(self.models)] for i in range(len(self.models))]
-        self._current = (self._current + 1) % len(self.models)
-        for attempt in range(3):
-            for model in ordered:
-                if not self._is_available(model):
-                    continue
-                try:
-                    response = self.client.models.generate_content(model=model, contents=prompt, config={"response_mime_type": "application/json"})
-                    self._record_use(model)
-                    print(f"  ok [{model}]")
-                    return response.text
-                except Exception as e:
-                    err = str(e)
-                    if '429' in err or 'Quota' in err or '503' in err:
-                        self._mark_limited(model)
-                        continue
-                    else:
-                        raise
-            print(f"  Both models rate limited. Sleeping 65s...")
-            time.sleep(65)
-            for m in self.models:
-                self._stats[m]["minute_count"] = 0
-                self._stats[m]["minute_start"] = time.time()
-        raise RuntimeError("All models exhausted.")
+from safe_ats import is_eligible_for_jobbuddy
+from main import ModelPool, get_db, now_iso
 
 # -- JD Fetcher
 def fetch_jd_http(url):
@@ -176,7 +109,7 @@ def fetch_job_description(url):
 # -- Stage 2 Gemini Prompt
 STAGE2_PROMPT = '''
 You are an expert job eligibility screener. The candidate is a COMPLETELY FRESH GRADUATE with
-0 years of experience and 0 internships. Your #1 job is detecting experience requirements.
+0 years of experience and 0 internships. Your job is to verify experience requirements and extract the core tech stack.
 
 JOB DESCRIPTION:
 {job_description}
@@ -194,8 +127,10 @@ Return a JSON object with exactly these keys:
    - "experience preferred but not required" -> POSSIBLE
    - No mention of experience at all -> POSSIBLE
 
-2. "core_requirements": 2-3 sentences. First sentence must state the experience verdict and why.
-   If experience details are quoted from the JD, include them.
+2. "verdict_reason": 1 sentence explaining the experience verdict and quoting any specific experience requirements found.
+
+3. "core_requirements": 1-2 factual sentences summarizing ONLY the required tech stack, programming languages, degree, or critical technical skills (e.g., 'Python, React, SQL, and a Bachelor's degree in CS').
+   DO NOT include explanations of the experience verdict here.
 
 Return ONLY valid JSON. No markdown.
 '''
@@ -232,7 +167,7 @@ def main():
     pending = list(
         db.jobs.find(
             {"stage2_processed_at": {"$exists": False}, "link_type": "direct_apply", "link": {"$exists": True, "$ne": ""}},
-            {"_id": 1, "title": 1, "company_name": 1, "link": 1}
+            {"_id": 1, "title": 1, "company_name": 1, "link": 1, "location": 1, "core_requirements": 1}
         )
         .sort("scraped_at", -1)
         .limit(BATCH_SIZE)
@@ -256,16 +191,31 @@ def main():
         title   = job.get("title", "?")
         company = job.get("company_name", "?")
         link    = job.get("link", "")
+        loc     = job.get("location", "")
         job_id  = job.get("_id")
 
-        print(f"[{i}/{len(pending)}] {title} @ {company}")
+        # 1. Location & Visa Gate check
+        ok, reason = is_eligible_for_jobbuddy(job)
+        if not ok:
+            print(f"[{i}/{len(pending)}] [Deleted] Ineligible for Indian freshers: {title} ({loc}) -> {reason}")
+            db.jobs.delete_one({"_id": job_id})
+            continue
+
+        print(f"[{i}/{len(pending)}] {title} @ {company} ({loc})")
         print(f"  -> {link}")
 
         jd_text = fetch_job_description(link)
         if not jd_text:
             print(f"  Could not fetch JD")
-            db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": EXP_POSSIBLE, "core_requirements": "Could not fetch job description page."}})
+            db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": EXP_POSSIBLE}})
             error_count += 1
+            continue
+
+        # 2. Check full JD text for hidden clearance / domestic-only restrictions
+        ok, reason = is_eligible_for_jobbuddy({"title": title, "location": loc, "core_requirements": jd_text})
+        if not ok:
+            print(f"  [Deleted] Ineligible from JD content: {reason}")
+            db.jobs.delete_one({"_id": job_id})
             continue
 
         result = score_job_with_gemini(jd_text, pool)
@@ -275,11 +225,14 @@ def main():
             continue
 
         verdict      = result.get("experience_verdict", EXP_POSSIBLE)
-        reasoning    = result.get("core_requirements", "")
+        verdict_reason = result.get("verdict_reason", "")
+        tech_reqs    = (result.get("core_requirements") or "").strip() or job.get("core_requirements", "")
 
         icons = {"SAFE": "[OK]", "POSSIBLE": "[?]", "BLOCKED": "[X]"}
         print(f"  {icons.get(verdict,'?')} Experience: {verdict}")
-        print(f"  Reasoning: {reasoning}")
+        if verdict_reason:
+            print(f"  Reason: {verdict_reason}")
+        print(f"  Tech Requirements: {tech_reqs}")
 
         if verdict == EXP_SAFE:      safe_count += 1
         elif verdict == EXP_POSSIBLE: possible_count += 1
@@ -288,9 +241,19 @@ def main():
         try:
             if verdict == EXP_BLOCKED:
                 db.jobs.delete_one({"_id": job_id})
-                print(f"  [Deleted] Removed from database to save space")
+                print(f"  [Deleted] Removed from database to save space (BLOCKED)")
             else:
-                db.jobs.update_one({"_id": job_id}, {"$set": {"stage2_processed_at": now_iso(), "experience_verdict": verdict, "core_requirements": reasoning}})
+                db.jobs.update_one(
+                    {"_id": job_id},
+                    {
+                        "$set": {
+                            "stage2_processed_at": now_iso(),
+                            "experience_verdict": verdict,
+                            "verdict_reason": verdict_reason,
+                            "core_requirements": tech_reqs
+                        }
+                    }
+                )
         except Exception as e:
             print(f"  [Error] Failed to update MongoDB for {job_id}: {e}")
 

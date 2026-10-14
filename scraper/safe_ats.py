@@ -35,6 +35,12 @@ def extract_slug(url: str, ats: str) -> str | None:
             match = re.search(r'ashbyhq\.com/([^/]+)', url)
             if match:
                 return match.group(1)
+        elif ats == "smartrecruiters":
+            match = re.search(r'smartrecruiters\.com/(?:v1/companies/)?([^/?#]+)', url)
+            if match:
+                token = match.group(1)
+                if token not in ('v1', 'companies', 'jobs', 'postings'):
+                    return token
     except Exception:
         return None
     return None
@@ -83,32 +89,39 @@ def fetch_ashby_jobs(slug: str) -> list[dict] | None:
         return []
 
 def fetch_greenhouse_jobs(slug: str) -> list[dict] | None:
-    """Fetches all jobs from Greenhouse public API."""
-    url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true"
-    try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode('utf-8'))
-            jobs = data.get('jobs', [])
-            
-            # Normalize to a common format
-            normalized = []
-            for j in jobs:
-                loc = j.get('location', {}).get('name', '')
-                title = j.get('title', '')
-                normalized.append({
-                    "title": title,
-                    "location": loc,
-                    "link": j.get('absolute_url', ''),
-                    "content": j.get('content', '') # raw html of job
-                })
-            return normalized
-    except HTTPError as e:
-        print(f"    [Greenhouse API Blocked or Missing for {slug}] HTTP {e.code}")
-        return None
-    except Exception as e:
-        print(f"    [Greenhouse API Error] {e}")
-        return []
+    """Fetches all jobs from Greenhouse public API, with EU endpoint fallback."""
+    urls = [
+        f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true",
+        f"https://job-boards.eu.greenhouse.io/{slug}/jobs"
+    ]
+    for url in urls:
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                jobs = data.get('jobs', [])
+                
+                # Normalize to a common format
+                normalized = []
+                for j in jobs:
+                    loc = j.get('location', {}).get('name', '')
+                    title = j.get('title', '')
+                    normalized.append({
+                        "title": title,
+                        "location": loc,
+                        "link": j.get('absolute_url', ''),
+                        "content": j.get('content', '') # raw html of job
+                    })
+                return normalized
+        except HTTPError as e:
+            if e.code == 404:
+                continue
+            print(f"    [Greenhouse API Blocked or Missing for {slug}] HTTP {e.code}")
+            return None
+        except Exception as e:
+            print(f"    [Greenhouse API Error] {e}")
+            return []
+    return None
 
 def fetch_lever_jobs(slug: str) -> list[dict] | None:
     """Fetches all jobs from Lever public API."""
@@ -263,6 +276,211 @@ def fetch_mynexthire_jobs(domain: str) -> list[dict]:
         
     return all_jobs
 
+def fetch_smartrecruiters_jobs(token: str, country: str = "in") -> list[dict]:
+    """
+    Fetches jobs from SmartRecruiters public API.
+    Handles pagination and filters by country if applicable.
+    Quirk: SmartRecruiters returns HTTP 200 with totalFound: 0 on invalid company tokens.
+    """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json'
+    }
+    all_jobs = []
+    limit = 100
+    offset = 0
+    max_pages = 20  # Safety cap: ~2000 jobs max
+    page = 0
+    
+    try:
+        while page < max_pages:
+            query_suffix = f"&country={country}" if country else ""
+            api_url = f"https://api.smartrecruiters.com/v1/companies/{token}/postings?limit={limit}&offset={offset}{query_suffix}"
+            req = urllib.request.Request(api_url, headers=headers)
+            with urllib.request.urlopen(req, timeout=12) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                total_found = data.get('totalFound', 0)
+                
+                # Quirk fix: if 0 jobs found with country filter, retry once without country filter
+                if total_found == 0 and offset == 0 and country:
+                    fallback_url = f"https://api.smartrecruiters.com/v1/companies/{token}/postings?limit={limit}&offset={offset}"
+                    fallback_req = urllib.request.Request(fallback_url, headers=headers)
+                    with urllib.request.urlopen(fallback_req, timeout=12) as fallback_resp:
+                        data = json.loads(fallback_resp.read().decode('utf-8'))
+                        total_found = data.get('totalFound', 0)
+                        if total_found == 0:
+                            break
+                elif total_found == 0:
+                    break
+                    
+                postings = data.get('content', [])
+                if not postings:
+                    break
+                    
+                for p in postings:
+                    loc = p.get('location', {})
+                    city = loc.get('city', '')
+                    c_code = loc.get('country', '')
+                    region = loc.get('region', '')
+                    loc_parts = [part for part in [city, region, c_code] if part]
+                    loc_str = ', '.join(loc_parts) if loc_parts else 'Unknown'
+                    
+                    job_id = p.get('id', '')
+                    full_link = f"https://jobs.smartrecruiters.com/{token}/{job_id}"
+                    
+                    all_jobs.append({
+                        "title": p.get('name', 'Unknown Title'),
+                        "location": loc_str,
+                        "link": full_link,
+                        "content": ""  # SmartRecruiters list API returns summary metadata
+                    })
+                    
+                offset += limit
+                page += 1
+                if offset >= total_found:
+                    break
+    except Exception as e:
+        print(f"    [SmartRecruiters API Error for {token}] {e}")
+        
+    return all_jobs
+
+def fetch_uber_jobs(query: str = "location=Bengaluru") -> list[dict]:
+    """
+    Fetches jobs from Uber's public careers API (jobs.uber.com/api/jobs/search).
+    Automatically loops through pages and normalizes into standard schema.
+    """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': '*/*',
+        'Referer': 'https://jobs.uber.com/en/jobs/',
+    }
+    all_jobs = []
+    
+    # Extract query params if a full URL was provided
+    if '?' in query:
+        query_string = query.split('?', 1)[1]
+    elif '=' in query:
+        query_string = query
+    else:
+        query_string = f"location={query}" if query else "location=Bengaluru"
+
+    # Strip existing page param to control pagination loop
+    query_string = re.sub(r'[?&]page=\d+', '', query_string).strip('&')
+    
+    page = 1
+    max_pages = 10
+    try:
+        while page <= max_pages:
+            api_url = f"https://jobs.uber.com/api/jobs/search/?{query_string}&page={page}"
+            req = urllib.request.Request(api_url, headers=headers)
+            with urllib.request.urlopen(req, timeout=12) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                jobs = data.get('jobs', [])
+                if not jobs:
+                    break
+                for j in jobs:
+                    cities = [loc.get('City') for loc in j.get('Locations', []) if loc.get('City')]
+                    country = (j.get('Locations', [{}])[0].get('Country')) if j.get('Locations') else ''
+                    loc_parts = cities + ([country] if country else [])
+                    loc_str = ', '.join(loc_parts) if loc_parts else 'India'
+                    
+                    job_path = j.get('Urls', [{}])[0].get('Url', f"/en/jobs/{j.get('Id')}/")
+                    all_jobs.append({
+                        "title": j.get('Title', 'Unknown Title'),
+                        "location": loc_str,
+                        "link": f"https://jobs.uber.com{job_path}",
+                        "content": j.get('Description', ''),
+                        "id": str(j.get('Id', ''))
+                    })
+                total_pages = data.get('totalPages', 1)
+                if page >= total_pages:
+                    break
+                page += 1
+    except Exception as e:
+        print(f"    [Uber API Error] {e}")
+
+    return all_jobs
+
+# ── Location & Visa Gate (Indian Candidate Eligibility) ────────────────────────
+INDIAN_LOCATIONS = [
+    'india', 'bangalore', 'bengaluru', 'hyderabad', 'pune', 'chennai', 'mumbai',
+    'gurgaon', 'gurugram', 'noida', 'delhi', 'new delhi', 'kolkata', 'ahmedabad',
+    'kochi', 'coimbatore', 'trivandrum', 'thiruvananthapuram', 'indore', 'jaipur',
+    'chandigarh', 'mysore', 'bhubaneswar'
+]
+
+INDIAN_LOC_REGEX = re.compile(
+    r'\b(?:' + '|'.join(map(re.escape, INDIAN_LOCATIONS)) + r')\b|' +
+    r'\bIN\s*-\s*[a-zA-Z]+|\bIndia\b',
+    re.IGNORECASE
+)
+
+SPONSOR_REGEX = re.compile(
+    r'relocation provided|relocation assistance provided|visa sponsorship available|visa sponsorship provided|will sponsor visa|international relocation',
+    re.IGNORECASE
+)
+
+RESTRICTED_REMOTE_REGEX = re.compile(
+    r'\b(?:us|u\.s\.|usa|united states|canada|can|latin america|latam|colombia|brazil|peru|mexico|argentina|chile|costa rica|cri|uk|united kingdom|emea|europe|germany|france|spain|portugal|australia|nz|japan|china)\b|' +
+    r'eastern time|pacific time|central time|\best\b|\bpst\b|\bcst\b|\bmst\b',
+    re.IGNORECASE
+)
+
+CLEARANCE_REGEX = re.compile(
+    r'security clearance|secret clearance|top secret|ts/sci|\bitar\b|us citizen|u\.s\. citizen|us citizenship|uk citizen|us persons only|us government|uk government|aus government',
+    re.IGNORECASE
+)
+
+NO_SPONSOR_REGEX = re.compile(
+    r'without sponsorship|no visa sponsorship|will not sponsor|cannot sponsor|unable to sponsor|not able to sponsor|permanent right to work|must be authorized to work',
+    re.IGNORECASE
+)
+
+def is_eligible_for_jobbuddy(job: dict) -> tuple[bool, str]:
+    """
+    Ensures jobs align with JobBuddy's mission: Indian candidates with Indian passports,
+    no pre-existing foreign visas.
+    Accepted:
+    1. Roles located in India (Bangalore, Hyderabad, Pune, Gurugram, etc.).
+    2. Roles explicitly providing international relocation assistance or visa sponsorship.
+    3. Genuine worldwide / global remote roles (not restricted to US/EU/LATAM/Canada).
+
+    Rejected:
+    1. US/UK/Foreign domestic roles with no visa sponsorship.
+    2. Roles requiring domestic citizenship, government defense clearance, or ITAR.
+    3. Explicit 'No visa sponsorship' / 'Must be authorized without sponsorship' clauses.
+    4. Region-locked remote roles (e.g., 'Colombia, Remote', 'US Remote').
+    """
+    loc = str(job.get('location', '') or '')
+    title = str(job.get('title', '') or '')
+    reqs = str(job.get('core_requirements', '') or '')
+    combined = f"{title} {loc} {reqs}".lower()
+
+    # 1. Hard Rejection: Security clearance, government defense, or domestic citizenship
+    if CLEARANCE_REGEX.search(combined):
+        return False, "Requires government/defense security clearance or domestic citizenship"
+
+    # 2. Hard Rejection: Explicit no-visa sponsorship
+    if NO_SPONSOR_REGEX.search(combined):
+        return False, "Explicitly states no visa sponsorship or domestic right to work required"
+
+    # 3. Acceptance: India-based location
+    if INDIAN_LOC_REGEX.search(loc) or INDIAN_LOC_REGEX.search(title):
+        return True, "India-based location"
+
+    # 4. Acceptance: Explicit international relocation / visa sponsorship
+    if SPONSOR_REGEX.search(combined):
+        return True, "Explicit international relocation or visa sponsorship provided"
+
+    # 5. Check Remote eligibility
+    if 'remote' in loc.lower() or 'remote' in title.lower() or loc.strip().lower() in ['global', 'anywhere', 'worldwide']:
+        if RESTRICTED_REMOTE_REGEX.search(loc):
+            return False, f"Region-locked remote role ({loc})"
+        return True, "Worldwide Remote"
+
+    # 6. Default: Reject foreign domestic role without visa sponsorship
+    return False, f"Foreign domestic role without verified visa sponsorship ({loc})"
+
 def pre_filter_jobs(jobs: list[dict]) -> list[dict]:
     """
     Filters a massive list of ATS jobs down to just software/fresher roles
@@ -296,7 +514,14 @@ def pre_filter_jobs(jobs: list[dict]) -> list[dict]:
         # Must NOT be senior
         if re.search(r'\b(?:' + '|'.join(map(re.escape, senior_keywords)) + r')\b', t):
             continue
-            
+
+        # Location & Visa Gate (Indian Candidate Eligibility)
+        loc = str(j.get('location') or '').strip()
+        if loc:
+            ok, _ = is_eligible_for_jobbuddy(j)
+            if not ok:
+                continue
+
         good_roles.append(j)
 
     # Sort early-career titles to the top so chunk-capped evaluations prioritize them
@@ -343,57 +568,29 @@ def process_ats_url(url: str) -> tuple[bool, list[dict], str]:
         params = extract_workday_params(url)
         if params:
             return True, fetch_workday_jobs(url), "Workday"
-            
-    return False, [], "Unknown"
 
-def process_html_for_ats(html: str) -> tuple[bool, list[dict], str]:
-    """
-    Scans raw HTML (or Markdown) to detect embedded ATS links.
-    Returns (is_supported, raw_jobs_list, ats_name)
-    """
-    # 1. Check for Greenhouse links embedded in HTML
-    # Example matches: href="https://boards.greenhouse.io/robinhood/jobs/..."
-    gh_match = re.search(r'boards\.greenhouse\.io/([^/\"\'\?\>]+)', html)
-    if gh_match:
-        slug = gh_match.group(1)
-        if slug.lower() not in ('jobs', 'v1'): # safety check against generic paths
-            jobs = fetch_greenhouse_jobs(slug)
-            if jobs is not None:
-                return True, jobs, "Greenhouse"
-
-    # 2. Check for Lever links embedded in HTML
-    # Example matches: href="https://jobs.lever.co/netflix/..."
-    lv_match = re.search(r'jobs\.lever\.co/([^/\"\'\?\>]+)', html)
-    if lv_match:
-        slug = lv_match.group(1)
-        jobs = fetch_lever_jobs(slug)
-        if jobs is not None:
-            return True, jobs, "Lever"
-
-    # 3. Check for Ashby links embedded in HTML
-    ashby_match = re.search(r'jobs\.ashbyhq\.com/([^/\"\'\?\>]+)', html)
-    if ashby_match:
-        slug = ashby_match.group(1)
-        jobs = fetch_ashby_jobs(slug)
-        if jobs is not None:
-            return True, jobs, "Ashby"
-        
-    # 4. Check for MyNextHire links
-    mnh_match = re.search(r'(https://[^/\"\'\?\>]+\.mynexthire\.com)', html)
-    if mnh_match:
-        domain = mnh_match.group(1).replace('https://', '')
-        jobs = fetch_mynexthire_jobs(domain)
-        if jobs:
-            return True, jobs, "MyNextHire"
-        
-    # 5. Check for Workday links embedded in HTML
-    wd_match = re.search(r'(https://[a-zA-Z0-9\-]+\.[^/]+myworkdayjobs\.com/(?:[a-zA-Z]{2}-[a-zA-Z]{2}/)?[^/\"\'\?\>]+)', html)
-    if wd_match:
-        wd_url = wd_match.group(1)
-        if not wd_url.endswith('/login'):
-            jobs = fetch_workday_jobs(wd_url)
+    elif "smartrecruiters.com" in url:
+        token = extract_slug(url, "smartrecruiters")
+        if token:
+            jobs = fetch_smartrecruiters_jobs(token)
             if jobs:
-                return True, jobs, "Workday"
+                return True, jobs, "SmartRecruiters"
 
+    elif "jobs.uber.com" in url or "uber.com/api/jobs" in url:
+        return True, fetch_uber_jobs(url), "Uber"
+
+    elif "uber.com" in url:
+        # Generic uber careers URL: fetch both Bengaluru and Hyderabad
+        blr_jobs = fetch_uber_jobs("location=Bengaluru")
+        hyd_jobs = fetch_uber_jobs("location=Hyderabad")
+        seen = set()
+        combined = []
+        for j in blr_jobs + hyd_jobs:
+            jid = j.get('id') or j.get('link')
+            if jid not in seen:
+                seen.add(jid)
+                combined.append(j)
+        return True, combined, "Uber"
+            
     return False, [], "Unknown"
 

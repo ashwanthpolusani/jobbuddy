@@ -18,8 +18,8 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from google import genai
 import certifi
-from playwright.sync_api import sync_playwright
-import safe_ats  # v3 Safe API Router
+
+from safe_ats import process_ats_url, pre_filter_jobs, is_eligible_for_jobbuddy
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 load_dotenv()
@@ -30,8 +30,6 @@ MONGODB_URI    = os.getenv("MONGODB_URI")
 URLS_FILE      = os.path.join(os.path.dirname(__file__), "urls.txt")
 
 # Both models share the same free-tier limits: 15 RPM, 500 RPD, 250K TPM
-# Note: All 4 GH Actions parallel runners share one API key, so real RPM is still
-# 15/min total (each runner processes a shard of URLs, so contention is minimal).
 GEMINI_MODELS = [
     "gemini-3.5-flash-lite",   # Model A (primary)
     "gemini-3.1-flash-lite",   # Model B (fallback)
@@ -39,7 +37,7 @@ GEMINI_MODELS = [
 RPM_LIMIT = 15          # Per-model per-minute limit
 RPD_LIMIT = 500         # Per-model per-day limit
 GEMINI_CHUNK_SIZE   = 50  # Max jobs per Gemini API call (prevents Payload Too Large)
-MAX_CHUNKS_PER_SITE = 4   # Max 4 chunks (200 jobs) per site to prevent single-company runner bottlenecks
+MAX_CHUNKS_PER_SITE = 4   # Max 4 chunks (200 jobs) per site to prevent runner bottlenecks
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -47,27 +45,10 @@ def get_target_urls():
     if not os.path.exists(URLS_FILE):
         return []
     
-    # Read all valid URLs
-    with open(URLS_FILE, 'r') as f:
-        raw_urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+    with open(URLS_FILE, 'r', encoding='utf-8') as f:
+        urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
     
-    # 1. Expand Pagination Templates
-    # Example: https://site.com/jobs?from=[PAGE_OFFSET:0:90:10]
-    urls = []
-    pattern = re.compile(r'\[PAGE_OFFSET:(\d+):(\d+):(\d+)\]')
-    for raw_url in raw_urls:
-        match = pattern.search(raw_url)
-        if match:
-            start = int(match.group(1))
-            end = int(match.group(2))
-            step = int(match.group(3))
-            if step <= 0: step = 10 # safety fallback
-            for offset in range(start, end + 1, step):
-                urls.append(pattern.sub(str(offset), raw_url))
-        else:
-            urls.append(raw_url)
-    
-    # 2. Modulo Sharding for GH Actions Matrix Scaling
+    # Modulo Sharding for GH Actions Matrix Scaling
     chunk_index = int(os.getenv("CHUNK_INDEX", "0"))
     total_chunks = int(os.getenv("TOTAL_CHUNKS", "1"))
     
@@ -78,38 +59,6 @@ def get_target_urls():
         
     return urls
 
-def clean_html(html):
-    """Strip scripts, styles, SVG, comments to cut token count ~80%."""
-    html = re.sub(r'<script.*?</script>', '', html, flags=re.DOTALL | re.IGNORECASE)
-    html = re.sub(r'<style.*?</style>',  '', html, flags=re.DOTALL | re.IGNORECASE)
-    html = re.sub(r'<svg.*?</svg>',      '', html, flags=re.DOTALL | re.IGNORECASE)
-    html = re.sub(r'<!--.*?-->',         '', html, flags=re.DOTALL)
-    return html
-
-def extract_text_and_links(html: str) -> str:
-    """Uses markdownify to convert HTML to Markdown, preserving structure and links while minimizing tokens."""
-    try:
-        import markdownify
-        from bs4 import BeautifulSoup
-        
-        # First clean up unnecessary elements that bloat the output
-        soup = BeautifulSoup(html, 'html.parser')
-        for element in soup(["script", "style", "noscript", "svg"]):
-            element.extract()
-            
-        clean_html_str = str(soup)
-        
-        # Convert to markdown: preserves headers (e.g. ### SOFTWARE ENGINEERING) and links [Job](url)
-        md = markdownify.markdownify(clean_html_str, heading_style="ATX")
-        
-        # Clean up excessive blank lines to save tokens
-        import re
-        md = re.sub(r'\n{3,}', '\n\n', md).strip()
-        
-        return md if md else clean_html(html)
-    except Exception as e:
-        print(f"  ⚠ Markdown conversion error: {e}. Falling back to cleaned HTML.")
-        return clean_html(html)
 
 # ── Dual-Model Pool ────────────────────────────────────────────────────────────
 class ModelPool:
@@ -152,7 +101,6 @@ class ModelPool:
         Instant failover on 429/503. Sleep only when both exhausted.
         Returns the response text or raises RuntimeError.
         """
-        # Build ordered list starting from current round-robin index
         ordered = [self.models[(self._current + i) % len(self.models)]
                    for i in range(len(self.models))]
         self._current = (self._current + 1) % len(self.models)
@@ -177,14 +125,13 @@ class ModelPool:
                     if '429' in err or 'Quota' in err or '503' in err:
                         print(f"  ⚠ [{model}] rate limited — trying next model instantly")
                         self._mark_limited(model)
-                        continue  # immediately try next model
+                        continue
                     else:
-                        raise  # non-rate-limit error: propagate up
+                        raise
 
             # Both models are exhausted — wait for minute to reset
             print(f"  ⏳ Both models rate limited. Sleeping 65s… (attempt {global_attempt+1}/{max_global_retries})")
             time.sleep(65)
-            # Reset tracking so we retry fresh
             for m in self.models:
                 self._stats[m]["minute_count"] = 0
                 self._stats[m]["minute_start"] = time.time()
@@ -200,35 +147,8 @@ def make_job_id(company: str, title: str, link: str) -> str:
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
-# ── Playwright ─────────────────────────────────────────────────────────────────
-def fetch_html_with_playwright(url: str) -> tuple[str, str, int, str | None]:
-    """
-    Returns (html, final_url, fetch_time_ms, error_message).
-    html is empty string on failure.
-    final_url tracks the redirected URL (e.g., jobs.company.com) so relative links resolve accurately.
-    """
-    print(f"  ↳ Fetching {url} …")
-    start = time.time()
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url, wait_until="domcontentloaded", timeout=45000)
-            time.sleep(3)
-            final_url = page.url or url
-            raw_html = page.content()
-            html = extract_text_and_links(raw_html)
-            browser.close()
-        elapsed = int((time.time() - start) * 1000)
-        return html, final_url, elapsed, None
-    except Exception as e:
-        elapsed = int((time.time() - start) * 1000)
-        return "", url, elapsed, str(e)
 
-# ── Gemini ─────────────────────────────────────────────────────────────────────
-# NOTE: We deliberately do NOT pass candidate skills/profile to this prompt.
-# The scraper's only job is to find genuine 0-experience openings — not to
-# match against a personal skill set. Skill-based filtering is not done here.
+# ── Gemini Extraction ──────────────────────────────────────────────────────────
 GEMINI_PROMPT_TEMPLATE = """
 You are a strict job-listing extractor. Your sole purpose is to identify
 genuine entry-level / no-experience-required tech job openings.
@@ -273,9 +193,10 @@ STRICT RULES — follow exactly:
    "title", "company_name", "location", "core_requirements", "link",
    "link_type", "category", "experience_verdict"
 
-   - "core_requirements": 1 short sentence summarizing the core tech stack, degree, or critical skills required. 
-                          Keep it extremely brief and factual (e.g., 'Python, React, and B.Tech in CS'). 
-                          Use empty string if the posting states nothing.
+   - "core_requirements": 1 short factual sentence listing the required tech stack, programming languages, 
+                          degree, or critical technical skills (e.g., 'Python, React, SQL, and B.Tech in CS'). 
+                          DO NOT include reasoning or explanations of the experience verdict here.
+                          Use empty string if the posting states no specific technical requirements.
    - All links must be absolute URLs.
    - If no valid jobs found → return []
    - IF the raw data appears to be a CAPTCHA, Cloudflare challenge, Access Denied, or a generic
@@ -287,7 +208,7 @@ RAW DATA TO EVALUATE:
 """
 
 def extract_jobs_with_gemini(raw_data: str, url: str, pool: ModelPool, base_url: str = "") -> list[dict]:
-    """Extract 0-experience jobs using Gemini. No personal profile is passed — purely experience-gated."""
+    """Extract 0-experience jobs using Gemini. Purely experience-gated."""
     if not GEMINI_API_KEY or not raw_data:
         return []
 
@@ -298,7 +219,6 @@ def extract_jobs_with_gemini(raw_data: str, url: str, pool: ModelPool, base_url:
         jobs = json.loads(text)
         if not isinstance(jobs, list):
             return []
-        # Defensive: only keep actual dicts
         jobs = [job for job in jobs if isinstance(job, dict)]
         resolve_url = base_url or url
         for job in jobs:
@@ -325,43 +245,8 @@ def extract_jobs_with_gemini(raw_data: str, url: str, pool: ModelPool, base_url:
         print(f"  ✗ Gemini error: {e}")
         return []
 
-def is_eligible_for_jobbuddy(job: dict) -> tuple[bool, str]:
-    """
-    Ensures jobs align with JobBuddy's mission: Indian candidates with Indian passports,
-    no pre-existing foreign visas.
-    Rejects:
-    1. US/UK Security Clearance, defense, or citizenship requirements.
-    2. Explicit 'No visa sponsorship' / 'Must be authorized without sponsorship' clauses.
-    3. Overseas student worker contract roles requiring local US campus enrollment.
-    """
-    text = (
-        str(job.get('title', '')) + ' ' +
-        str(job.get('location', '')) + ' ' +
-        str(job.get('core_requirements', '')) + ' ' +
-        str(job.get('requirements', ''))
-    ).lower()
-
-    # Clearance / Citizenship restriction
-    if any(k in text for k in ['security clearance', 'us citizen', 'uk government vetting', 'active clearance']):
-        return False, "Requires government/defense security clearance or citizenship"
-
-    # Explicit no-sponsorship clause
-    if any(k in text for k in [
-        'without sponsorship', 'no visa sponsorship', 'will not sponsor',
-        'not able to sponsor', 'permanent right to work in the uk',
-        'authorized to work in the u.k', 'must have right to work in the uk'
-    ]):
-        return False, "Explicitly states no visa sponsorship or local right to work required"
-
-    # Domestic student worker contract roles
-    if 'contract student worker' in text:
-        return False, "Domestic student worker contract requiring local US campus enrollment"
-
-    return True, "OK"
 
 # ── MongoDB ────────────────────────────────────────────────────────────────────
-# Singleton client — created once per process, reused across all 200+ URL iterations.
-# Prevents opening 400+ TCP connections per run.
 _mongo_client = None
 _mongo_db     = None
 
@@ -384,39 +269,29 @@ def create_indexes():
     """Ensure optimal indexes exist. Safe to call on every startup (idempotent)."""
     try:
         db = get_db()
-        # 1. Search/Filter Indexes
         db.jobs.create_index("job_id",      unique=True,  background=True)
-
         db.jobs.create_index("category",                 background=True)
         db.jobs.create_index("company_name",             background=True)
         db.jobs.create_index("ats_name",                 background=True)
         db.site_stats.create_index("url",                background=True)
-        
-        # 2. TTL Indexes (Auto-Deletion)
-        # Delete jobs 30 days (2592000s) after the scraper last saw them
         db.jobs.create_index("scraped_at", expireAfterSeconds=2592000, background=True)
-        # Delete site logs 14 days (1209600s) after they run
         db.site_stats.create_index("run_date", expireAfterSeconds=1209600, background=True)
-        
         print("  ✓ MongoDB indexes (with TTL) verified.")
     except Exception as e:
         print(f"  ⚠ Index creation warning: {e}")
 
 def slug_to_company(url: str) -> str:
-    """Best-effort company name from a URL or ATS API path."""
-    # Greenhouse: boards-api.greenhouse.io/v1/boards/figma/jobs -> Figma
+    """Best-effort company name from an ATS API URL or path."""
     m = re.search(r'/boards/([^/]+)/jobs', url)
     if m: return m.group(1).replace('-', ' ').title()
-    # Lever: api.lever.co/v0/postings/palantir -> Palantir
     m = re.search(r'/postings/([^/?]+)', url)
     if m: return m.group(1).replace('-', ' ').title()
-    # Ashby: api.ashbyhq.com/posting-api/job-board/linear -> Linear
     m = re.search(r'/job-board/([^/?]+)', url)
     if m: return m.group(1).replace('-', ' ').title()
-    # Generic careers subdomain: careers.stripe.com -> Stripe
-    m = re.search(r'(?:careers|jobs)\.([a-zA-Z0-9-]+)\.', url)
+    m = re.search(r'smartrecruiters\.com/(?:careers/|v1/companies/)?([^/?#]+)', url)
     if m: return m.group(1).replace('-', ' ').title()
-    # Fallback: grab the main domain name
+    m = re.search(r'https://([a-zA-Z0-9\-]+)\.[^/]+myworkdayjobs\.com', url)
+    if m: return m.group(1).replace('-', ' ').title()
     m = re.search(r'https?://(?:www\.)?([a-zA-Z0-9-]+)\.', url)
     if m: return m.group(1).replace('-', ' ').title()
     return ''
@@ -430,12 +305,15 @@ def upsert_jobs(jobs: list[dict], ats_name: str = '') -> int:
         db = get_db()
         collection = db.jobs
         for job in jobs:
+            ok, reason = is_eligible_for_jobbuddy(job)
+            if not ok:
+                continue
             company = job.get('company_name', '')
             title   = job.get('title', '')
             link    = job.get('link', '')
             job_id  = make_job_id(company, title, link)
             job['job_id']  = job_id
-            job['ats_name'] = ats_name  # store which system found this job
+            job['ats_name'] = ats_name
             result = collection.update_one(
                 {"job_id": job_id},
                 {
@@ -452,12 +330,11 @@ def upsert_jobs(jobs: list[dict], ats_name: str = '') -> int:
 
 def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
                       jobs: list[dict], error: str | None,
-                      ats_replacement_url: str | None = None,
-                      ats_name: str = 'Playwright',
+                      ats_name: str = 'ATS API',
                       jobs_seen: int = 0,
                       jobs_prefiltered: int = 0,
                       jobs_gemini_kept: int = 0):
-    """Write one rich performance record per URL visit to site_stats collection."""
+    """Write rich performance metrics per URL visit to site_stats collection."""
     if not MONGODB_URI:
         return
     link_types = {}
@@ -466,24 +343,18 @@ def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
         link_types[lt] = link_types.get(lt, 0) + 1
 
     stat = {
-        # ── Core ──────────────────────────────────────────────────
         "url":                  url,
         "company_name":         slug_to_company(url),
         "ats_name":             ats_name,
         "run_date":             now_iso(),
-        # ── Fetch ─────────────────────────────────────────────────
         "fetch_success":        fetch_success,
         "fetch_time_ms":        fetch_time_ms,
-        # ── Job Funnel (store all, analyze later) ─────────────────
-        "jobs_seen":            jobs_seen,           # raw API/page count
-        "jobs_prefiltered":     jobs_prefiltered,    # after pre_filter_jobs()
-        "jobs_gemini_kept":     jobs_gemini_kept,    # after Gemini strict check
+        "jobs_seen":            jobs_seen,
+        "jobs_prefiltered":     jobs_prefiltered,
+        "jobs_gemini_kept":     jobs_gemini_kept,
         "quality_jobs_saved":   len(jobs),
-        # ── Quality breakdown ─────────────────────────────────────
         "link_types":           link_types,
-        # ── Diagnostics ───────────────────────────────────────────
         "error":                error,
-        "ats_replacement_url":  ats_replacement_url,
     }
     try:
         db = get_db()
@@ -491,163 +362,82 @@ def record_site_stats(url: str, fetch_success: bool, fetch_time_ms: int,
     except Exception as e:
         print(f"  ⚠ Could not write site_stats: {e}")
 
-# ── Main ───────────────────────────────────────────────────────────────────────
+
+# ── Main Engine ────────────────────────────────────────────────────────────────
 def main():
     print("═" * 60)
-    print("  JobBuddy Scraper v3 — Starting")
+    print("  JobBuddy Scraper v3 — High-Speed ATS Engine Starting")
     print("═" * 60)
 
-    # ── Guard: fail fast if required secrets are missing ──────────────
     if not GEMINI_API_KEY:
-        print("  ✗ FATAL: GEMINI_API_KEY is not set. Add it to .env or GitHub Secrets.")
+        print("  ✗ FATAL: GEMINI_API_KEY is not set.")
         return
     if not MONGODB_URI:
-        print("  ✗ FATAL: MONGODB_URI is not set. Add it to .env or GitHub Secrets.")
+        print("  ✗ FATAL: MONGODB_URI is not set.")
         return
-
-    # Profile text is no longer sent to Gemini — the scraper is purely experience-gated.
-    # Skill matching was removed. profile.txt is kept as a reference only.
 
     urls = get_target_urls()
     print(f"  Loaded {len(urls)} target URLs.")
     print(f"  Models: {GEMINI_MODELS[0]} (primary) + {GEMINI_MODELS[1]} (fallback)")
-    print(f"  Rate limits: {RPM_LIMIT} RPM · {RPD_LIMIT} RPD per model (shared API key)\n")
+    print(f"  Rate limits: {RPM_LIMIT} RPM · {RPD_LIMIT} RPD per model\n")
 
-    create_indexes()  # Ensure DB indexes exist (idempotent)
+    create_indexes()
     pool = ModelPool(api_key=GEMINI_API_KEY, models=GEMINI_MODELS)
     total_jobs_saved = 0
     start_time = time.time()
-    MAX_RUNTIME_SECONDS = 80 * 60  # 80 minutes fail-safe (leaves 10 min buffer before 90m hard timeout)
+    MAX_RUNTIME_SECONDS = 80 * 60
 
     for i, url in enumerate(urls, 1):
         if time.time() - start_time > MAX_RUNTIME_SECONDS:
-            print("  [FAIL-SAFE] Approaching global time limit (80 minutes). Shutting down gracefully to prevent GitHub Actions cancellation...")
+            print("  [FAIL-SAFE] Approaching time limit (80m). Shutting down gracefully...")
             break
             
         print(f"\n[{i}/{len(urls)}] {url}")
-        api_link          = None   # Reset per-URL to prevent leak across iterations
-        jobs_seen         = 0      # Raw count from ATS API
-        filtered          = []     # Pre-filtered list
-        detected_is_api   = False  # Set to True if auto-detected mid-Playwright
-        detected_ats_name = 'Playwright'
 
-        # 1. ATS API ROUTER (The fast/safe path)
-        is_api, api_jobs, ats_name = safe_ats.process_ats_url(url)
+        # 1. ATS API ROUTER
+        is_api, api_jobs, ats_name = process_ats_url(url)
         
-        if is_api:
-            print(f"  ⚡ ATS Detected: {ats_name} API (bypassing Playwright)")
-            start = time.time()
-            jobs_seen = len(api_jobs)
-            if not api_jobs:
-                print(f"  → 0 total open roles found via {ats_name} API.")
-                record_site_stats(url, True, int((time.time()-start)*1000), [], None,
-                                  ats_name=ats_name, jobs_seen=0)
-                continue
-                
-            filtered = safe_ats.pre_filter_jobs(api_jobs)
-            print(f"  → API returned {jobs_seen} jobs. Pre-filtered to {len(filtered)} tech/junior roles.")
+        if not is_api:
+            print(f"  ⚠ Unsupported URL format (no ATS router matched): {url}")
+            record_site_stats(url, False, 0, [], "Unsupported URL format - no ATS API matched", ats_name="Unknown")
+            continue
+
+        print(f"  ⚡ ATS: {ats_name} API")
+        fetch_start = time.time()
+        jobs_seen = len(api_jobs)
+        
+        if not api_jobs:
+            print(f"  → 0 total open roles found via {ats_name} API.")
+            record_site_stats(url, True, int((time.time() - fetch_start) * 1000), [], None,
+                              ats_name=ats_name, jobs_seen=0)
+            continue
             
-            if not filtered:
-                record_site_stats(url, True, int((time.time()-start)*1000), [], None,
-                                  ats_name=ats_name, jobs_seen=jobs_seen, jobs_prefiltered=0)
-                continue
-                
-            # Send the JSON shortlist to Gemini for strict experience-level checking (CHUNKED)
-            jobs = []
-            chunks_processed = 0
-            for j in range(0, len(filtered), GEMINI_CHUNK_SIZE):
-                if chunks_processed >= MAX_CHUNKS_PER_SITE:
-                    print(f"  ℹ Reached max evaluation cap ({MAX_CHUNKS_PER_SITE * GEMINI_CHUNK_SIZE} jobs) for this site.")
-                    break
-                chunk = filtered[j:j + GEMINI_CHUNK_SIZE]
-                raw_data_for_gemini = json.dumps(chunk, indent=2)
-                chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, url, pool)
-                jobs.extend(chunk_jobs)
-                chunks_processed += 1
-            fetch_time_ms = int((time.time()-start)*1000)
+        filtered = pre_filter_jobs(api_jobs)
+        fetch_time_ms = int((time.time() - fetch_start) * 1000)
+        print(f"  → Fetched {jobs_seen} jobs in {fetch_time_ms}ms. Pre-filtered to {len(filtered)} tech/junior candidates.")
+        
+        if not filtered:
+            record_site_stats(url, True, fetch_time_ms, [], None,
+                              ats_name=ats_name, jobs_seen=jobs_seen, jobs_prefiltered=0)
+            continue
+            
+        # 2. Strict Experience Evaluation with Gemini (Chunked)
+        jobs = []
+        chunks_processed = 0
+        for j in range(0, len(filtered), GEMINI_CHUNK_SIZE):
+            if chunks_processed >= MAX_CHUNKS_PER_SITE:
+                print(f"  ℹ Reached max evaluation cap ({MAX_CHUNKS_PER_SITE * GEMINI_CHUNK_SIZE} jobs) for this site.")
+                break
+            chunk = filtered[j:j + GEMINI_CHUNK_SIZE]
+            raw_data_for_gemini = json.dumps(chunk, indent=2)
+            chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, url, pool)
+            jobs.extend(chunk_jobs)
+            chunks_processed += 1
 
-        # 2. PLAYWRIGHT FALLBACK (The safe HTML path)
-        else:
-            html, final_url, fetch_time_ms, fetch_error = fetch_html_with_playwright(url)
-            fetch_success = bool(html and not fetch_error)
-
-            if not fetch_success:
-                print(f"  ✗ Fetch failed ({fetch_time_ms}ms): {fetch_error}")
-                record_site_stats(url, False, fetch_time_ms, [], fetch_error)
-                time.sleep(2)
-                continue
-
-            # ATS Auto-Detection
-            detected_is_api, detected_api_jobs, detected_ats_name = safe_ats.process_html_for_ats(html)
-            if detected_is_api:
-                print(f"  ⚡ Auto-Detected {detected_ats_name} inside webpage! Switching to API.")
-                
-                # Derive the replacement API link from the detected slug in the HTML
-                if detected_ats_name == "Greenhouse" and safe_ats.extract_slug(url, "greenhouse"):
-                    api_link = f"https://boards.greenhouse.io/{safe_ats.extract_slug(url, 'greenhouse')}"
-                elif detected_ats_name == "Lever" and safe_ats.extract_slug(url, "lever"):
-                    api_link = f"https://jobs.lever.co/{safe_ats.extract_slug(url, 'lever')}"
-                elif detected_ats_name == "Workday" and safe_ats.extract_workday_params(url):
-                    _, domain, site = safe_ats.extract_workday_params(url)
-                    api_link = f"https://{domain}/en-US/{site}"
-                elif detected_ats_name == "MyNextHire":
-                    match = re.search(r'https://([^/]+\.mynexthire\.com)', url)
-                    if match:
-                        api_link = f"https://{match.group(1)}/employer/jobs/careers"
-                elif detected_api_jobs:
-                    # Last resort: try extracting slug from the first job's link
-                    sample_link = detected_api_jobs[0].get('link', '')
-                    if detected_ats_name == "Workday":
-                        params = safe_ats.extract_workday_params(sample_link)
-                        if params:
-                            _, domain, site = params
-                            api_link = f"https://{domain}/en-US/{site}"
-                    elif detected_ats_name == "MyNextHire":
-                        match = re.search(r'https://([^/]+\.mynexthire\.com)', sample_link)
-                        if match:
-                            api_link = f"https://{match.group(1)}/employer/jobs/careers"
-                    else:
-                        slug = safe_ats.extract_slug(sample_link, detected_ats_name.lower())
-                        if slug:
-                            api_link = f"https://boards.greenhouse.io/{slug}" if detected_ats_name == "Greenhouse" else f"https://jobs.lever.co/{slug}"
-
-                # Log ATS replacement recommendation to a file inside scraper/
-                log_path = os.path.join(os.path.dirname(__file__), "ats_replacements.log")
-                with open(log_path, "a") as f:
-                    if api_link:
-                         f.write(f"[{now_iso()}] {detected_ats_name} Detected: REPLACE {url} WITH {api_link}\n")
-                    else:
-                         f.write(f"[{now_iso()}] {detected_ats_name} Detected: Consider replacing {url} with direct ATS link in urls.txt for faster runs.\n")
-                
-                jobs_seen = len(detected_api_jobs)
-                filtered = safe_ats.pre_filter_jobs(detected_api_jobs)
-                print(f"  → {detected_ats_name} API returned {len(detected_api_jobs)} jobs. Pre-filtered to {len(filtered)} roles.")
-                
-                if not filtered:
-                    record_site_stats(url, True, fetch_time_ms, [], None, ats_replacement_url=api_link,
-                                      ats_name=detected_ats_name, jobs_seen=jobs_seen, jobs_prefiltered=0, jobs_gemini_kept=0)
-                    continue
-                
-                jobs = []
-                chunks_processed = 0
-                for j in range(0, len(filtered), GEMINI_CHUNK_SIZE):
-                    if chunks_processed >= MAX_CHUNKS_PER_SITE:
-                        print(f"  ℹ Reached max evaluation cap ({MAX_CHUNKS_PER_SITE * GEMINI_CHUNK_SIZE} jobs) for this site.")
-                        break
-                    chunk = filtered[j:j + GEMINI_CHUNK_SIZE]
-                    raw_data_for_gemini = json.dumps(chunk, indent=2)
-                    chunk_jobs = extract_jobs_with_gemini(raw_data_for_gemini, url, pool)
-                    jobs.extend(chunk_jobs)
-                    chunks_processed += 1
-            else:
-                jobs = extract_jobs_with_gemini(html, url, pool, base_url=final_url)
-
-        # 3. SAVE RESULTS
-        # Filter out any error_type sentinel objects that may have leaked through from any chunk
+        # 3. Deterministic Eligibility Gate & Save
         error_jobs = [j for j in jobs if "error_type" in j]
         real_jobs  = [j for j in jobs if "error_type" not in j]
 
-        # Apply deterministic JobBuddy eligibility filter (citizenship/clearance/no-sponsorship)
         eligible_jobs = []
         for rj in real_jobs:
             ok, reason = is_eligible_for_jobbuddy(rj)
@@ -655,35 +445,29 @@ def main():
                 eligible_jobs.append(rj)
             else:
                 print(f"  ⊘ Filtered out '{rj.get('title')}' ({rj.get('location')}): {reason}")
-        real_jobs = eligible_jobs
+
+        jobs_gemini_kept = len(real_jobs)
         
-        # Compute funnel counts for stats
-        _jobs_seen        = jobs_seen if (is_api or detected_is_api) else 0
-        _jobs_prefiltered = len(filtered) if ((is_api or detected_is_api) and filtered) else 0
-        _jobs_gemini_kept = len([j for j in jobs if "error_type" not in j])
-        _final_ats        = ats_name if is_api else (detected_ats_name if detected_is_api else 'Playwright')
-
-        if error_jobs and not real_jobs:
+        if error_jobs and not eligible_jobs:
             issue = error_jobs[0].get("error_type")
-            print(f"  ⚠ Gemini detected site issue: {issue}")
-            record_site_stats(url, True, fetch_time_ms, [], error=f"Gemini Analysis: {issue}",
-                              ats_replacement_url=api_link, ats_name=_final_ats,
-                              jobs_seen=_jobs_seen, jobs_prefiltered=_jobs_prefiltered, jobs_gemini_kept=0)
-        elif not real_jobs:
-            print(f"  → 0 valid jobs extracted (post-Gemini)")
-            record_site_stats(url, True, fetch_time_ms, [], None, ats_replacement_url=api_link,
-                              ats_name=_final_ats, jobs_seen=_jobs_seen,
-                              jobs_prefiltered=_jobs_prefiltered, jobs_gemini_kept=0)
+            print(f"  ⚠ Gemini returned site error: {issue}")
+            record_site_stats(url, True, fetch_time_ms, [], error=f"Gemini: {issue}",
+                              ats_name=ats_name, jobs_seen=jobs_seen,
+                              jobs_prefiltered=len(filtered), jobs_gemini_kept=0)
+        elif not eligible_jobs:
+            print(f"  → 0 valid 0-experience jobs extracted (post-Gemini)")
+            record_site_stats(url, True, fetch_time_ms, [], None,
+                              ats_name=ats_name, jobs_seen=jobs_seen,
+                              jobs_prefiltered=len(filtered), jobs_gemini_kept=0)
         else:
-            saved = upsert_jobs(real_jobs, ats_name=_final_ats)
+            saved = upsert_jobs(eligible_jobs, ats_name=ats_name)
             total_jobs_saved += saved
-            print(f"  ✓ {len(real_jobs)} jobs extracted, {saved} upserted to DB")
-            record_site_stats(url, True, fetch_time_ms, real_jobs, None, ats_replacement_url=api_link,
-                              ats_name=_final_ats, jobs_seen=_jobs_seen,
-                              jobs_prefiltered=_jobs_prefiltered, jobs_gemini_kept=_jobs_gemini_kept)
+            print(f"  ✓ {len(eligible_jobs)} jobs eligible, {saved} upserted to DB")
+            record_site_stats(url, True, fetch_time_ms, eligible_jobs, None,
+                              ats_name=ats_name, jobs_seen=jobs_seen,
+                              jobs_prefiltered=len(filtered), jobs_gemini_kept=jobs_gemini_kept)
 
-        # Shorter delay now that we have 2x rate limit headroom
-        time.sleep(6)
+        time.sleep(3)
 
     print(f"\n{'═'*60}")
     print(f"  Run complete. {total_jobs_saved} total jobs saved/updated.")

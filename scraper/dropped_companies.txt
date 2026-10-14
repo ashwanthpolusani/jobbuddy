@@ -114,3 +114,122 @@ Reason: Local "Práctica Profesional" internships requiring local university enr
 
 [Zoox] | Region: US Only | https://api.lever.co/v0/postings/zoox
 Reason: All early career roles are part-time "Contract Student Worker" positions requiring active US college enrollment under F-1 CPT/OPT.
+
+# ==============================================================================
+# Strictly Ineligible for Indian Freshers (No India Roles, No Visa, No Remote)
+# ==============================================================================
+# Pruned to ensure 100% genuine relevance for Indian B.Tech freshers (0 exp).
+
+[Palantir] | Region: US & UK (Defense/Government) | https://api.lever.co/v0/postings/palantir
+Reason: 40%+ defense/government clearance roles (US/UK Citizen only). 0 India roles, 0 worldwide remote. 0 direct overseas visa sponsorship for Indian fresh graduates.
+
+[Sezzle] | Region: Latin America Regional Only | https://boards-api.greenhouse.io/v1/boards/sezzle/jobs
+Reason: All remote internships are region-locked to Latin America (Brazil/Colombia/Peru/Mexico/Argentina). 0 India roles, 0 visa sponsorship.
+
+[Lyft] | Region: US & Canada Only | https://boards-api.greenhouse.io/v1/boards/lyft/jobs
+Reason: Internships strictly require pre-existing US (F-1 CPT) or Canadian university student status. 0 India roles, 0 direct international intern visas.
+
+[Epic Games] | Region: US (Cary, NC) & UK Only | https://boards-api.greenhouse.io/v1/boards/epicgames/jobs
+Reason: US internships strictly require pre-existing legal work authorization (F-1 CPT/OPT). 0 India roles, 0 foreign intern visas.
+
+[Binance] | Region: Global / APAC | https://boards-api.greenhouse.io/v1/boards/binance/jobs
+Reason: Binance Accelerator Program is a 3-6 month early career contract track with strictly 0 international visa sponsorship.
+
+[Databricks] | Region: US & Europe Only | https://boards-api.greenhouse.io/v1/boards/databricks/jobs
+Reason: Internships strictly require active university enrollment and work authorization in host countries (US, Germany, Denmark, Serbia). 0 India roles, 0 intern visas.
+
+[Adobe] | Region: US Only | https://boards-api.greenhouse.io/v1/boards/adobe/jobs
+Reason: Workday early-career roles require active US university enrollment (F-1 CPT/OPT). 0 international visa sponsorship.
+
+[Figma] | Region: US & UK Only | https://boards-api.greenhouse.io/v1/boards/figma/jobs
+Reason: Early-career engineering roles require existing domestic work authorization in SF/NY/London. 0 India roles, 0 visas.
+
+[Datadog] | Region: US & Europe Only | https://boards-api.greenhouse.io/v1/boards/datadog/jobs
+Reason: Requires domestic university enrollment/work rights in US/Spain/France. 0 India roles, 0 visas.
+
+[Coinbase] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/coinbase/jobs
+Reason: All early talent postings strictly require permanent US work authorization. 0 international visa sponsorship.
+
+[Roblox] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/roblox/jobs
+Reason: San Mateo, CA headquarters only. Requires pre-existing US work authorization (CPT/OPT). 0 international intern visas.
+
+[Ramp] | Region: US Domestic Only | https://api.ashbyhq.com/posting-api/job-board/ramp
+Reason: New York HQ internships require active US college enrollment under F-1 CPT. 0 international visa sponsorship.
+
+[Gemini] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/gemini/jobs
+Reason: Crypto exchange openings require US domestic work authorization with no visa sponsorship.
+
+[Carvana] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/carvana/jobs
+Reason: Tempe, AZ roles require existing US work authorization. 0 international sponsorship.
+
+[Kodiak Robotics] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/kodiak/jobs
+Reason: Autonomous trucking requiring US work authorization / ITAR clearance. 0 international visas.
+
+[Brex] | Region: Brazil Regional Only | https://boards-api.greenhouse.io/v1/boards/brex/jobs
+Reason: São Paulo local financial underwriting requiring Brazilian residency and fluent Portuguese.
+
+[Airbnb] | Region: Brazil Regional Only | https://boards-api.greenhouse.io/v1/boards/airbnb/jobs
+Reason: São Paulo local mobile engineering requiring Brazilian domestic work rights.
+
+[Careem] | Region: Pakistan Regional Only | https://boards-api.greenhouse.io/v1/boards/careem/jobs
+Reason: NextGen engineering program strictly based in Karachi/Lahore requiring local work rights.
+
+[DiDi Autonomous Driving] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/didi/jobs
+Reason: San Jose, CA AV engineering requiring US work authorization.
+
+[Deliveroo] | Region: UK Regional Only | https://boards-api.greenhouse.io/v1/boards/deliveroo/jobs
+Reason: London domestic roles requiring permanent right to work in the UK.
+
+[Payoneer] | Region: China Regional Only | https://boards-api.greenhouse.io/v1/boards/payoneer/jobs
+Reason: Shanghai local office requiring permanent Chinese work authorization and Mandarin.
+
+[Slice] | Region: UK Regional Only | https://boards-api.greenhouse.io/v1/boards/slice/jobs
+Reason: UK domestic pizza SaaS roles requiring UK right to work.
+
+[Workato] | Region: Singapore Regional Only | https://boards-api.greenhouse.io/v1/boards/workato/jobs
+Reason: Singapore intern roles require Singapore citizen/PR or local university student pass.
+
+[Commvault] | Region: South Korea Regional Only | https://boards-api.greenhouse.io/v1/boards/commvault/jobs
+Reason: Seoul domestic office requiring Korean residency and work authorization.
+
+[trivago] | Region: Germany Regional Only | https://boards-api.greenhouse.io/v1/boards/trivago/jobs
+Reason: Working Student roles in Düsseldorf legally require enrollment in a German accredited university.
+
+[CLEAR] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/clear/jobs
+Reason: Airport biometric security contractor requiring US security clearance / US citizenship.
+
+[N26] | Region: Europe Regional Only | https://boards-api.greenhouse.io/v1/boards/n26/jobs
+Reason: Berlin/Barcelona fintech roles requiring existing EU work authorization.
+
+[Vercel] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/vercel/jobs
+Reason: San Francisco hybrid engineering requiring US work authorization.
+
+[Notion] | Region: US Domestic Only | https://api.ashbyhq.com/posting-api/job-board/notion
+Reason: San Francisco early-career roles require permanent US work authorization. 0 international visa sponsorship.
+
+[Trainline] | Region: UK Regional Only | https://api.ashbyhq.com/posting-api/job-board/trainline
+Reason: London ML roles require pre-existing UK right to work. No foreign intern visa sponsorship.
+
+[Snowflake] | Region: US/Europe/Japan Domestic Only | https://api.ashbyhq.com/posting-api/job-board/snowflake
+Reason: Internships require local university student enrollment in Germany, Switzerland, Japan, or US. 0 international visas.
+
+[Elastic] | Region: Europe Regional Only | https://boards-api.greenhouse.io/v1/boards/elastic/jobs
+Reason: Greece, Spain, Portugal local roles requiring existing EU residency and tax status.
+
+[HighRadius] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/highradius/jobs
+Reason: Houston, TX Forward Deployed Engineer requiring US domestic work authorization.
+
+[Xero] | Region: Canada Regional Remote Only | https://api.ashbyhq.com/posting-api/job-board/xero
+Reason: All remote roles are strictly locked to Canadian residents (Alberta Remote Worker) with Canadian tax status.
+
+[Revenue Analytics] | Region: US Regional Remote Only | https://api.lever.co/v0/postings/revenueanalytics
+Reason: Remote roles strictly locked to US Eastern Time Zone with US work authorization.
+
+[Fivetran] | Region: Costa Rica Regional Remote Only | https://boards-api.greenhouse.io/v1/boards/fivetran/jobs
+Reason: Remote analytics roles strictly locked to Costa Rica (CRI Remote).
+
+[Talkspace] | Region: US Domestic Only | https://boards-api.greenhouse.io/v1/boards/talkspace/jobs
+Reason: US clinical telehealth network requiring US medical/technical licensure and US residency.
+
+[Cloudflare] | Region: US/Europe Regional Only | https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs
+Reason: Internships require domestic student enrollment in Austin TX, London UK, or Lisbon PT. 0 international visas.

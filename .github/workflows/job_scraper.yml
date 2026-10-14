@@ -1,8 +1,7 @@
-name: Playwright Job Scraper
+name: Job Scraper & Stage 2 Pipeline
 
 on:
   schedule:
-    # Re-registered on 2026-10-14 to refresh GitHub Actions cron registration.
     # Runs at 08:30 IST (03:00 UTC) every day
     - cron: '0 3 * * *'
   workflow_dispatch: # Allows manual run
@@ -31,11 +30,6 @@ jobs:
           cd scraper
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Install Playwright Browsers
-        run: |
-          cd scraper
-          playwright install chromium
 
       - name: Run Stage 1 Scraper
         env:

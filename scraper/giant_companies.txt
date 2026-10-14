@@ -1,0 +1,87 @@
+# ==============================================================================
+# JobBuddy - Tech Giants & Custom Career Portals
+# Stored for Phase 2 / Dedicated Custom Scrapers
+# ==============================================================================
+# These companies are major global employers and tech giants that do not use
+# off-the-shelf ATS APIs (Greenhouse, Lever, Ashby, SmartRecruiters, Workday).
+# They use proprietary client-side JavaScript SPAs that require dedicated
+# Playwright extractors or reverse-engineered private internal search APIs.
+# ==============================================================================
+
+# ── 1. Big Tech & FAANG+ (Custom SPAs) ─────────────────────────────────────────
+https://aws.amazon.com/careers/
+https://careers.google.com/
+https://careers.microsoft.com/
+https://careers.oracle.com/
+https://careers.tiktok.com/
+https://jobs.apple.com/
+https://jobs.netflix.com/
+https://www.amazon.jobs/
+https://www.ibm.com/employment/
+https://www.metacareers.com/
+https://careers.twitter.com/
+https://github.com/about/careers
+https://jpmc.fa.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/requisitions?location=India
+https://www.sap.com/about/careers.html
+
+# ── 2. Enterprise IT & Consulting Giants (India Massive Hiring) ───────────────
+https://careers.cognizant.com/global-en/jobs/?page=[PAGE_OFFSET:1:5:1]
+https://careers.apac.bnpparibas/
+https://careers.techmahindra.com/
+https://careers.wipro.com/careers-home/jobs
+https://www.capgemini.com/in-en/careers/job-search/
+
+# ── 3. Consumer Electronics, Hardware & Telecom Giants ─────────────────────────
+https://www.philips.com/a-w/careers/healthtech/home.html
+https://global.sharp/corporate/careers/
+https://www.lg.com/us/about-lg/careers
+https://www.panasonic.com/global/corporate/careers.html
+https://www.samsung.com/in/about-us/careers/
+https://www.sony.co.in/careers
+https://www.webex.com/about/careers.html
+
+# ── 4. Major Tech SaaS & Custom Portal SPAs ───────────────────────────────────
+https://careersatdoordash.com/wp-content/themes/external-job-board/theme/get-jobs.php?ajax=1&spage=[PAGE_OFFSET:1:5:1]
+https://careers.servicenow.com/jobs/?page=[PAGE_OFFSET:1:5:1]#results
+https://careers.shopify.com/
+https://careers.snap.com/
+https://monday.com/careers
+https://www.lifeatspotify.com/
+https://www.splunk.com/en_us/careers.html
+https://www.zoho.com/careers/
+
+# ── 5. Other Corporate Career Landing Pages (HTML) ─────────────────────────────
+https://www.avaya.com/en/about-avaya/careers/
+https://www.barracuda.com/company/careers
+https://www.cyberark.com/careers/
+https://www.darktrace.com/careers/
+https://www.freshbooks.com/careers
+https://www.infor.com/about/careers
+https://www.jabra.com/about/careers
+https://www.mailchimp.com/jobs/
+https://www.mimecast.com/company/careers/
+https://www.ooma.com/company/careers/
+https://www.proofpoint.com/us/company/careers
+https://www.rapid7.com/company/careers/
+https://www.squarespace.com/about/careers
+https://www.tcl.com/global/en/about-tcl/careers
+https://www.trendmicro.com/en_us/about/careers.html
+https://www.varonis.com/careers/
+https://www.verisign.com/en_US/company-information/careers/index.xhtml
+https://www.wix.com/jobs/home
+https://www.8x8.com/about/careers
+https://www.bluehost.com/about/careers
+https://www.checkpoint.com/about-us/careers/
+https://www.constantcontact.com/about/careers
+https://www.epicor.com/en-us/about/careers/
+https://www.fireeye.com/company/careers.html
+https://www.hostgator.com/careers
+https://www.logitech.com/en-us/about/careers.html
+https://www.mailgun.com/about/careers/
+https://www.mitel.com/about/careers
+https://www.namecheap.com/careers/
+https://www.netsuite.com/portal/company/careers.shtml
+https://www.pinterestcareers.com/
+https://www.qualys.com/company/careers/
+https://www.rsa.com/en-us/company/careers
+https://www.sage.com/en-in/company/careers/
