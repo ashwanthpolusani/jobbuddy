@@ -2,84 +2,82 @@ name: Playwright Job Scraper
 
 on:
   schedule:
+    # Re-registered on 2026-10-14 to refresh GitHub Actions cron registration.
     # Runs at 08:30 IST (03:00 UTC) every day
     - cron: '0 3 * * *'
   workflow_dispatch: # Allows manual run
 
 jobs:
-  # ── Stage 1: Scrape & Store ─────────────────────────────────────────────────
   scrape-and-store:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
       matrix:
-        chunk: [0, 1, 2, 3] # Spawns 4 parallel runners
+        chunk: [0, 1, 2, 3]
       fail-fast: false
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
 
-    - name: Install dependencies
-      run: |
-        cd scraper
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        
-    - name: Install Playwright Browsers
-      run: |
-        cd scraper
-        playwright install chromium
+      - name: Install dependencies
+        run: |
+          cd scraper
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run Stage 1 Scraper
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        MONGODB_URI: ${{ secrets.MONGODB_URI }}
-        CHUNK_INDEX: ${{ matrix.chunk }}
-        TOTAL_CHUNKS: 4
-      run: |
-        cd scraper
-        python main.py
+      - name: Install Playwright Browsers
+        run: |
+          cd scraper
+          playwright install chromium
 
-  # ── Stage 2: Deep Resume Matching ───────────────────────────────────────────
-  # Runs after ALL Stage 1 chunks finish. Processes up to 150 new jobs per day.
+      - name: Run Stage 1 Scraper
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          CHUNK_INDEX: ${{ matrix.chunk }}
+          TOTAL_CHUNKS: 4
+        run: |
+          cd scraper
+          python main.py
+
   deep-match:
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: scrape-and-store   # Wait for all 4 Stage 1 chunks to complete
-    if: always()              # Run even if some Stage 1 chunks failed
+    needs: scrape-and-store
+    if: always()
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
 
-    - name: Install dependencies
-      run: |
-        cd scraper
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          cd scraper
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Install Playwright Browsers
-      run: |
-        cd scraper
-        playwright install chromium
+      - name: Install Playwright Browsers
+        run: |
+          cd scraper
+          playwright install chromium
 
-    - name: Run Stage 2 Deep Matcher
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        MONGODB_URI: ${{ secrets.MONGODB_URI }}
-      run: |
-        cd scraper
-        python stage2.py
+      - name: Run Stage 2 Deep Matcher
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        run: |
+          cd scraper
+          python stage2.py
