@@ -436,6 +436,90 @@ NO_SPONSOR_REGEX = re.compile(
     re.IGNORECASE
 )
 
+# ── Classification Rules (Link Type & Category) ───────────────────────────────
+
+PROGRAM_PORTAL_REGEX = re.compile(
+    r'\b(?:program|cohort|talent network|talent community|emerging talent|university interns?|campus recruitment|campus hiring|fresher portal|career opportunities|entry-level careers|early talent|graduate program|internship program|leadership development|rotational program|student careers)\b',
+    re.IGNORECASE
+)
+
+DATA_ML_REGEX = re.compile(
+    r'\b(?:data|machine learning|ml|ai|artificial intelligence|deep learning|analytics|analyst|data scientist|data science|bi analyst|business intelligence|mle|nlp|computer vision|llm|gen ai|data engineer)\b',
+    re.IGNORECASE
+)
+
+DEVOPS_CLOUD_REGEX = re.compile(
+    r'\b(?:devops|cloud|sre|site reliability|infrastructure|platform|aws|azure|gcp|kubernetes|docker|sysadmin|systems administrator|network engineer)\b',
+    re.IGNORECASE
+)
+
+CYBERSECURITY_REGEX = re.compile(
+    r'\b(?:security|cyber|infosec|information security|soc|vulnerability|penetration|pentest|iam|threat|incident response)\b',
+    re.IGNORECASE
+)
+
+PRODUCT_DESIGN_REGEX = re.compile(
+    r'\b(?:product manager|associate product manager|\bapm\b|product design|ux designer|ui designer|ui/ux|user experience|user interface|interaction design|graphic design|\bdesigner\b|game design)\b',
+    re.IGNORECASE
+)
+
+SWE_REGEX = re.compile(
+    r'\b(?:software|developer|engineer|engineering|sde|swe|sdet|frontend|front-end|backend|back-end|fullstack|full-stack|web|android|ios|mobile|qa|quality assurance|test|testing|tester|automation|programmer|coding|coder|firmware|embedded|systems engineer|java|python|c\+\+|react|node|golang)\b',
+    re.IGNORECASE
+)
+
+VALID_CATEGORIES = {
+    'software_engineering',
+    'data_ml',
+    'devops_cloud',
+    'cybersecurity',
+    'product_design',
+    'other'
+}
+
+def normalize_job_classification(job: dict) -> dict:
+    """
+    Deterministically normalizes link_type and category on the scraper side
+    before jobs are saved to MongoDB.
+
+    1. Programs, cohorts, talent networks, university portals -> 'filtered_list' (Fresher Portals)
+       Individual vacancies -> 'direct_apply'
+    2. 'early_careers' is eliminated; maps to functional technical tracks:
+       software_engineering | data_ml | devops_cloud | cybersecurity | product_design | other
+    """
+    title = str(job.get('title', '') or '')
+    link = str(job.get('link', '') or '')
+    reqs = str(job.get('core_requirements', '') or '')
+
+    # 1. Deterministic Link Type Partition
+    if PROGRAM_PORTAL_REGEX.search(title) or PROGRAM_PORTAL_REGEX.search(link):
+        job['link_type'] = 'filtered_list'
+    elif job.get('link_type') in ('filtered_list', 'career_homepage'):
+        job['link_type'] = 'filtered_list'
+    else:
+        job['link_type'] = 'direct_apply'
+
+    # 2. Deterministic Technical Category Partition
+    cat = str(job.get('category', '') or '').strip().lower()
+
+    if cat not in VALID_CATEGORIES or cat == 'early_careers' or cat == 'other':
+        if CYBERSECURITY_REGEX.search(title) or CYBERSECURITY_REGEX.search(reqs):
+            job['category'] = 'cybersecurity'
+        elif DEVOPS_CLOUD_REGEX.search(title) or DEVOPS_CLOUD_REGEX.search(reqs):
+            job['category'] = 'devops_cloud'
+        elif DATA_ML_REGEX.search(title) or DATA_ML_REGEX.search(reqs):
+            job['category'] = 'data_ml'
+        elif PRODUCT_DESIGN_REGEX.search(title) or PRODUCT_DESIGN_REGEX.search(reqs):
+            job['category'] = 'product_design'
+        elif SWE_REGEX.search(title) or SWE_REGEX.search(reqs):
+            job['category'] = 'software_engineering'
+        else:
+            job['category'] = 'other'
+    else:
+        job['category'] = cat
+
+    return job
+
 def is_eligible_for_jobbuddy(job: dict) -> tuple[bool, str]:
     """
     Ensures jobs align with JobBuddy's mission: Indian candidates with Indian passports,
