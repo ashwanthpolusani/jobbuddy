@@ -181,11 +181,19 @@ STRICT RULES — follow exactly:
                   (e.g., title is "Junior Developer" with no stated requirements)
 
 5. For each valid job, determine link_type:
-   - "direct_apply":   URL leads directly to one specific job application form
-   - "filtered_list":  URL leads to a pre-filtered list (e.g., by city, department, or team)
+   - "direct_apply":  URL leads directly to ONE specific individual job requisition (e.g. 'Associate Software Engineer', 'Junior QA Analyst').
+   - "filtered_list": URL leads to a company program, university cohort, talent network, or early-careers portal (e.g. 'Emerging Talent Program', 'Graduate Cohort', 'Campus Hiring 2026', 'Early Talent Program', or pre-filtered listings page).
 
 6. Assign category (pick ONE):
-   software_engineering | data_ml | devops_cloud | cybersecurity | early_careers | product_design | other
+   software_engineering | data_ml | devops_cloud | cybersecurity | product_design | other
+   CRITICAL: Do NOT assign 'early_careers' — all jobs on JobBuddy are already early careers!
+   Always categorize by the functional technical discipline:
+   - 'Software Engineer Intern' or 'QA Trainee' -> software_engineering
+   - 'Data Analyst Intern' or 'AI Trainee' -> data_ml
+   - 'Cloud Associate' or 'SRE Trainee' -> devops_cloud
+   - 'Security Analyst Intern' -> cybersecurity
+   - 'Product Design Intern' or 'UI/UX Trainee' -> product_design
+   - General company portals/programs with no single tech focus -> other
 
 7. Extract company_name accurately.
 
@@ -221,13 +229,46 @@ def extract_jobs_with_gemini(raw_data: str, url: str, pool: ModelPool, base_url:
             return []
         jobs = [job for job in jobs if isinstance(job, dict)]
         resolve_url = base_url or url
+
+        program_keywords = re.compile(
+            r'\b(?:program|cohort|talent network|emerging talent|university interns|campus recruitment|fresher portal|career opportunities|entry-level careers|early talent)\b',
+            re.IGNORECASE
+        )
+
         for job in jobs:
             job['source_url'] = url
             job['scraped_at'] = now_iso()
             if not job.get('company_name'):
                 job['company_name'] = slug_to_company(url)
-            job.setdefault('link_type', 'direct_apply')
-            job.setdefault('category', 'other')
+
+            title = job.get('title', '')
+            link = job.get('link', '')
+
+            # Deterministic portal classification: programs & cohorts belong in filtered_list
+            if program_keywords.search(title) or program_keywords.search(link):
+                job['link_type'] = 'filtered_list'
+            else:
+                job.setdefault('link_type', 'direct_apply')
+
+            # Ensure early_careers is never set as a category
+            cat = job.get('category', 'other')
+            if cat == 'early_careers':
+                t_low = title.lower()
+                if re.search(r'\b(?:software|developer|engineer|sde|swe|coding|frontend|backend|fullstack|android|ios|qa|test|tester)\b', t_low):
+                    job['category'] = 'software_engineering'
+                elif re.search(r'\b(?:data|ml|ai|machine learning|analyst|analytics|gen ai|nlp)\b', t_low):
+                    job['category'] = 'data_ml'
+                elif re.search(r'\b(?:devops|cloud|sre|infrastructure|platform|aws|azure)\b', t_low):
+                    job['category'] = 'devops_cloud'
+                elif re.search(r'\b(?:security|cyber|infosec|soc)\b', t_low):
+                    job['category'] = 'cybersecurity'
+                elif re.search(r'\b(?:design|ux|ui|product|game design)\b', t_low):
+                    job['category'] = 'product_design'
+                else:
+                    job['category'] = 'other'
+            else:
+                job.setdefault('category', 'other')
+
             job.setdefault('experience_verdict', 'POSSIBLE')
             job.setdefault('core_requirements', '')
             job.setdefault('location', '')

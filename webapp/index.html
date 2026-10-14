@@ -161,17 +161,50 @@
         }
 
         /* ── CATEGORY TABS ────────────────────────────────────────── */
-        .cat-scroll-wrap {
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding: 0 0 12px;
-            border-bottom: 1px solid var(--border);
+        .cat-scroll-container {
+            position: relative;
             margin-bottom: 16px;
         }
 
+        .cat-scroll-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 6px;
+            width: 44px;
+            background: linear-gradient(to right, rgba(243, 242, 239, 0), var(--bg) 95%);
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+            z-index: 2;
+        }
+
+        .cat-scroll-container.is-at-end::after {
+            opacity: 0;
+        }
+
+        .cat-scroll-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            padding: 2px 0 10px;
+            border-bottom: 1px solid var(--border);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border2) transparent;
+        }
+
         .cat-scroll-wrap::-webkit-scrollbar {
-            display: none;
+            height: 3px;
+        }
+
+        .cat-scroll-wrap::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 3px;
+        }
+
+        .cat-scroll-wrap::-webkit-scrollbar-track {
+            background: transparent;
         }
 
         .cat-tabs {
@@ -264,25 +297,32 @@
         .filter-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 14px;
             align-items: center;
             padding-bottom: 14px;
             border-bottom: 1px solid var(--border);
         }
 
-        .filter-group {
-            display: flex;
+        .filter-group-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-pill-wrap {
+            display: inline-flex;
             align-items: center;
             gap: 4px;
+            flex-wrap: wrap;
         }
 
         .filter-label {
-            font-size: 0.63rem;
+            font-size: 0.65rem;
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--muted);
-            margin-right: 2px;
             user-select: none;
             white-space: nowrap;
         }
@@ -291,7 +331,6 @@
             width: 1px;
             height: 18px;
             background: var(--border2);
-            margin: 0 4px;
             flex-shrink: 0;
             align-self: center;
         }
@@ -352,11 +391,6 @@
             gap: 12px;
         }
 
-        .conf-filter-wrap {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
 
         .view-tabs {
             display: inline-flex;
@@ -749,21 +783,76 @@
             font-size: 0.87rem;
         }
 
-        .header-links {
-            display: flex;
-            gap: 16px;
-            align-items: center;
+        /* ── FOOTER ───────────────────────────────────────────────── */
+        .site-footer {
+            border-top: 1px solid var(--border);
+            margin-top: 48px;
+            padding: 32px 24px 44px;
+            background: var(--surface);
         }
 
-        .header-links a {
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .footer-brand {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.04em;
+        }
+
+        .footer-brand .accent {
+            color: var(--accent);
+        }
+
+        .footer-tagline {
+            font-size: 0.75rem;
+            color: var(--text2);
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-links a {
             font-size: 0.75rem;
             color: var(--text2);
             text-decoration: none;
             transition: color 0.15s;
         }
 
-        .header-links a:hover {
-            color: var(--text);
+        .footer-links a:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        .footer-sep {
+            color: var(--border2);
+            font-size: 0.75rem;
+        }
+
+        .footer-disclaimer {
+            max-width: 1200px;
+            margin: 16px auto 0;
+            font-size: 0.70rem;
+            color: var(--muted);
+            line-height: 1.5;
         }
 
         /* ── MOBILE ───────────────────────────────────────────────── */
@@ -799,14 +888,52 @@
                 padding-left: 0;
             }
 
-            .filter-label {
+            .filter-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .filter-divider {
                 display: none;
             }
 
-            .header-links {
-                margin-top: 10px;
+            .filter-group-item {
+                display: flex;
+                align-items: center;
                 width: 100%;
-                justify-content: flex-start;
+                gap: 10px;
+            }
+
+            .filter-label {
+                font-size: 0.65rem;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--muted);
+                min-width: 72px;
+                flex-shrink: 0;
+            }
+
+            .filter-pill-wrap {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                flex: 1;
+            }
+
+            .site-footer {
+                padding: 24px 16px 36px;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .footer-links {
+                gap: 10px;
             }
         }
 
@@ -852,10 +979,6 @@
                         <div class="header-sub">Daily tech jobs for freshers &middot; No experience required</div>
                     </div>
                 </a>
-                <nav class="header-links" aria-label="Legal links">
-                    <a href="/privacy.html">Privacy</a>
-                    <a href="/terms.html">Terms</a>
-                </nav>
             </div>
         </header>
 
@@ -899,24 +1022,24 @@
                     </div>
 
                     <!-- 2. Category tabs -->
-                    <div class="cat-scroll-wrap" id="cat-scroll-wrap">
-                        <div class="cat-tabs" id="cat-tabs" role="tablist" aria-label="Job categories">
-                            <button class="cat-btn active" data-cat="all" id="cat-all"
-                                onclick="setCat('all',this)">All</button>
-                            <button class="cat-btn" data-cat="software_engineering" id="cat-swe"
-                                onclick="setCat('software_engineering',this)">Software Eng</button>
-                            <button class="cat-btn" data-cat="data_ml" id="cat-dataml"
-                                onclick="setCat('data_ml',this)">Data / ML</button>
-                            <button class="cat-btn" data-cat="devops_cloud" id="cat-devops"
-                                onclick="setCat('devops_cloud',this)">DevOps</button>
-                            <button class="cat-btn" data-cat="cybersecurity" id="cat-cyber"
-                                onclick="setCat('cybersecurity',this)">Security</button>
-                            <button class="cat-btn" data-cat="early_careers" id="cat-early"
-                                onclick="setCat('early_careers',this)">Early Careers</button>
-                            <button class="cat-btn" data-cat="product_design" id="cat-product"
-                                onclick="setCat('product_design',this)">Product</button>
-                            <button class="cat-btn" data-cat="other" id="cat-other"
-                                onclick="setCat('other',this)">Other</button>
+                    <div class="cat-scroll-container" id="cat-scroll-container">
+                        <div class="cat-scroll-wrap" id="cat-scroll-wrap">
+                            <div class="cat-tabs" id="cat-tabs" role="tablist" aria-label="Job categories">
+                                <button class="cat-btn active" data-cat="all" id="cat-all"
+                                    onclick="setCat('all',this)">All</button>
+                                <button class="cat-btn" data-cat="software_engineering" id="cat-swe"
+                                    onclick="setCat('software_engineering',this)">Software Eng</button>
+                                <button class="cat-btn" data-cat="data_ml" id="cat-dataml"
+                                    onclick="setCat('data_ml',this)">Data / ML</button>
+                                <button class="cat-btn" data-cat="devops_cloud" id="cat-devops"
+                                    onclick="setCat('devops_cloud',this)">DevOps</button>
+                                <button class="cat-btn" data-cat="cybersecurity" id="cat-cyber"
+                                    onclick="setCat('cybersecurity',this)">Security</button>
+                                <button class="cat-btn" data-cat="product_design" id="cat-product"
+                                    onclick="setCat('product_design',this)">Product</button>
+                                <button class="cat-btn" data-cat="other" id="cat-other"
+                                    onclick="setCat('other',this)">Other Roles</button>
+                            </div>
                         </div>
                     </div>
 
@@ -934,21 +1057,28 @@
                         </div>
 
                         <div class="filter-row" id="filter-row">
-                            <span class="filter-label">Location</span>
-                            <button class="filt-btn active-blue" id="loc-all" onclick="setLoc('all',this)">All</button>
-                            <button class="filt-btn" id="loc-remote" onclick="setLoc('remote',this)">Remote</button>
-                            <button class="filt-btn" id="loc-india" onclick="setLoc('india',this)">India</button>
-                            <button class="filt-btn" id="loc-global" onclick="setLoc('global',this)">Global</button>
+                            <div class="filter-group-item">
+                                <span class="filter-label">Location</span>
+                                <div class="filter-pill-wrap">
+                                    <button class="filt-btn active-blue" id="loc-all" onclick="setLoc('all',this)">All</button>
+                                    <button class="filt-btn" id="loc-remote" onclick="setLoc('remote',this)">Remote</button>
+                                    <button class="filt-btn" id="loc-india" onclick="setLoc('india',this)">India</button>
+                                    <button class="filt-btn" id="loc-global" onclick="setLoc('global',this)">Global</button>
+                                </div>
+                            </div>
 
-                            <div class="conf-filter-wrap" id="conf-filter-wrap">
-                                <div class="filter-divider" aria-hidden="true"></div>
+                            <div class="filter-divider" aria-hidden="true"></div>
+
+                            <div class="filter-group-item" id="conf-filter-wrap">
                                 <span class="filter-label">Confidence</span>
-                                <button class="filt-btn active-blue" id="conf-all"
-                                    onclick="setConf('all',this)">All</button>
-                                <button class="filt-btn" id="conf-safe"
-                                    onclick="setConf('SAFE',this)">Confirmed</button>
-                                <button class="filt-btn" id="conf-possible"
-                                    onclick="setConf('POSSIBLE',this)">Likely</button>
+                                <div class="filter-pill-wrap">
+                                    <button class="filt-btn active-blue" id="conf-all"
+                                        onclick="setConf('all',this)">All</button>
+                                    <button class="filt-btn" id="conf-safe"
+                                        onclick="setConf('SAFE',this)">Confirmed</button>
+                                    <button class="filt-btn" id="conf-possible"
+                                        onclick="setConf('POSSIBLE',this)">Likely</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -988,6 +1118,24 @@
 
         </div>
 
+        <!-- FOOTER -->
+        <footer class="site-footer">
+            <div class="footer-inner">
+                <div class="footer-left">
+                    <span class="footer-brand">Job<span class="accent">Buddy</span></span>
+                    <span class="footer-tagline">Daily tech opportunities for freshers &middot; No experience required</span>
+                </div>
+                <nav class="footer-links" aria-label="Footer legal links">
+                    <a href="/privacy.html">Privacy Policy</a>
+                    <span class="footer-sep">&middot;</span>
+                    <a href="/terms.html">Terms of Service</a>
+                </nav>
+            </div>
+            <div class="footer-disclaimer">
+                JobBuddy is an independent aggregator indexing publicly accessible corporate job requisitions and official career portals. All trademarks and company names belong to their respective owners.
+            </div>
+        </footer>
+
     </div>
 
     <script>
@@ -1022,11 +1170,11 @@
             document.getElementById('tab-portals').setAttribute('aria-selected', !isDirect);
 
             // Category, Location, and Confidence filters apply to individual Job Openings
-            const catWrap = document.getElementById('cat-scroll-wrap');
+            const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
             const filterRow = document.getElementById('filter-row');
             const searchInput = document.getElementById('search-input');
 
-            if (catWrap) catWrap.style.display = isDirect ? 'block' : 'none';
+            if (catContainer) catContainer.style.display = isDirect ? 'block' : 'none';
             if (filterRow) filterRow.style.display = isDirect ? 'flex' : 'none';
 
             if (searchInput) {
@@ -1401,9 +1549,9 @@
                     const tabPort = document.getElementById('tab-portals');
                     if (tabDir) { tabDir.classList.remove('active'); tabDir.setAttribute('aria-selected', 'false'); }
                     if (tabPort) { tabPort.classList.add('active'); tabPort.setAttribute('aria-selected', 'true'); }
-                    const catWrap = document.getElementById('cat-scroll-wrap');
+                    const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
                     const filterRow = document.getElementById('filter-row');
-                    if (catWrap) catWrap.style.display = 'none';
+                    if (catContainer) catContainer.style.display = 'none';
                     if (filterRow) filterRow.style.display = 'none';
                 }
                 const parts = cleanPath.split('/').filter(p => p);
@@ -1427,6 +1575,19 @@
                     const lBtn = document.getElementById(locBtnId);
                     if (lBtn) lBtn.className = 'filt-btn active-blue';
                 }
+            }
+
+            // Category horizontal scroll fade indicator
+            const cWrap = document.getElementById('cat-scroll-wrap');
+            const cCont = document.getElementById('cat-scroll-container');
+            if (cWrap && cCont) {
+                const checkScrollEnd = () => {
+                    const atEnd = cWrap.scrollLeft + cWrap.clientWidth >= cWrap.scrollWidth - 10;
+                    cCont.classList.toggle('is-at-end', atEnd);
+                };
+                cWrap.addEventListener('scroll', checkScrollEnd, { passive: true });
+                window.addEventListener('resize', checkScrollEnd, { passive: true });
+                checkScrollEnd();
             }
 
             fetchJobs(1);

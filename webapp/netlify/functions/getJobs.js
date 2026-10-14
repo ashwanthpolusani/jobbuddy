@@ -26,6 +26,10 @@ function buildQueryFilter({ category, link_type, verdict, location, search }) {
     // 1. Link Type partition: direct apply vs portals
     if (link_type === 'direct_apply') {
         clauses.push({ link_type: { $nin: ['filtered_list', 'career_homepage'] } });
+        // Double safeguard: programs and cohorts belong in fresher portals, not direct apply
+        clauses.push({
+            title: { $not: { $regex: "\\b(?:program|cohort|talent network|emerging talent|university interns|campus recruitment|fresher portal|career opportunities|entry-level careers|early talent)\\b", $options: "i" } }
+        });
 
         // Verdict (experience gate only applies to individual direct apply vacancies)
         if (verdict && verdict !== "all") {
@@ -35,63 +39,48 @@ function buildQueryFilter({ category, link_type, verdict, location, search }) {
             clauses.push({ experience_verdict: { $nin: ['REJECTED', 'BLOCKED'] } });
         }
 
-        // Category filter (applies to individual job openings)
+        // Functional Category filter (applies to individual job openings)
         if (category && category !== "all") {
             if (category === "software_engineering") {
                 clauses.push({
                     $or: [
                         { category: "software_engineering" },
-                        {
-                            category: "early_careers",
-                            title: { $regex: "software|engineer|developer|frontend|backend|fullstack|web|android|ios|sde|coding|programmer|swe|java|python", $options: "i" }
-                        }
+                        { title: { $regex: "\\b(?:software|engineer|developer|frontend|backend|fullstack|web|android|ios|sde|coding|programmer|swe|java|python|qa|tester)\\b", $options: "i" } }
                     ]
                 });
             } else if (category === "data_ml") {
                 clauses.push({
                     $or: [
                         { category: "data_ml" },
-                        {
-                            category: "early_careers",
-                            title: { $regex: "data|ml|ai|machine learning|analytics|analyst|deep learning|nlp", $options: "i" }
-                        }
+                        { title: { $regex: "\\b(?:data|ml|ai|machine learning|analytics|analyst|deep learning|nlp)\\b", $options: "i" } }
                     ]
                 });
             } else if (category === "devops_cloud") {
                 clauses.push({
                     $or: [
                         { category: "devops_cloud" },
-                        {
-                            category: "early_careers",
-                            title: { $regex: "devops|cloud|sre|infrastructure|platform|aws|azure", $options: "i" }
-                        }
+                        { title: { $regex: "\\b(?:devops|cloud|sre|infrastructure|platform|aws|azure)\\b", $options: "i" } }
                     ]
                 });
             } else if (category === "cybersecurity") {
                 clauses.push({
                     $or: [
                         { category: "cybersecurity" },
-                        {
-                            category: "early_careers",
-                            title: { $regex: "security|cyber|infosec|vulnerability", $options: "i" }
-                        }
+                        { title: { $regex: "\\b(?:security|cyber|infosec|vulnerability|soc)\\b", $options: "i" } }
                     ]
                 });
             } else if (category === "product_design") {
                 clauses.push({
                     $or: [
                         { category: "product_design" },
-                        {
-                            category: "early_careers",
-                            title: { $regex: "product|design|ux|ui|graphic", $options: "i" }
-                        }
+                        { title: { $regex: "\\b(?:product|design|ux|ui|graphic|game design)\\b", $options: "i" } }
                     ]
                 });
-            } else if (category === "early_careers") {
+            } else if (category === "it_support") {
                 clauses.push({
                     $or: [
-                        { category: "early_careers" },
-                        { title: { $regex: "intern|graduate|grad|trainee|apprentice|campus|fresher|fellow|associate", $options: "i" } }
+                        { category: "it_support" },
+                        { title: { $regex: "\\b(?:support|customer experience|it|tech support|operations)\\b", $options: "i" } }
                     ]
                 });
             } else {
