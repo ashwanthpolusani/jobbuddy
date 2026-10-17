@@ -1,0 +1,10 @@
+# JobBuddy - Entry-Level Tech Jobs & Fresher Portals
+
+> JobBuddy aggregates entry-level, fresher, and internship software engineering, data science, DevOps, and cyber security opportunities across 300+ vetted companies.
+
+## Links
+- [Job Openings](https://buddyjob.netlify.app/)
+- [Company Fresher Portals](https://buddyjob.netlify.app/portals)
+- [API Documentation](https://buddyjob.netlify.app/.netlify/functions/getJobs)
+- [Privacy Policy](https://buddyjob.netlify.app/privacy)
+- [Terms of Service](https://buddyjob.netlify.app/terms)
