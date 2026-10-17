@@ -12,6 +12,7 @@
         content="300+ company career pages scraped daily. Only genuine 0-experience tech roles.">
     <meta property="og:url" content="https://buddyjob.netlify.app/">
     <meta name="theme-color" content="#0a66c2">
+    <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
@@ -284,7 +285,7 @@
             font-size: 0.84rem;
             font-family: inherit;
             outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            transition: border-color 0.15s;
         }
 
         .search-input:focus {
@@ -535,7 +536,7 @@
             justify-content: space-between;
             gap: 14px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-            transition: box-shadow 0.15s, border-color 0.15s;
+            transition: border-color 0.15s;
         }
 
         .job-card:hover {
@@ -1190,14 +1191,6 @@
                     <!-- Google AdSense 300x250 — replace data-ad-client and data-ad-slot with your real values -->
                     <ins class="adsbygoogle sidebar-ad-slot" data-ad-client="ca-pub-3809813018120427"
                         data-ad-slot="XXXXXXXXXX" data-ad-format="rectangle" data-full-width-responsive="false"></ins>
-                    <script>
-                        if (window.innerWidth > 880) {
-                            const _slot = document.querySelector('.sidebar-ad-slot');
-                            if (_slot && _slot.getAttribute('data-ad-slot') !== 'XXXXXXXXXX') {
-                                (adsbygoogle = window.adsbygoogle || []).push({});
-                            }
-                        }
-                    </script>
                 </div>
             </aside>
 
@@ -1670,13 +1663,18 @@
                 }
             }
 
-            // Category horizontal scroll fade indicator
+            // Category horizontal scroll fade indicator (RAF-batched to prevent forced reflow)
             const cWrap = document.getElementById('cat-scroll-wrap');
             const cCont = document.getElementById('cat-scroll-container');
             if (cWrap && cCont) {
+                let rafId = null;
                 const checkScrollEnd = () => {
-                    const atEnd = cWrap.scrollLeft + cWrap.clientWidth >= cWrap.scrollWidth - 10;
-                    cCont.classList.toggle('is-at-end', atEnd);
+                    if (cCont.style.display === 'none') return;
+                    if (rafId) cancelAnimationFrame(rafId);
+                    rafId = requestAnimationFrame(() => {
+                        const atEnd = cWrap.scrollLeft + cWrap.clientWidth >= cWrap.scrollWidth - 10;
+                        cCont.classList.toggle('is-at-end', atEnd);
+                    });
                 };
                 cWrap.addEventListener('scroll', checkScrollEnd, { passive: true });
                 window.addEventListener('resize', checkScrollEnd, { passive: true });
@@ -1692,12 +1690,16 @@
         // Defer Google AdSense script until main thread is idle to maximize Core Web Vitals
         window.addEventListener('load', () => {
             const loadAds = () => {
+                if (window.innerWidth <= 880) return;
                 const ins = document.querySelector('ins.adsbygoogle');
                 if (!ins || ins.getAttribute('data-ad-slot') === 'XXXXXXXXXX') return;
                 const adScript = document.createElement('script');
                 adScript.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3809813018120427';
                 adScript.async = true;
                 adScript.crossOrigin = 'anonymous';
+                adScript.onload = () => {
+                    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+                };
                 document.head.appendChild(adScript);
             };
             if ('requestIdleCallback' in window) {
