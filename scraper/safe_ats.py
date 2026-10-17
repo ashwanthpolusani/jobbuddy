@@ -9,11 +9,11 @@ def extract_slug(url: str, ats: str) -> str | None:
     try:
         if ats == "greenhouse":
             # Check for direct API links first
-            api_match = re.search(r'boards-api\.greenhouse\.io/v1/boards/([^/]+)', url)
+            api_match = re.search(r'boards-api\.greenhouse\.io/v1/boards/([^/?#]+)', url)
             if api_match:
                 return api_match.group(1)
             # Check for standard links
-            match = re.search(r'greenhouse\.io/([^/]+)', url)
+            match = re.search(r'greenhouse\.io/([^/?#]+)', url)
             if match:
                 slug = match.group(1)
                 # Sometimes the url is greenhouse.io/embed/job_board?for=company
@@ -22,17 +22,17 @@ def extract_slug(url: str, ats: str) -> str | None:
                     return qs.get('for', [None])[0]
                 return slug
         elif ats == "lever":
-            api_match = re.search(r'api\.lever\.co/v0/postings/([^/]+)', url)
+            api_match = re.search(r'api\.lever\.co/v0/postings/([^/?#]+)', url)
             if api_match:
                 return api_match.group(1)
-            match = re.search(r'lever\.co/([^/]+)', url)
+            match = re.search(r'lever\.co/([^/?#]+)', url)
             if match:
                 return match.group(1)
         elif ats == "ashby":
-            api_match = re.search(r'api\.ashbyhq\.com/posting-api/job-board/([^/]+)', url)
+            api_match = re.search(r'api\.ashbyhq\.com/posting-api/job-board/([^/?#]+)', url)
             if api_match:
                 return api_match.group(1)
-            match = re.search(r'ashbyhq\.com/([^/]+)', url)
+            match = re.search(r'ashbyhq\.com/([^/?#]+)', url)
             if match:
                 return match.group(1)
         elif ats == "smartrecruiters":
@@ -41,6 +41,13 @@ def extract_slug(url: str, ats: str) -> str | None:
                 token = match.group(1)
                 if token not in ('v1', 'companies', 'jobs', 'postings'):
                     return token
+        elif ats == "workable":
+            m1 = re.search(r'([a-zA-Z0-9\-]+)\.workable\.com', url)
+            if m1 and m1.group(1) not in ('apply', 'www', 'jobs', 'api'):
+                return m1.group(1)
+            m2 = re.search(r'workable\.com/(?:api/v\d+/widget/accounts/)?([a-zA-Z0-9\-]+)', url)
+            if m2 and m2.group(1) not in ('api', 'widget', 'accounts', 'jobs'):
+                return m2.group(1)
     except Exception:
         return None
     return None
@@ -126,9 +133,13 @@ def fetch_greenhouse_jobs(slug: str) -> list[dict] | None:
 def fetch_lever_jobs(slug: str) -> list[dict] | None:
     """Fetches all jobs from Lever public API."""
     url = f"https://api.lever.co/v0/postings/{slug}?mode=json"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*'
+    }
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as response:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=12) as response:
             jobs = json.loads(response.read().decode('utf-8'))
             
             normalized = []
@@ -276,6 +287,32 @@ def fetch_mynexthire_jobs(domain: str) -> list[dict]:
         
     return all_jobs
 
+def fetch_workable_jobs(slug: str) -> list[dict] | None:
+    """Fetches jobs from Workable public widget API."""
+    url = f"https://apply.workable.com/api/v1/widget/accounts/{slug}"
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        with urllib.request.urlopen(req, timeout=12) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            jobs = data.get('jobs', [])
+            normalized = []
+            for j in jobs:
+                loc_parts = [p for p in [j.get('city', ''), j.get('country', '')] if p]
+                loc = ', '.join(loc_parts) if loc_parts else 'Unknown'
+                normalized.append({
+                    "title": j.get('title', 'Unknown Title'),
+                    "location": loc,
+                    "link": j.get('url', ''),
+                    "content": j.get('description', '')
+                })
+            return normalized
+    except HTTPError as e:
+        print(f"    [Workable API Blocked or Missing for {slug}] HTTP {e.code}")
+        return None
+    except Exception as e:
+        print(f"    [Workable API Error for {slug}] {e}")
+        return []
+
 def fetch_smartrecruiters_jobs(token: str, country: str = "in") -> list[dict]:
     """
     Fetches jobs from SmartRecruiters public API.
@@ -403,10 +440,12 @@ def fetch_uber_jobs(query: str = "location=Bengaluru") -> list[dict]:
 
 # ── Location & Visa Gate (Indian Candidate Eligibility) ────────────────────────
 INDIAN_LOCATIONS = [
-    'india', 'bangalore', 'bengaluru', 'hyderabad', 'pune', 'chennai', 'mumbai',
+    'india', 'bangalore', 'bengaluru', 'hyderabad','hyd','warangal', 'pune', 'chennai', 'mumbai',
     'gurgaon', 'gurugram', 'noida', 'delhi', 'new delhi', 'kolkata', 'ahmedabad',
     'kochi', 'coimbatore', 'trivandrum', 'thiruvananthapuram', 'indore', 'jaipur',
-    'chandigarh', 'mysore', 'bhubaneswar'
+    'chandigarh', 'mysore', 'bhubaneswar', 'karnataka', 'maharashtra', 'telangana',
+    'tamil nadu', 'haryana', 'uttar pradesh', 'delhi ncr', 'ncr', 'hyd', 'blr',
+    'navi mumbai', 'thane', 'nagpur', 'vadodara', 'surat', 'visakhapatnam'
 ]
 
 INDIAN_LOC_REGEX = re.compile(
@@ -416,7 +455,9 @@ INDIAN_LOC_REGEX = re.compile(
 )
 
 SPONSOR_REGEX = re.compile(
-    r'relocation provided|relocation assistance provided|visa sponsorship available|visa sponsorship provided|will sponsor visa|international relocation',
+    r'\b(?:visa sponsorship|visa support|relocation assistance|relocation support|relocation package|'
+    r'international relocation|relocation to japan|relocation provided|will sponsor|sponsors? visa|'
+    r'sponsorship available|sponsorship provided|work visa|visa assistance)\b',
     re.IGNORECASE
 )
 
@@ -556,6 +597,13 @@ def is_eligible_for_jobbuddy(job: dict) -> tuple[bool, str]:
     if SPONSOR_REGEX.search(combined):
         return True, "Explicit international relocation or visa sponsorship provided"
 
+    # 4b. Acceptance / Hold for Stage 2: Japan tech roles pending JD evaluation
+    # If a role is in Japan and we don't have the full JD text yet (pre-filter stage),
+    # let it pass to Stage 2 so Stage 2 can inspect the full JD for visa sponsorship.
+    if re.search(r'\b(?:japan|tokyo|kyoto|osaka|yokohama)\b', combined):
+        if len(reqs) < 100:
+            return True, "Japan tech role pending Stage 2 visa verification"
+
     # 5. Check Remote eligibility
     if 'remote' in loc.lower() or 'remote' in title.lower() or loc.strip().lower() in ['global', 'anywhere', 'worldwide']:
         if RESTRICTED_REMOTE_REGEX.search(loc):
@@ -567,8 +615,8 @@ def is_eligible_for_jobbuddy(job: dict) -> tuple[bool, str]:
 
 def pre_filter_jobs(jobs: list[dict]) -> list[dict]:
     """
-    Filters a massive list of ATS jobs down to just software/fresher roles
-    before we send them to Gemini (to save tokens/time).
+    Filters a massive list of ATS jobs down to tech and early-career candidate roles
+    before sending them to Gemini (saving tokens and runtime).
     """
     good_roles = []
     # Broad keywords to catch tech roles
@@ -581,37 +629,64 @@ def pre_filter_jobs(jobs: list[dict]) -> list[dict]:
         'sde', 'swe', 'sdet', 'mle', 'quant', 'quantitative', 'firmware', 'hardware', 'embedded',
         'security', 'cyber', 'infosec', 'data scientist', 'science', 'scientist'
     ]
-    # Keywords to catch early career (we don't strictly require these, but they are strong signals)
-    fresher_keywords = ['intern', 'new grad', 'graduate', 'fresher', 'junior', 'entry']
-    # Negative keywords
-    senior_keywords = ['senior', 'staff', 'principal', 'lead', 'manager', 'director', 'vp', 'head', 'architect']
+    # Keywords to catch early career & campus hiring across global tech platforms
+    fresher_keywords = [
+        'intern', 'internship', 'new grad', 'graduate', 'fresher', 'junior', 'entry',
+        'apprentice', 'apprenticeship', 'trainee', 'campus', 'early career', 'early talent',
+        'rotational'
+    ]
+    # Explicit non-technical domain exclusions
+    non_tech_pattern = (
+        r'\b(?:hr|human resources|recruiter|recruiting|talent acquisition|payroll|'
+        r'sales|account executive|\bbdr\b|\bsdr\b|business development representative|'
+        r'legal|counsel|paralegal|compliance officer|accountant|accounting|'
+        r'cashier|cook|warehouse|driver|janitor)\b'
+    )
+    # Senior / leadership exclusions (including levels III, IV, V, Level 3+)
+    senior_pattern = (
+        r'\b(?:senior|staff|principal|lead|manager|director|vp|head|architect|'
+        r'level [3-9]|level iii|level iv|level v|\biii\b|\biv\b|\bv\b)\b'
+    )
+    senior_regex = re.compile(senior_pattern, re.IGNORECASE)
+    tech_regex = re.compile(r'\b(?:' + '|'.join(map(re.escape, tech_keywords)) + r')\b', re.IGNORECASE)
+    fresher_regex = re.compile(r'\b(?:' + '|'.join(map(re.escape, fresher_keywords)) + r')\b', re.IGNORECASE)
+    non_tech_regex = re.compile(non_tech_pattern, re.IGNORECASE)
 
     for j in jobs:
         t = str(j.get('title') or '').lower()
         if not t:
             continue
-        
-        # Must be tech related (using regex word boundaries to safely match acronyms like 'it', 'qa', 'swe')
-        if not re.search(r'\b(?:' + '|'.join(map(re.escape, tech_keywords)) + r')\b', t):
+
+        # Must NOT be senior or high-level
+        if senior_regex.search(t):
             continue
-            
-        # Must NOT be senior
-        if re.search(r'\b(?:' + '|'.join(map(re.escape, senior_keywords)) + r')\b', t):
+
+        # Must NOT be a non-technical role unless it specifically includes technical keywords
+        is_tech = bool(tech_regex.search(t))
+        if non_tech_regex.search(t) and not is_tech:
+            continue
+
+        # Must be tech-related OR an explicit early-career/trainee/campus posting
+        is_fresher = bool(fresher_regex.search(t))
+        if not (is_tech or is_fresher):
             continue
 
         # Location & Visa Gate (Indian Candidate Eligibility)
         loc = str(j.get('location') or '').strip()
         if loc:
-            ok, _ = is_eligible_for_jobbuddy(j)
+            check_job = dict(j)
+            # Pass JD content sample to catch relocation or visa sponsorship in the description body
+            if not check_job.get('core_requirements') and check_job.get('content'):
+                check_job['core_requirements'] = check_job['content'][:2500]
+            ok, _ = is_eligible_for_jobbuddy(check_job)
             if not ok:
                 continue
 
         good_roles.append(j)
 
     # Sort early-career titles to the top so chunk-capped evaluations prioritize them
-    fresher_regex = re.compile(r'\b(?:' + '|'.join(map(re.escape, fresher_keywords)) + r')\b', re.IGNORECASE)
     good_roles.sort(key=lambda item: 0 if fresher_regex.search(item.get('title', '')) else 1)
-            
+
     return good_roles
 
 def process_ats_url(url: str) -> tuple[bool, list[dict], str]:
@@ -676,5 +751,12 @@ def process_ats_url(url: str) -> tuple[bool, list[dict], str]:
                 combined.append(j)
         return True, combined, "Uber"
             
+    elif "workable.com" in url:
+        slug = extract_slug(url, "workable")
+        if slug:
+            jobs = fetch_workable_jobs(slug)
+            if jobs is not None:
+                return True, jobs, "Workable"
+
     return False, [], "Unknown"
 

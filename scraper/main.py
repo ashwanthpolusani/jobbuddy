@@ -141,7 +141,13 @@ class ModelPool:
 
 def make_job_id(company: str, title: str, link: str) -> str:
     """Stable unique ID for deduplication via upsert."""
-    raw = f"{company.lower().strip()}|{title.lower().strip()}|{link.strip()}"
+    clean_company = re.sub(r'[\s\-_]+', ' ', company.lower()).strip()
+    clean_title = re.sub(r'[\s\-_]+', ' ', title.lower()).strip()
+    clean_link = str(link or '').strip().rstrip('/')
+    if clean_link and clean_link != '#':
+        raw = f"{clean_company}|{clean_link}"
+    else:
+        raw = f"{clean_company}|{clean_title}"
     return hashlib.sha256(raw.encode()).hexdigest()
 
 def now_iso():
@@ -322,19 +328,27 @@ def upsert_jobs(jobs: list[dict], ats_name: str = '') -> int:
             normalize_job_classification(job)
             company = job.get('company_name', '')
             title   = job.get('title', '')
-            link    = job.get('link', '')
+            link    = str(job.get('link', '') or '').strip()
             job_id  = make_job_id(company, title, link)
             job['job_id']  = job_id
             job['ats_name'] = ats_name
-            result = collection.update_one(
-                {"job_id": job_id},
-                {
-                    "$set": {k: v for k, v in job.items() if k != 'first_seen'},
-                    "$setOnInsert": {"first_seen": now_iso()}
-                },
-                upsert=True
-            )
-            if result.upserted_id or result.modified_count:
+
+            # Canonical deduplication: match on unique URL if present, or job_id
+            existing = None
+            if link and link != '#':
+                existing = collection.find_one({"link": link})
+            if not existing:
+                existing = collection.find_one({"job_id": job_id})
+
+            if existing:
+                collection.update_one(
+                    {"_id": existing["_id"]},
+                    {"$set": {k: v for k, v in job.items() if k != 'first_seen'}}
+                )
+                saved += 1
+            else:
+                job['first_seen'] = now_iso()
+                collection.insert_one(job)
                 saved += 1
     except Exception as e:
         print(f"  ✗ MongoDB upsert error: {e}")

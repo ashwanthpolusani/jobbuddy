@@ -141,20 +141,28 @@ exports.handler = async (event, context) => {
         const directCount = link_type === 'direct_apply' ? total : otherCount;
         const portalCount = link_type === 'direct_apply' ? otherCount : total;
 
-        // Map to clean response objects (canonical schema)
-        const jobs = rawJobs.map(j => ({
-            _id: j._id,
-            title: j.title || 'Untitled',
-            company_name: j.company_name || '',
-            location: j.location || '',
-            category: j.category || 'other',
-            link: j.link || '#',
-            link_type: j.link_type || 'direct_apply',
-            experience_verdict: j.experience_verdict || null,
-            core_requirements: j.core_requirements || '',
-            scraped_at: j.scraped_at || null,
-            first_seen: j.first_seen || j.scraped_at || null
-        }));
+        // Map to clean response objects with defense-in-depth URL deduplication
+        const seenLinks = new Set();
+        const jobs = [];
+        for (const j of rawJobs) {
+            const linkKey = (j.link && j.link !== '#') ? j.link.trim().toLowerCase() : j._id.toString();
+            if (!seenLinks.has(linkKey)) {
+                seenLinks.add(linkKey);
+                jobs.push({
+                    _id: j._id,
+                    title: j.title || 'Untitled',
+                    company_name: j.company_name || '',
+                    location: j.location || '',
+                    category: j.category || 'other',
+                    link: j.link || '#',
+                    link_type: j.link_type || 'direct_apply',
+                    experience_verdict: j.experience_verdict || null,
+                    core_requirements: j.core_requirements || '',
+                    scraped_at: j.scraped_at || null,
+                    first_seen: j.first_seen || j.scraped_at || null
+                });
+            }
+        }
 
         return {
             statusCode: 200,
