@@ -16,7 +16,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+    <link rel="ai-catalog" type="application/json" href="/.well-known/ai-catalog.json">
+    <link rel="ai-catalog" type="application/json" href="/ai-catalog.json">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <style>
         *,
@@ -151,9 +152,9 @@
         }
 
         .header-sub {
-            font-size: 0.67rem;
-            color: var(--text2);
-            margin-top: 2px;
+            font-size: 0.80rem;
+            color: #374151;
+            margin-top: 3px;
         }
 
         /* ── PANEL ────────────────────────────────────────────────── */
@@ -242,8 +243,8 @@
 
         .cat-btn .count {
             margin-left: 5px;
-            color: var(--muted);
-            font-size: 0.68rem;
+            color: #4b5563;
+            font-size: 0.76rem;
         }
 
         .cat-btn.active .count {
@@ -432,15 +433,15 @@
         .tab-badge {
             background: rgba(10, 102, 194, 0.12);
             color: var(--accent);
-            font-size: 0.67rem;
-            padding: 1px 6px;
+            font-size: 0.78rem;
+            padding: 2px 7px;
             border-radius: 10px;
             font-weight: 700;
         }
 
         .view-tab:not(.active) .tab-badge {
             background: var(--border);
-            color: var(--muted);
+            color: #374151;
         }
 
         /* ── RESULT META & PAGINATION ─────────────────────────────── */
@@ -567,28 +568,16 @@
         }
 
         .tag-new {
-            font-size: 0.68rem;
+            font-size: 0.74rem;
             font-weight: 700;
             letter-spacing: 0.07em;
             text-transform: uppercase;
             color: #074a8a;
+            background: rgba(10, 102, 194, 0.12);
             border: 1px solid rgba(7, 74, 138, 0.4);
             border-radius: 4px;
-            padding: 1px 6px;
+            padding: 1px 7px;
             flex-shrink: 0;
-            animation: pnew 2.5s ease-in-out infinite;
-        }
-
-        @keyframes pnew {
-
-            0%,
-            100% {
-                opacity: 1
-            }
-
-            50% {
-                opacity: .4
-            }
         }
 
         .job-meta {
@@ -748,7 +737,7 @@
         }
 
         .sidebar-ad-label {
-            font-size: 0.70rem;
+            font-size: 0.76rem;
             text-transform: uppercase;
             letter-spacing: 0.09em;
             color: #4b5563;
@@ -812,10 +801,10 @@
         }
 
         .skeleton-bar {
-            background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
-            background-size: 200% 100%;
-            animation: skeleton-pulse 1.4s ease-in-out infinite;
+            background: #e2e8f0;
+            animation: skeleton-pulse 1.2s ease-in-out infinite alternate;
             border-radius: 4px;
+            will-change: opacity;
         }
 
         .skeleton-bar.title {
@@ -833,13 +822,20 @@
             width: 88px;
             height: 32px;
             border-radius: var(--radius);
-            background: #e5e7eb;
+            background: #e2e8f0;
             flex-shrink: 0;
+            animation: skeleton-pulse 1.2s ease-in-out infinite alternate;
+            will-change: opacity;
         }
 
         @keyframes skeleton-pulse {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                opacity: 0.45;
+            }
+
+            100% {
+                opacity: 0.95;
+            }
         }
 
         /* ── FOOTER ───────────────────────────────────────────────── */

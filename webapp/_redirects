@@ -2,5 +2,6 @@
 /sitemap.xml /sitemap.xml 200
 /llms.txt    /llms.txt    200
 /ai-catalog.json /ai-catalog.json 200
+/.well-known/ai-catalog.json /.well-known/ai-catalog.json 200
 /ads.txt     /ads.txt     200
 /*           /index.html  200

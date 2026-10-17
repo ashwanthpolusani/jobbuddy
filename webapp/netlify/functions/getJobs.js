@@ -169,7 +169,7 @@ exports.handler = async (event, context) => {
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
-                "Cache-Control": "public, s-maxage=180, stale-while-revalidate=360",
+                "Cache-Control": "public, max-age=180, s-maxage=180, stale-while-revalidate=360",
             },
             body: JSON.stringify({
                 jobs,
