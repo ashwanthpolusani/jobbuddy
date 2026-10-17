@@ -11,12 +11,13 @@
     <meta property="og:description"
         content="300+ company career pages scraped daily. Only genuine 0-experience tech roles.">
     <meta property="og:url" content="https://buddyjob.netlify.app/">
+    <meta name="theme-color" content="#0a66c2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3809813018120427"
-        crossorigin="anonymous"></script>
     <style>
         *,
         *::before,
@@ -56,7 +57,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
@@ -783,6 +784,54 @@
             font-size: 0.87rem;
         }
 
+        /* ── SKELETON PLACEHOLDERS (INSTANT FCP & LCP) ────────────── */
+        .skeleton-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .skeleton-left {
+            flex: 1;
+        }
+
+        .skeleton-bar {
+            background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+            background-size: 200% 100%;
+            animation: skeleton-pulse 1.4s ease-in-out infinite;
+            border-radius: 4px;
+        }
+
+        .skeleton-bar.title {
+            width: 55%;
+            height: 18px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-bar.meta {
+            width: 35%;
+            height: 12px;
+        }
+
+        .skeleton-btn {
+            width: 88px;
+            height: 32px;
+            border-radius: var(--radius);
+            background: #e5e7eb;
+            flex-shrink: 0;
+        }
+
+        @keyframes skeleton-pulse {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         /* ── FOOTER ───────────────────────────────────────────────── */
         .site-footer {
             border-top: 1px solid var(--border);
@@ -975,7 +1024,7 @@
                             stroke-width="1.5" stroke-linecap="round" />
                     </svg>
                     <div>
-                        <div class="wordmark">Job<span class="accent">Buddy</span></div>
+                        <h1 class="wordmark">Job<span class="accent">Buddy</span></h1>
                         <div class="header-sub">Daily tech jobs for freshers &middot; No experience required</div>
                     </div>
                 </a>
@@ -1090,9 +1139,33 @@
                     </div>
 
                     <div id="jobs-container">
-                        <div class="state">
-                            <div class="spinner" role="status" aria-label="Loading"></div>
-                            <p>Loading job listings&#8230;</p>
+                        <div class="skeleton-card" aria-hidden="true">
+                            <div class="skeleton-left">
+                                <div class="skeleton-bar title"></div>
+                                <div class="skeleton-bar meta"></div>
+                            </div>
+                            <div class="skeleton-btn"></div>
+                        </div>
+                        <div class="skeleton-card" aria-hidden="true">
+                            <div class="skeleton-left">
+                                <div class="skeleton-bar title" style="width:68%;"></div>
+                                <div class="skeleton-bar meta" style="width:40%;"></div>
+                            </div>
+                            <div class="skeleton-btn"></div>
+                        </div>
+                        <div class="skeleton-card" aria-hidden="true">
+                            <div class="skeleton-left">
+                                <div class="skeleton-bar title" style="width:50%;"></div>
+                                <div class="skeleton-bar meta" style="width:30%;"></div>
+                            </div>
+                            <div class="skeleton-btn"></div>
+                        </div>
+                        <div class="skeleton-card" aria-hidden="true">
+                            <div class="skeleton-left">
+                                <div class="skeleton-bar title" style="width:60%;"></div>
+                                <div class="skeleton-bar meta" style="width:45%;"></div>
+                            </div>
+                            <div class="skeleton-btn"></div>
                         </div>
                     </div>
 
@@ -1594,6 +1667,24 @@
             setTimeout(hideNBadge, 500);
             setTimeout(hideNBadge, 2000);
             setTimeout(hideNBadge, 5000);
+        });
+
+        // Defer Google AdSense script until main thread is idle to maximize Core Web Vitals
+        window.addEventListener('load', () => {
+            const loadAds = () => {
+                const ins = document.querySelector('ins.adsbygoogle');
+                if (!ins || ins.getAttribute('data-ad-slot') === 'XXXXXXXXXX') return;
+                const adScript = document.createElement('script');
+                adScript.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3809813018120427';
+                adScript.async = true;
+                adScript.crossOrigin = 'anonymous';
+                document.head.appendChild(adScript);
+            };
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(loadAds, { timeout: 2500 });
+            } else {
+                setTimeout(loadAds, 1200);
+            }
         });
     </script>
 </body>
