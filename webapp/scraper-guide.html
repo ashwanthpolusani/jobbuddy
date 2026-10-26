@@ -457,7 +457,7 @@ python main.py</code></pre>
         <h4>🔒 Security Best Practices</h4>
         <p><strong>1. Always use a Read-Only User:</strong> Never use your cluster admin or primary scraper writer credentials in the web frontend. Creating a dedicated <code>webapp_reader</code> user ensures the browser can never write, delete, or alter any documents.</p>
         <p><strong>2. Encrypted Transmission:</strong> Your connection string is never included in URL parameters or browser history. It is sent exclusively via encrypted HTTPS request headers.</p>
-        <p><strong>3. 1-Click Disconnect:</strong> You can disconnect your database or switch back to demo mode anytime by clicking <strong>Disconnect Database</strong> in the Account modal.</p>
+        <p><strong>3. 1-Click Disconnect:</strong> You can disconnect your database anytime by clicking <strong>Disconnect Database</strong> in the Account modal.</p>
     </div>
 
     <h2>3. Frequently Asked Questions</h2>
@@ -470,7 +470,7 @@ python main.py</code></pre>
 
     <div class="callout" style="text-align: center; padding: 28px 20px;">
         <h4 style="font-size: 1.15rem; margin-bottom: 8px;">Ready to explore the workspace?</h4>
-        <p style="margin-bottom: 16px;">Try our demo workspace with placeholder jobs, or sign in to connect your live MongoDB database.</p>
+        <p style="margin-bottom: 16px;">Sign in to your private workspace to connect your live MongoDB database and browse scraped jobs.</p>
         <a href="/" class="btn-action">Go to Live Workspace &rarr;</a>
         <a href="/#connect" class="btn-secondary" onclick="localStorage.setItem('jobbuddy_open_modal', '1');">Open Connection Settings</a>
     </div>

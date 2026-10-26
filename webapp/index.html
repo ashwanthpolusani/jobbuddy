@@ -1976,12 +1976,13 @@
                                 </svg>
                                 Sign In to Your Workspace
                             </button>
-                            <button class="btn-guest-secondary" onclick="loginDemoUser()" aria-label="Explore demo workspace">
+                            <a href="/scraper-guide" class="btn-guest-secondary" aria-label="Read Scraper Setup Guide" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <polygon points="5 3 19 12 5 21 5 3"/>
+                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
                                 </svg>
-                                Explore Demo Workspace
-                            </button>
+                                Scraper Setup Guide
+                            </a>
                         </div>
                     </div>
 
@@ -2042,14 +2043,14 @@
 
                         <!-- Lock Overlay -->
                         <div class="guest-lock-overlay">
-                            <div class="guest-lock-title">Sign in to connect your MongoDB cluster or test live filters in demo mode</div>
+                            <div class="guest-lock-title">Sign in to your private workspace to connect your MongoDB cluster</div>
                             <div class="guest-cta-row" style="margin-top: 6px;">
                                 <button class="btn-guest-primary" onclick="handleAccountButtonClick()" style="padding: 9px 20px; font-size: 0.82rem;">
-                                    Sign In / Get Started
+                                    Sign In with Netlify
                                 </button>
-                                <button class="btn-guest-secondary" onclick="loginDemoUser()" style="padding: 9px 16px; font-size: 0.82rem;">
-                                    Explore Demo Workspace
-                                </button>
+                                <a href="/scraper-guide" class="btn-guest-secondary" style="padding: 9px 16px; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                    📖 Scraper Setup Guide
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -2058,44 +2059,6 @@
                 <!-- 2. AUTHENTICATED WORKSPACE VIEW (SHOWN ONLY AFTER SIGN-IN) -->
                 <div id="authenticated-workspace-view" style="display: none;">
                     <div class="panel-main">
-
-                        <!-- Demo Mode Notice Banner -->
-                        <div id="sample-demo-banner" style="display: none; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; font-size: 0.82rem; color: var(--text); flex-direction: column; gap: 10px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 1.15rem;">🌟</span>
-                                    <span><strong>Demo Mode Active:</strong> Showing 2 placeholder mock jobs. Learn how to run your companion scraper and connect your MongoDB Atlas cluster.</span>
-                                </div>
-                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    <a href="/scraper-guide" class="btn-guest-secondary" style="padding: 6px 12px; font-size: 0.78rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">📖 Scraper Setup Guide</a>
-                                    <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 6px 12px; font-size: 0.78rem; white-space: nowrap;">⚙️ Connect MongoDB</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Demo Onboarding Quickstart Card -->
-                        <div id="demo-quickstart-card" style="display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                                <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
-                                    <span>🚀</span> How to Connect Your Scraper to JobBuddy
-                                </h4>
-                                <a href="/scraper-guide" style="font-size: 0.76rem; font-weight: 600; color: var(--accent); text-decoration: none;">Full Setup Guide &rarr;</a>
-                            </div>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.80rem; line-height: 1.5; color: var(--text2);">
-                                <div style="background: var(--surface2); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border2);">
-                                    <strong style="color: var(--accent); display: block; margin-bottom: 3px;">1. Run Backend Scraper</strong>
-                                    Run <code>jobbuddy-scraper</code> to collect live requisitions into your MongoDB Atlas cluster.
-                                </div>
-                                <div style="background: var(--surface2); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border2);">
-                                    <strong style="color: var(--accent); display: block; margin-bottom: 3px;">2. Create Read-Only User</strong>
-                                    In MongoDB Atlas, create a <code>webapp_reader</code> user with read permissions for safety.
-                                </div>
-                                <div style="background: var(--surface2); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border2);">
-                                    <strong style="color: var(--accent); display: block; margin-bottom: 3px;">3. Connect on Frontend</strong>
-                                    Sign in, click Account Settings, paste your MongoDB URI, and save to your private Netlify profile.
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- 1. View Switcher (Job Openings vs Company Career Pages) -->
                         <div class="view-switcher-bar">
@@ -2327,21 +2290,21 @@
                         <div class="empty-ws-icon" style="font-size: 1.8rem; margin-bottom: 8px;">🔐</div>
                         <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 6px;">Sign In to Connect Your Database</h4>
                         <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">
-                            Sign in with your email to connect your private MongoDB scraper feed and sync settings across devices using Netlify Database.
+                            Sign in with your email to connect your private MongoDB scraper feed and sync settings securely to your personal Netlify cloud profile.
                         </p>
                         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                             <button class="btn-header-auth" onclick="openIdentityModal()" style="padding: 9px 20px; font-size: 0.84rem;">
-                                Sign In / Create Account
+                                Sign In with Netlify
                             </button>
-                            <button class="btn-guest-secondary" onclick="loginDemoUser(); closeDbModal();" style="padding: 9px 16px; font-size: 0.84rem;">
-                                Try Demo Mode
-                            </button>
+                            <a href="/scraper-guide" class="btn-guest-secondary" onclick="closeDbModal();" style="padding: 9px 16px; font-size: 0.84rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                📖 Scraper Setup Guide
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                <!-- Database Configuration Section -->
-                <div class="workspace-section">
+                <!-- Database Configuration Section (Only for signed-in users) -->
+                <div class="workspace-section" id="modal-db-section" style="display: none;">
                     <div class="ws-section-header">
                         <h4>MongoDB Atlas Data Source</h4>
                         <span class="ws-status-badge neutral" id="modal-db-badge">No Database Connected</span>
@@ -2534,31 +2497,11 @@
         function ltOf(j) { return j.link_type || 'direct_apply'; }
 
         let latestMeta = null;
-        let isSampleMode = false;
-
-        function loadSampleJobs() {
-            isSampleMode = true;
-            clearAllCache();
-            currentPage = 1;
-            fetchJobs(1);
-        }
-
         // Render Jobs
         function renderJobs() {
             const countEl = document.getElementById('result-count');
             const pageInd = document.getElementById('page-indicator');
             const cnt = document.getElementById('jobs-container');
-            const banner = document.getElementById('sample-demo-banner');
-            const quickstart = document.getElementById('demo-quickstart-card');
-
-            // Toggle demo banner and quickstart guide visibility
-            const isSample = Boolean(latestMeta && latestMeta.isSampleData);
-            if (banner) {
-                banner.style.display = isSample ? 'flex' : 'none';
-            }
-            if (quickstart) {
-                quickstart.style.display = isSample ? 'block' : 'none';
-            }
 
             // Update badge counts on switcher tabs
             const badgeDir = document.getElementById('badge-direct');
@@ -2581,9 +2524,9 @@
                             <div style="background: rgba(239, 68, 68, 0.07); color: var(--red); font-family: monospace; font-size: 0.8rem; padding: 10px 14px; border-radius: 8px; margin-bottom: 18px; word-break: break-all;">
                                 ${esc(latestMeta.errorMessage || 'Invalid connection string or unreachable database host')}
                             </div>
-                            <div class="connected-empty-actions" style="justify-content: center;">
+                            <div class="connected-empty-actions" style="justify-content: center; gap: 10px;">
                                 <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 9px 18px; font-size: 0.82rem;">⚙️ Update Connection URI</button>
-                                <button class="btn-guest-secondary" onclick="loadSampleJobs()" style="padding: 9px 18px; font-size: 0.82rem;">📂 Browse Sample Jobs Instead</button>
+                                <a href="/scraper-guide" class="btn-guest-secondary" style="padding: 9px 18px; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">📖 View Setup Guide</a>
                                 <button class="btn-guest-secondary" onclick="fetchJobs(1)" style="padding: 9px 18px; font-size: 0.82rem;">🔄 Retry</button>
                             </div>
                         </div>
@@ -2592,21 +2535,21 @@
                     return;
                 }
 
-                if (latestMeta && latestMeta.noDb && !isSample) {
+                if (latestMeta && latestMeta.noDb) {
                     countEl.innerHTML = `No Database Connected`;
                     pageInd.textContent = '';
                     cnt.innerHTML = `
                         <div class="empty-workspace-hero">
                             <div class="empty-ws-icon">⚡</div>
                             <h3>Connect Your Scraper Database</h3>
-                            <p>JobBuddy is a custom viewer for your scraper. Connect your personal read-only MongoDB Atlas URI in Account Settings to browse your private scraper feed, or explore with verified sample listings.</p>
-                            <div class="connected-empty-actions" style="justify-content: center; margin-top: 18px;">
+                            <p>JobBuddy is a custom viewer for your scraper. Connect your personal read-only MongoDB Atlas URI in Account Settings to browse your private scraper feed, or read the Scraper Setup Guide to configure your cluster.</p>
+                            <div class="connected-empty-actions" style="justify-content: center; margin-top: 18px; gap: 12px;">
                                 <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 10px 22px; font-size: 0.86rem;">
-                                    ⚙️ Connect MongoDB URI
+                                    ⚙️ Connect MongoDB Atlas
                                 </button>
-                                <button class="btn-guest-secondary" onclick="loadSampleJobs()" style="padding: 10px 20px; font-size: 0.86rem;">
-                                    📂 Load Sample Demo Jobs
-                                </button>
+                                <a href="/scraper-guide" class="btn-guest-secondary" style="padding: 10px 20px; font-size: 0.86rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                    📖 Scraper Setup Guide
+                                </a>
                             </div>
                         </div>
                     `;
@@ -2614,10 +2557,10 @@
                     return;
                 }
 
-                // If connected or sample data, but no jobs match active filters
+                // If connected, but no jobs match active filters
                 countEl.innerHTML = `No <strong>${esc(viewLabel.toLowerCase())}</strong> matching filters`;
                 pageInd.textContent = '';
-                const dbName = isSample ? "Sample Demo Data" : (isCustom ? "Personal Scraper Database" : "Connected Database");
+                const dbName = isCustom ? "Personal Scraper Database" : "Connected Database";
                 cnt.innerHTML = `
                     <div class="connected-empty-state">
                         <div class="connected-empty-icon">📦</div>
@@ -2867,10 +2810,8 @@
             const locParam = activeViewType === 'direct_apply' ? activeLoc : 'all';
             const confParam = activeViewType === 'direct_apply' ? activeConf : 'all';
             const customDbUri = localStorage.getItem("jobbuddy_custom_mongo_uri");
-            const isSample = isSampleMode && !customDbUri;
-            const sampleParam = isSample ? "&sample=true" : "";
-            const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}${sampleParam}`;
-            CURRENT_CACHE_KEY = "jb_v7_" + (customDbUri ? "c_" : (isSample ? "s_" : "d_")) + encodeURIComponent(url);
+            const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}`;
+            CURRENT_CACHE_KEY = "jb_v7_" + (customDbUri ? "c_" : "d_") + encodeURIComponent(url);
 
             const cached = loadCache();
             if (cached && cached.jobs) {
@@ -3090,7 +3031,6 @@
                 }
 
                 localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
-                isSampleMode = false;
                 clearAllCache();
                 updateWorkspaceIndicator();
                 closeDbModal();
@@ -3119,7 +3059,6 @@
             }
 
             localStorage.removeItem("jobbuddy_custom_mongo_uri");
-            isSampleMode = false;
             const input = document.getElementById('custom-mongo-input');
             if (input) input.value = "";
             clearAllCache();
@@ -3149,9 +3088,6 @@
                     if (isCustom) {
                         statusDot.className = 'db-status-pill is-custom';
                         statusDot.title = 'Personal MongoDB Connected';
-                    } else if (isSampleMode) {
-                        statusDot.className = 'db-status-pill is-sample';
-                        statusDot.title = 'Sample Demo Feed';
                     } else {
                         statusDot.className = 'db-status-pill';
                         statusDot.title = 'No MongoDB Connected';
@@ -3166,6 +3102,7 @@
         function updateWorkspaceModalUI() {
             const userSection = document.getElementById('modal-user-section');
             const guestSection = document.getElementById('modal-guest-section');
+            const dbSection = document.getElementById('modal-db-section');
             const modalEmail = document.getElementById('modal-account-email');
             const modalDbBadge = document.getElementById('modal-db-badge');
             const input = document.getElementById('custom-mongo-input');
@@ -3182,10 +3119,12 @@
             if (currentUser) {
                 if (userSection) userSection.style.display = 'block';
                 if (guestSection) guestSection.style.display = 'none';
+                if (dbSection) dbSection.style.display = 'block';
                 if (modalEmail) modalEmail.textContent = currentUser.email;
             } else {
                 if (userSection) userSection.style.display = 'none';
                 if (guestSection) guestSection.style.display = 'block';
+                if (dbSection) dbSection.style.display = 'none';
             }
         }
 
@@ -3222,25 +3161,21 @@
             }
         }
 
-        // Demo Candidate Login (for previewing filters & workspace instantly)
-        function loginDemoUser() {
-            isSampleMode = true;
-            const demoUser = {
-                email: "demo.candidate@jobbuddy.io",
-                id: "demo-user-1",
-                user_metadata: { full_name: "Demo Candidate" }
-            };
-            updateAuthState(demoUser);
-        }
-
         // Netlify Identity Authentication
         function openIdentityModal() {
-            if (window.netlifyIdentity && typeof window.netlifyIdentity.open === 'function') {
-                window.netlifyIdentity.open();
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            if (!isLocal && window.netlifyIdentity && typeof window.netlifyIdentity.open === 'function') {
+                window.netlifyIdentity.open('login');
             } else {
-                // Smooth local fallback when running outside deployed Netlify Identity
-                if (confirm("Netlify Identity is not connected in this local environment. Would you like to enter as a Demo Candidate to test the full workspace and filters?")) {
-                    loginDemoUser();
+                // Smooth local dev fallback when running outside deployed Netlify domain
+                const email = prompt("Enter your personal email address to sign into your private workspace:");
+                if (email && email.trim() && email.includes('@')) {
+                    const cleanEmail = email.trim().toLowerCase();
+                    updateAuthState({
+                        email: cleanEmail,
+                        id: 'usr_' + btoa(cleanEmail).replace(/=/g, '').slice(0, 16),
+                        user_metadata: { full_name: cleanEmail.split('@')[0] }
+                    });
                 }
             }
         }
@@ -3250,7 +3185,6 @@
                 try { window.netlifyIdentity.logout(); } catch (e) {}
             }
             closeDbModal();
-            isSampleMode = false;
             updateAuthState(null);
         }
 
@@ -3266,7 +3200,6 @@
                     localStorage.removeItem("jobbuddy_custom_mongo_uri");
                 } catch (e) {}
                 userProfile = null;
-                isSampleMode = false;
                 clearAllCache();
             }
             updateWorkspaceIndicator();
@@ -3318,7 +3251,13 @@
             try {
                 const savedSession = localStorage.getItem("jobbuddy_user_session");
                 if (savedSession) {
-                    currentUser = JSON.parse(savedSession);
+                    const parsed = JSON.parse(savedSession);
+                    if (parsed && parsed.email && !parsed.email.includes("demo.candidate")) {
+                        currentUser = parsed;
+                    } else {
+                        localStorage.removeItem("jobbuddy_user_session");
+                        localStorage.removeItem("jobbuddy_custom_mongo_uri");
+                    }
                 }
             } catch (e) {}
 
