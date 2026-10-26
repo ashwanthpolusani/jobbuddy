@@ -582,14 +582,274 @@
             border-color: #dc2626;
         }
 
+        /* ── GUEST WELCOME & FEATURE SHOWCASE ─────────────────── */
+        .guest-welcome-view {
+            padding: 8px 0 40px;
+        }
+
+        .guest-hero-card {
+            background: linear-gradient(145deg, #ffffff, #f8faff);
+            border: 1px solid rgba(10, 102, 194, 0.18);
+            border-radius: 16px;
+            padding: 38px 28px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(10, 102, 194, 0.06);
+            margin-bottom: 22px;
+        }
+
+        .guest-hero-card::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(10, 102, 194, 0.10) 0%, rgba(255,255,255,0) 70%);
+            pointer-events: none;
+        }
+
+        .guest-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(10, 102, 194, 0.08);
+            color: var(--accent);
+            border: 1px solid rgba(10, 102, 194, 0.22);
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 5px 14px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+        }
+
+        .guest-hero-title {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.03em;
+            line-height: 1.25;
+            margin-bottom: 12px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .guest-hero-title .accent-text {
+            background: linear-gradient(135deg, #0a66c2 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .guest-hero-desc {
+            font-size: 0.88rem;
+            color: var(--muted);
+            line-height: 1.65;
+            max-width: 520px;
+            margin: 0 auto 22px;
+        }
+
+        .guest-cta-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-guest-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #0a66c2 0%, #0052a3 100%);
+            color: #fff;
+            padding: 11px 24px;
+            border-radius: 9px;
+            font-size: 0.86rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(10, 102, 194, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .btn-guest-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(10, 102, 194, 0.35);
+            background: linear-gradient(135deg, #0d74dc 0%, #005bb5 100%);
+        }
+
+        .btn-guest-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 11px 20px;
+            border-radius: 9px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-guest-secondary:hover {
+            background: var(--surface2);
+            border-color: var(--border2);
+        }
+
+        /* Feature grid */
+        .guest-features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .guest-features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .guest-feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 16px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .guest-feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .guest-feature-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .guest-feature-title {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .guest-feature-text {
+            font-size: 0.77rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* Preview Section with locked overlay */
+        .guest-preview-wrapper {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .guest-preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .guest-preview-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .guest-sample-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .guest-sample-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+        }
+
+        .guest-sample-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .guest-sample-title {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .guest-sample-meta {
+            font-size: 0.74rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guest-lock-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 160px;
+            background: linear-gradient(to top, rgba(255,255,255,0.98) 45%, rgba(255,255,255,0.7) 75%, rgba(255,255,255,0) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 20px;
+            backdrop-filter: blur(2px);
+            z-index: 5;
+        }
+
+        .guest-lock-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
         /* ── EMPTY WORKSPACE HERO ────────────────────────────────── */
         .empty-workspace-hero {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 48px 24px;
+            padding: 44px 24px;
             text-align: center;
-            margin: 24px 0;
+            margin: 20px 0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
 
@@ -599,7 +859,7 @@
         }
 
         .empty-workspace-hero h3 {
-            font-size: 1.25rem;
+            font-size: 1.20rem;
             font-weight: 800;
             color: var(--text);
             letter-spacing: -0.02em;
@@ -607,7 +867,7 @@
         }
 
         .empty-workspace-hero p {
-            font-size: 0.88rem;
+            font-size: 0.86rem;
             color: var(--muted);
             max-width: 460px;
             margin: 0 auto 20px;
@@ -1673,131 +1933,236 @@
 
             <!-- JOB LIST COLUMN -->
             <main class="main-col" id="panel-jobs">
-                <div class="panel-main">
 
-                    <!-- 1. View Switcher (Job Openings vs Company Career Pages) -->
-                    <div class="view-switcher-bar">
-                        <div class="view-tabs" role="tablist" aria-label="Job listing view">
-                            <button class="view-tab active" id="tab-direct" onclick="setViewType('direct_apply')"
-                                role="tab" aria-selected="true">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2.5" aria-hidden="true">
-                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                <!-- 1. GUEST WELCOME & FEATURE SHOWCASE (VISIBLE BEFORE SIGN-IN) -->
+                <div id="guest-welcome-view" class="guest-welcome-view">
+                    <!-- Hero Card -->
+                    <div class="guest-hero-card">
+                        <div class="guest-badge-pill">
+                            <span>⚡</span> Direct ATS Portals &middot; 0-2 YOE Tech Opportunities
+                        </div>
+                        <h2 class="guest-hero-title">
+                            Verified Early-Career Tech Jobs Straight from <span class="accent-text">Company Career Portals</span>
+                        </h2>
+                        <p class="guest-hero-desc">
+                            Stop wasting hours on agency spam, ghost listings, and fake junior roles. JobBuddy tracks official Workday, Lever, and Greenhouse portals for genuine entry-level roles. Sign in to unlock live search, multi-factor filters, and your Netlify Database workspace.
+                        </p>
+                        <div class="guest-cta-row">
+                            <button class="btn-guest-primary" onclick="openIdentityModal()" aria-label="Sign in with Netlify">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                                    <polyline points="10 17 15 12 10 7"/>
+                                    <line x1="15" y1="12" x2="3" y2="12"/>
                                 </svg>
-                                Direct Job Links <span class="tab-badge" id="badge-direct">...</span>
+                                Sign In to Unlock Feed
                             </button>
-                            <button class="view-tab" id="tab-portals" onclick="setViewType('filtered_list')" role="tab"
-                                aria-selected="false">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" aria-hidden="true">
-                                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-                                    <line x1="9" y1="22" x2="9" y2="22.01" />
-                                    <line x1="15" y1="22" x2="15" y2="22.01" />
-                                    <line x1="9" y1="6" x2="9" y2="6.01" />
-                                    <line x1="15" y1="6" x2="15" y2="6.01" />
-                                    <line x1="9" y1="10" x2="9" y2="10.01" />
-                                    <line x1="15" y1="10" x2="15" y2="10.01" />
-                                    <line x1="9" y1="14" x2="9" y2="14.01" />
-                                    <line x1="15" y1="14" x2="15" y2="14.01" />
-                                    <line x1="9" y1="18" x2="9" y2="18.01" />
-                                    <line x1="15" y1="18" x2="15" y2="18.01" />
+                            <button class="btn-guest-secondary" onclick="loginDemoUser()" aria-label="Explore demo workspace">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <polygon points="5 3 19 12 5 21 5 3"/>
                                 </svg>
-                                <span id="label-portals">Company Portals</span> <span class="tab-badge" id="badge-portals">...</span>
+                                Try Demo Workspace
                             </button>
                         </div>
                     </div>
 
-                    <!-- 2. Category tabs -->
-                    <div class="cat-scroll-container" id="cat-scroll-container">
-                        <div class="cat-scroll-wrap" id="cat-scroll-wrap">
-                            <div class="cat-tabs" id="cat-tabs" role="tablist" aria-label="Job categories">
-                                <button class="cat-btn active" data-cat="all" id="cat-all" role="tab" aria-selected="true"
-                                    onclick="setCat('all',this)">All</button>
-                            </div>
+                    <!-- 3 Pillars Grid -->
+                    <div class="guest-features-grid">
+                        <div class="guest-feature-card">
+                            <div class="guest-feature-icon">⚡</div>
+                            <div class="guest-feature-title">Direct ATS Applications</div>
+                            <div class="guest-feature-text">Apply directly on Workday, Lever, and Greenhouse systems. Zero recruiters or third-party tracking middlemen.</div>
+                        </div>
+                        <div class="guest-feature-card">
+                            <div class="guest-feature-icon">🎯</div>
+                            <div class="guest-feature-title">Strict 0–2 YOE Filtering</div>
+                            <div class="guest-feature-text">Heuristic parser filters out misleading "junior" postings asking for 5+ years of experience. Tailored for graduates.</div>
+                        </div>
+                        <div class="guest-feature-card">
+                            <div class="guest-feature-icon">🔒</div>
+                            <div class="guest-feature-title">Netlify Database Sync</div>
+                            <div class="guest-feature-text">Connect your private MongoDB cluster. Settings and saved listings sync across devices via Netlify Database.</div>
                         </div>
                     </div>
 
-                    <!-- Filters -->
-                    <div class="filter-section">
-                        <div class="search-wrap">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <circle cx="11" cy="11" r="8" />
-                                <path d="m21 21-4.35-4.35" />
-                            </svg>
-                            <input class="search-input" id="search-input" type="text"
-                                placeholder="Search title, company, location&#8230;" oninput="debounceSearch()"
-                                autocomplete="off" aria-label="Search jobs">
+                    <!-- Interactive Sample Feed Preview (with Locked Overlay) -->
+                    <div class="guest-preview-wrapper">
+                        <div class="guest-preview-header">
+                            <span class="guest-preview-badge">Live Opportunities Preview</span>
+                            <span style="font-size: 0.72rem; color: var(--accent); font-weight: 600;">🔒 Sign In Required for Full Feed</span>
+                        </div>
+                        <div class="guest-sample-cards">
+                            <div class="guest-sample-card">
+                                <div class="guest-sample-left">
+                                    <div class="guest-sample-title">Associate Software Development Engineer</div>
+                                    <div class="guest-sample-meta">
+                                        <span>Stripe</span> &middot; <span>Remote / Bengaluru</span> &middot; <span style="color:var(--green); font-weight:600;">Confirmed 0-1 YOE</span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-confirmed">Confirmed</span>
+                            </div>
+                            <div class="guest-sample-card">
+                                <div class="guest-sample-left">
+                                    <div class="guest-sample-title">Junior Data &amp; AI Systems Engineer</div>
+                                    <div class="guest-sample-meta">
+                                        <span>Snowflake</span> &middot; <span>Hyderabad / Hybrid</span> &middot; <span style="color:var(--green); font-weight:600;">Fresh Grad 2025/2026</span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-confirmed">Confirmed</span>
+                            </div>
+                            <div class="guest-sample-card">
+                                <div class="guest-sample-left">
+                                    <div class="guest-sample-title">Cloud DevOps &amp; Site Reliability Associate</div>
+                                    <div class="guest-sample-meta">
+                                        <span>Atlassian</span> &middot; <span>Remote Tech Hub</span> &middot; <span style="color:var(--amber); font-weight:600;">Early Career</span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-likely">Likely</span>
+                            </div>
                         </div>
 
-                        <div class="filter-row" id="filter-row">
-                            <div class="filter-group-item">
-                                <span class="filter-label">Location</span>
-                                <div class="filter-pill-wrap" id="location-pill-wrap">
-                                    <button class="filt-btn active-blue" id="loc-all" onclick="setLoc('all',this)">All</button>
-                                    <button class="filt-btn" id="loc-remote" onclick="setLoc('remote',this)">Remote</button>
-                                    <button class="filt-btn" id="loc-india" onclick="setLoc('india',this)">India</button>
-                                    <button class="filt-btn" id="loc-global" onclick="setLoc('global',this)">Global</button>
+                        <!-- Lock Overlay -->
+                        <div class="guest-lock-overlay">
+                            <div class="guest-lock-title">Sign in to unlock interactive search, track filters &amp; direct apply links</div>
+                            <div class="guest-cta-row" style="margin-top: 6px;">
+                                <button class="btn-guest-primary" onclick="openIdentityModal()" style="padding: 9px 20px; font-size: 0.82rem;">
+                                    Sign In with Netlify
+                                </button>
+                                <button class="btn-guest-secondary" onclick="loginDemoUser()" style="padding: 9px 16px; font-size: 0.82rem;">
+                                    Explore as Demo User
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. AUTHENTICATED WORKSPACE VIEW (SHOWN ONLY AFTER SIGN-IN) -->
+                <div id="authenticated-workspace-view" style="display: none;">
+                    <div class="panel-main">
+
+                        <!-- 1. View Switcher (Job Openings vs Company Career Pages) -->
+                        <div class="view-switcher-bar">
+                            <div class="view-tabs" role="tablist" aria-label="Job listing view">
+                                <button class="view-tab active" id="tab-direct" onclick="setViewType('direct_apply')"
+                                    role="tab" aria-selected="true">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" aria-hidden="true">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                    </svg>
+                                    Direct Job Links <span class="tab-badge" id="badge-direct">...</span>
+                                </button>
+                                <button class="view-tab" id="tab-portals" onclick="setViewType('filtered_list')" role="tab"
+                                    aria-selected="false">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" aria-hidden="true">
+                                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+                                        <line x1="9" y1="22" x2="9" y2="22.01" />
+                                        <line x1="15" y1="22" x2="15" y2="22.01" />
+                                        <line x1="9" y1="6" x2="9" y2="6.01" />
+                                        <line x1="15" y1="6" x2="15" y2="6.01" />
+                                        <line x1="9" y1="10" x2="9" y2="10.01" />
+                                        <line x1="15" y1="10" x2="15" y2="10.01" />
+                                        <line x1="9" y1="14" x2="9" y2="14.01" />
+                                        <line x1="15" y1="14" x2="15" y2="14.01" />
+                                        <line x1="9" y1="18" x2="9" y2="18.01" />
+                                        <line x1="15" y1="18" x2="15" y2="18.01" />
+                                    </svg>
+                                    <span id="label-portals">Company Portals</span> <span class="tab-badge" id="badge-portals">...</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2. Category tabs -->
+                        <div class="cat-scroll-container" id="cat-scroll-container">
+                            <div class="cat-scroll-wrap" id="cat-scroll-wrap">
+                                <div class="cat-tabs" id="cat-tabs" role="tablist" aria-label="Job categories">
+                                    <button class="cat-btn active" data-cat="all" id="cat-all" role="tab" aria-selected="true"
+                                        onclick="setCat('all',this)">All</button>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="filter-divider" aria-hidden="true"></div>
+                        <!-- Filters -->
+                        <div class="filter-section">
+                            <div class="search-wrap">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.35-4.35" />
+                                </svg>
+                                <input class="search-input" id="search-input" type="text"
+                                    placeholder="Search title, company, location&#8230;" oninput="debounceSearch()"
+                                    autocomplete="off" aria-label="Search jobs">
+                            </div>
 
-                            <div class="filter-group-item" id="conf-filter-wrap">
-                                <span class="filter-label">Confidence</span>
-                                <div class="filter-pill-wrap">
-                                    <button class="filt-btn active-blue" id="conf-all"
-                                        onclick="setConf('all',this)">All</button>
-                                    <button class="filt-btn" id="conf-safe"
-                                        onclick="setConf('SAFE',this)">Confirmed</button>
-                                    <button class="filt-btn" id="conf-possible"
-                                        onclick="setConf('POSSIBLE',this)">Likely</button>
+                            <div class="filter-row" id="filter-row">
+                                <div class="filter-group-item">
+                                    <span class="filter-label">Location</span>
+                                    <div class="filter-pill-wrap" id="location-pill-wrap">
+                                        <button class="filt-btn active-blue" id="loc-all" onclick="setLoc('all',this)">All</button>
+                                        <button class="filt-btn" id="loc-remote" onclick="setLoc('remote',this)">Remote</button>
+                                        <button class="filt-btn" id="loc-india" onclick="setLoc('india',this)">India</button>
+                                        <button class="filt-btn" id="loc-global" onclick="setLoc('global',this)">Global</button>
+                                    </div>
+                                </div>
+
+                                <div class="filter-divider" aria-hidden="true"></div>
+
+                                <div class="filter-group-item" id="conf-filter-wrap">
+                                    <span class="filter-label">Confidence</span>
+                                    <div class="filter-pill-wrap">
+                                        <button class="filt-btn active-blue" id="conf-all"
+                                            onclick="setConf('all',this)">All</button>
+                                        <button class="filt-btn" id="conf-safe"
+                                            onclick="setConf('SAFE',this)">Confirmed</button>
+                                        <button class="filt-btn" id="conf-possible"
+                                            onclick="setConf('POSSIBLE',this)">Likely</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Result Meta Bar with Visible Counts & Page Info -->
+                        <div class="result-meta-bar" id="result-meta-bar">
+                            <div class="result-count" id="result-count" aria-live="polite">Loading listings...</div>
+                            <div class="page-indicator" id="page-indicator"></div>
+                        </div>
+
+                        <div id="jobs-container">
+                            <div class="skeleton-card" aria-hidden="true">
+                                <div class="skeleton-left">
+                                    <div class="skeleton-bar title"></div>
+                                    <div class="skeleton-bar meta"></div>
+                                </div>
+                                <div class="skeleton-btn"></div>
+                            </div>
+                            <div class="skeleton-card" aria-hidden="true">
+                                <div class="skeleton-left">
+                                    <div class="skeleton-bar title" style="width:68%;"></div>
+                                    <div class="skeleton-bar meta" style="width:40%;"></div>
+                                </div>
+                                <div class="skeleton-btn"></div>
+                            </div>
+                            <div class="skeleton-card" aria-hidden="true">
+                                <div class="skeleton-left">
+                                    <div class="skeleton-bar title" style="width:50%;"></div>
+                                    <div class="skeleton-bar meta" style="width:30%;"></div>
+                                </div>
+                                <div class="skeleton-btn"></div>
+                            </div>
+                            <div class="skeleton-card" aria-hidden="true">
+                                <div class="skeleton-left">
+                                    <div class="skeleton-bar title" style="width:60%;"></div>
+                                    <div class="skeleton-bar meta" style="width:45%;"></div>
+                                </div>
+                                <div class="skeleton-btn"></div>
+                            </div>
+                        </div>
+
+                        <!-- Numbered Pagination Controls -->
+                        <nav class="pagination-bar" id="pagination-bar" aria-label="Job listings pagination"
+                            style="display:none;"></nav>
+
                     </div>
-
-                    <!-- Result Meta Bar with Visible Counts & Page Info -->
-                    <div class="result-meta-bar" id="result-meta-bar">
-                        <div class="result-count" id="result-count" aria-live="polite">Loading listings...</div>
-                        <div class="page-indicator" id="page-indicator"></div>
-                    </div>
-
-                    <div id="jobs-container">
-                        <div class="skeleton-card" aria-hidden="true">
-                            <div class="skeleton-left">
-                                <div class="skeleton-bar title"></div>
-                                <div class="skeleton-bar meta"></div>
-                            </div>
-                            <div class="skeleton-btn"></div>
-                        </div>
-                        <div class="skeleton-card" aria-hidden="true">
-                            <div class="skeleton-left">
-                                <div class="skeleton-bar title" style="width:68%;"></div>
-                                <div class="skeleton-bar meta" style="width:40%;"></div>
-                            </div>
-                            <div class="skeleton-btn"></div>
-                        </div>
-                        <div class="skeleton-card" aria-hidden="true">
-                            <div class="skeleton-left">
-                                <div class="skeleton-bar title" style="width:50%;"></div>
-                                <div class="skeleton-bar meta" style="width:30%;"></div>
-                            </div>
-                            <div class="skeleton-btn"></div>
-                        </div>
-                        <div class="skeleton-card" aria-hidden="true">
-                            <div class="skeleton-left">
-                                <div class="skeleton-bar title" style="width:60%;"></div>
-                                <div class="skeleton-bar meta" style="width:45%;"></div>
-                            </div>
-                            <div class="skeleton-btn"></div>
-                        </div>
-                    </div>
-
-                    <!-- Numbered Pagination Controls -->
-                    <nav class="pagination-bar" id="pagination-bar" aria-label="Job listings pagination"
-                        style="display:none;"></nav>
-
                 </div>
             </main>
 
@@ -2131,9 +2496,28 @@
                     renderPagination();
                     return;
                 }
-                countEl.innerHTML = `No <strong>${esc(viewLabel.toLowerCase())}</strong> matching current filters`;
+                countEl.innerHTML = `No <strong>${esc(viewLabel.toLowerCase())}</strong> in active workspace`;
                 pageInd.textContent = '';
-                cnt.innerHTML = '<div class="state"><p>No listings match your search criteria. Try adjusting the filters above.</p></div>';
+                const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
+                const dbName = isCustom ? "Custom Scraper Database" : "Community Demo Database";
+                cnt.innerHTML = `
+                    <div class="connected-empty-state">
+                        <div class="connected-empty-icon">📦</div>
+                        <div class="connected-empty-title">Your Workspace is Connected</div>
+                        <div class="connected-empty-desc">
+                            Connected to <strong>${esc(dbName)}</strong>, but no active listings match the current filters. Run your scraper or adjust your track filters.
+                        </div>
+                        <div class="connected-empty-actions">
+                            <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 9px 18px; font-size: 0.82rem;">
+                                ⚙️ Workspace Settings
+                            </button>
+                            <button class="btn-guest-secondary" onclick="fetchJobs(1)" style="padding: 9px 18px; font-size: 0.82rem;">
+                                🔄 Refresh Feed
+                            </button>
+                            ${(activeCat !== 'all' || activeLoc !== 'all' || (document.getElementById('search-input') && document.getElementById('search-input').value)) ? `<button class="btn-guest-secondary" onclick="clearFilters()" style="padding: 9px 18px; font-size: 0.82rem;">Clear Active Filters</button>` : ''}
+                        </div>
+                    </div>
+                `;
                 renderPagination();
                 return;
             }
@@ -2681,34 +3065,86 @@
             }
         }
 
+        // Filter reset helper
+        function clearFilters() {
+            activeCat = 'all';
+            activeLoc = 'all';
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = '';
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            const catAll = document.getElementById('cat-all');
+            if (catAll) catAll.classList.add('active');
+            ['loc-all', 'loc-remote', 'loc-india', 'loc-global'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.className = id === 'loc-all' ? 'filt-btn active-blue' : 'filt-btn';
+            });
+            updateURL();
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        // ── AUTHENTICATION & VIEW GATING ──────────────────────────
+        function updateAuthView() {
+            const guestView = document.getElementById('guest-welcome-view');
+            const authView = document.getElementById('authenticated-workspace-view');
+            const isAuth = Boolean(currentUser);
+
+            if (guestView) guestView.style.display = isAuth ? 'none' : 'block';
+            if (authView) authView.style.display = isAuth ? 'block' : 'none';
+
+            if (isAuth) {
+                currentPage = 1;
+                fetchJobs(1);
+            }
+        }
+
+        // Demo Candidate Login (for previewing filters & workspace instantly)
+        function loginDemoUser() {
+            const demoUser = {
+                email: "demo.candidate@jobbuddy.io",
+                id: "demo-user-1",
+                user_metadata: { full_name: "Demo Candidate" }
+            };
+            updateAuthState(demoUser);
+        }
+
         // Netlify Identity Authentication
         function openIdentityModal() {
-            if (window.netlifyIdentity) {
+            if (window.netlifyIdentity && typeof window.netlifyIdentity.open === 'function') {
                 window.netlifyIdentity.open();
             } else {
-                alert("Netlify Identity is initializing. Please verify Identity is enabled on your Netlify dashboard.");
+                // Smooth local fallback when running outside deployed Netlify Identity
+                if (confirm("Netlify Identity is not connected in this local environment. Would you like to enter as a Demo Candidate to test the full workspace and filters?")) {
+                    loginDemoUser();
+                }
             }
         }
 
         function logoutIdentity() {
             if (window.netlifyIdentity) {
-                window.netlifyIdentity.logout();
+                try { window.netlifyIdentity.logout(); } catch (e) {}
             }
+            updateAuthState(null);
         }
 
         function updateAuthState(user) {
             currentUser = user;
-            updateWorkspaceIndicator();
             if (user) {
-                fetchUserProfile(user);
+                try {
+                    localStorage.setItem("jobbuddy_user_session", JSON.stringify({ email: user.email, id: user.id }));
+                } catch (e) {}
             } else {
-                // Logged out: reset to community feed
-                localStorage.removeItem("jobbuddy_custom_mongo_uri");
+                try {
+                    localStorage.removeItem("jobbuddy_user_session");
+                    localStorage.removeItem("jobbuddy_custom_mongo_uri");
+                } catch (e) {}
                 userProfile = null;
                 clearAllCache();
-                updateWorkspaceIndicator();
-                currentPage = 1;
-                fetchJobs(1);
+            }
+            updateWorkspaceIndicator();
+            updateAuthView();
+            if (user) {
+                fetchUserProfile(user);
             }
         }
 
@@ -2742,12 +3178,22 @@
             }
 
             updatePageTitle();
-            currentPage = 1;
-            fetchJobs(1);
+            if (currentUser) {
+                currentPage = 1;
+                fetchJobs(1);
+            }
         });
 
         // Initialize Everything on Load
         document.addEventListener('DOMContentLoaded', () => {
+            // Restore persistent user session if available
+            try {
+                const savedSession = localStorage.getItem("jobbuddy_user_session");
+                if (savedSession) {
+                    currentUser = JSON.parse(savedSession);
+                }
+            } catch (e) {}
+
             // Clean up legacy localStorage cache keys
             clearAllCache();
 
@@ -2810,8 +3256,12 @@
 
             // Initialize Netlify Identity
             updateWorkspaceIndicator();
+            updateAuthView();
+
             if (window.netlifyIdentity) {
-                window.netlifyIdentity.on('init', user => updateAuthState(user));
+                window.netlifyIdentity.on('init', user => {
+                    if (user) updateAuthState(user);
+                });
                 window.netlifyIdentity.on('login', user => {
                     updateAuthState(user);
                     if (window.netlifyIdentity.close) window.netlifyIdentity.close();
@@ -2819,7 +3269,6 @@
                 window.netlifyIdentity.on('logout', () => updateAuthState(null));
             }
 
-            fetchJobs(1);
             setTimeout(hideNBadge, 500);
             setTimeout(hideNBadge, 2000);
             setTimeout(hideNBadge, 5000);
