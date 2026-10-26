@@ -107,8 +107,32 @@ exports.handler = async (event, context) => {
     const location   = params.location   || "all";
     const search     = params.search     || "";
 
+    const activeUri = (customUri && customUri.trim()) || process.env.MONGODB_URI || "";
+    if (!activeUri) {
+        return {
+            statusCode: 200,
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Cache-Control": "no-store"
+            },
+            body: JSON.stringify({
+                jobs: [],
+                total: 0,
+                directCount: 0,
+                portalCount: 0,
+                meta: {
+                    noDb: true,
+                    isCustomDb: false,
+                    categories: [],
+                    locations: []
+                }
+            })
+        };
+    }
+
     try {
-        const client = await connectToDatabase(customUri);
+        const client = await connectToDatabase(activeUri);
         const db = client.db("job_aggregator");
         const collection = db.collection("jobs");
 

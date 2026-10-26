@@ -40,6 +40,13 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        /* Kill Netlify badge */
+        a[href*="netlify.com"][style*="fixed"],
+        a[href*="netlify.app"][style*="fixed"],
+        [data-netlify-deploy-id],
+        #nl-badge-frame,
+        .netlify-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+
         .header {
             border-bottom: 1px solid var(--border);
             padding: 0 24px;
