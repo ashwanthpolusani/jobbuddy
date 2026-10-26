@@ -11,7 +11,13 @@ const getSiteStatsHandler = require('./netlify/functions/getSiteStats').handler;
 const app = express();
 const PORT = process.env.PORT || 8888;
 
-app.use(express.static(__dirname));
+app.use(express.static(__dirname, { extensions: ['html'] }));
+
+// Explicit static publisher routes (matching Netlify _redirects)
+app.get('/interview-prep', (req, res) => res.sendFile(path.join(__dirname, 'interview-prep.html')));
+app.get('/resume-guide', (req, res) => res.sendFile(path.join(__dirname, 'resume-guide.html')));
+app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'privacy.html')));
+app.get('/terms', (req, res) => res.sendFile(path.join(__dirname, 'terms.html')));
 
 app.get('/.netlify/functions/getJobs', async (req, res) => {
     const event = { queryStringParameters: req.query, headers: req.headers };
@@ -27,7 +33,7 @@ app.get('/.netlify/functions/getSiteStats', async (req, res) => {
     res.status(result.statusCode).set(result.headers || {}).send(result.body);
 });
 
-// SPA fallback for programmatic SEO routes
+// SPA fallback for programmatic SEO search filters
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });

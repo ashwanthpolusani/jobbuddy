@@ -165,79 +165,119 @@
             margin-top: 3px;
         }
 
-        /* ── WORKSPACE CONTROLLER & NAVBAR ───────────────────────── */
+        /* ── HEADER ACTIONS & CONTROLLERS ───────────────────────── */
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .header-nav {
-            display: flex;
+        .btn-header-db {
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .header-nav-link {
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: var(--radius);
             font-size: 0.82rem;
             font-weight: 600;
             color: var(--text2);
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: var(--radius);
-            transition: all 0.15s ease;
-        }
-
-        .header-nav-link:hover, .header-nav-link.active {
-            color: var(--accent);
-            background: var(--accent-dim);
-        }
-
-        @media (max-width: 720px) {
-            .header-nav { display: none; }
-        }
-
-        .btn-workspace {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 7px 16px;
-            border-radius: 20px;
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--surface);
             border: 1px solid var(--border);
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.15s ease;
             user-select: none;
         }
 
-        .btn-workspace:hover {
+        .btn-header-db:hover {
             border-color: var(--accent);
             color: var(--accent);
-            background: #fff;
-            box-shadow: 0 4px 12px rgba(10, 102, 194, 0.12);
-            transform: translateY(-1px);
+            background: var(--surface2);
         }
 
-        .btn-workspace.is-custom {
-            border-color: #10b981;
-            background: rgba(16, 185, 129, 0.08);
+        .btn-header-db.is-custom {
+            border-color: rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.06);
             color: #065f46;
         }
 
-        .ws-indicator {
-            width: 8px;
-            height: 8px;
+        .db-dot {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: #9ca3af;
             transition: background 0.2s ease, box-shadow 0.2s ease;
+            flex-shrink: 0;
         }
 
-        .btn-workspace.is-custom .ws-indicator {
+        .btn-header-db.is-custom .db-dot {
             background: #10b981;
             box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+        }
+
+        .btn-header-auth {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 16px;
+            border-radius: var(--radius);
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #ffffff;
+            background: var(--accent);
+            border: 1px solid var(--accent);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .btn-header-auth:hover {
+            background: #0052a3;
+            border-color: #0052a3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(10, 102, 194, 0.25);
+        }
+
+        .user-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px 5px 12px;
+            border-radius: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            font-size: 0.80rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .user-avatar-small {
+            font-size: 0.95rem;
+        }
+
+        .user-email-header {
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-logout-small {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: none;
+            background: var(--surface3);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            padding: 0;
+        }
+
+        .btn-logout-small:hover {
+            background: rgba(220, 38, 38, 0.12);
+            color: #dc2626;
         }
 
         /* ── UNIFIED WORKSPACE MODAL ──────────────────────────────── */
@@ -1249,33 +1289,43 @@
             }
         }
 
-        /* ── FOOTER ───────────────────────────────────────────────── */
+        /* ── PROFESSIONAL MULTI-COLUMN FOOTER ────────────────────── */
         .site-footer {
             border-top: 1px solid var(--border);
-            margin-top: 48px;
-            padding: 32px 24px 44px;
+            margin-top: 56px;
+            padding: 48px 24px 36px;
             background: var(--surface);
         }
 
-        .footer-inner {
+        .footer-container {
             max-width: 1200px;
             margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
         }
 
-        .footer-left {
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr 1fr;
+            gap: 40px;
+            padding-bottom: 36px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 28px;
+            }
+        }
+
+        .footer-logo-row {
             display: flex;
             align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
         .footer-brand {
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             font-weight: 800;
             color: var(--text);
             letter-spacing: -0.04em;
@@ -1285,41 +1335,62 @@
             color: var(--accent);
         }
 
-        .footer-tagline {
-            font-size: 0.78rem;
-            color: #374151;
+        .footer-mission {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.6;
+            max-width: 420px;
+            margin-bottom: 14px;
         }
 
-        .footer-links {
+        .footer-copy {
+            font-size: 0.76rem;
+            color: var(--muted);
+        }
+
+        .footer-col {
             display: flex;
-            align-items: center;
-            gap: 12px;
+            flex-direction: column;
         }
 
-        .footer-links a {
+        .footer-heading {
             font-size: 0.78rem;
-            color: #374151;
-            font-weight: 500;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text);
+            margin-bottom: 14px;
+        }
+
+        .footer-nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-nav-list a {
+            font-size: 0.82rem;
+            color: var(--muted);
             text-decoration: none;
-            transition: color 0.15s;
+            font-weight: 500;
+            transition: color 0.15s ease;
         }
 
-        .footer-links a:hover {
+        .footer-nav-list a:hover {
             color: var(--accent);
-            text-decoration: underline;
         }
 
-        .footer-sep {
-            color: #6b7280;
-            font-size: 0.85rem;
+        .footer-bottom-bar {
+            padding-top: 24px;
         }
 
         .footer-disclaimer {
-            max-width: 1200px;
-            margin: 16px auto 0;
             font-size: 0.75rem;
-            color: #4b5563;
-            line-height: 1.5;
+            color: var(--muted);
+            line-height: 1.6;
         }
 
         /* ── MOBILE ───────────────────────────────────────────────── */
@@ -1540,14 +1611,27 @@
                     </div>
                 </a>
                 <div class="header-actions">
-                    <nav class="header-nav" aria-label="Main Navigation">
-                        <a href="/interview-prep" class="header-nav-link">Interview Prep</a>
-                        <a href="/resume-guide" class="header-nav-link">Resume Guide</a>
-                    </nav>
-                    <button class="btn-workspace" id="btn-workspace" onclick="openWorkspaceModal()" aria-label="Workspace Settings" title="Configure database & account">
-                        <span class="ws-indicator" id="ws-indicator"></span>
-                        <span id="ws-btn-label">Workspace</span>
+                    <button class="btn-header-db" id="btn-db-connect" onclick="openDbModal()" title="Configure database data source" aria-label="Connect Database">
+                        <span class="db-dot" id="db-indicator"></span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                        <span id="db-btn-label">Connect Database</span>
                     </button>
+                    <div class="auth-wrapper" id="auth-header-wrapper">
+                        <button class="btn-header-auth" id="btn-header-signin" onclick="openIdentityModal()" aria-label="Sign In">
+                            Sign In
+                        </button>
+                        <div class="user-pill" id="user-header-pill" style="display: none;">
+                            <span class="user-avatar-small" id="header-avatar">&#128100;</span>
+                            <span class="user-email-header" id="header-user-email">user@domain.com</span>
+                            <button class="btn-logout-small" onclick="logoutIdentity()" title="Sign Out" aria-label="Sign Out">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -1706,30 +1790,47 @@
 
         <!-- FOOTER -->
         <footer class="site-footer">
-            <div class="footer-inner">
-                <div class="footer-left">
-                    <span class="footer-brand">Job<span class="accent">Buddy</span></span>
-                    <span class="footer-tagline">Daily tech opportunities for freshers &middot; No experience required</span>
+            <div class="footer-container">
+                <div class="footer-grid">
+                    <div class="footer-col-brand">
+                        <div class="footer-logo-row">
+                            <span class="footer-brand">Job<span class="accent">Buddy</span></span>
+                        </div>
+                        <p class="footer-mission">
+                            Indexing verified entry-level software engineering requisitions and official career portals directly from source ATS feeds. No experience required.
+                        </p>
+                        <div class="footer-copy">&copy; 2026 JobBuddy. Built for freshers.</div>
+                    </div>
+
+                    <div class="footer-col">
+                        <h4 class="footer-heading">Career Resources</h4>
+                        <ul class="footer-nav-list">
+                            <li><a href="/interview-prep">Interview Blueprint</a></li>
+                            <li><a href="/resume-guide">ATS Resume Guide</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h4 class="footer-heading">Transparency</h4>
+                        <ul class="footer-nav-list">
+                            <li><a href="/privacy">Privacy Policy</a></li>
+                            <li><a href="/terms">Terms of Service</a></li>
+                        </ul>
+                    </div>
                 </div>
-                <nav class="footer-links" aria-label="Footer navigation links">
-                    <a href="/interview-prep">Interview Prep</a>
-                    <span class="footer-sep">&middot;</span>
-                    <a href="/resume-guide">Resume Guide</a>
-                    <span class="footer-sep">&middot;</span>
-                    <a href="/privacy">Privacy Policy</a>
-                    <span class="footer-sep">&middot;</span>
-                    <a href="/terms">Terms of Service</a>
-                </nav>
-            </div>
-            <div class="footer-disclaimer">
-                JobBuddy is an independent aggregator indexing publicly accessible corporate job requisitions and official career portals. All trademarks and company names belong to their respective owners.
+
+                <div class="footer-bottom-bar">
+                    <p class="footer-disclaimer">
+                        JobBuddy is an independent aggregator indexing publicly accessible corporate requisitions and official career portals. All trademarks, company names, and logos belong to their respective owners.
+                    </p>
+                </div>
             </div>
         </footer>
 
     </div>
 
-        <!-- UNIFIED WORKSPACE & DATABASE SETTINGS MODAL -->
-    <div id="workspace-modal" class="db-modal-overlay" style="display: none;" onclick="if(event.target===this)closeWorkspaceModal()">
+    <!-- DATABASE CONNECTION MODAL -->
+    <div id="db-modal" class="db-modal-overlay" style="display: none;" onclick="if(event.target===this)closeDbModal()">
         <div class="db-modal-card">
             <div class="db-modal-header">
                 <div class="db-modal-title-wrap">
@@ -1739,15 +1840,14 @@
                         <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
                     </svg>
                     <div>
-                        <h3>JobBuddy Workspace</h3>
-                        <p class="modal-subtext">Manage database connection & multi-device sync</p>
+                        <h3>Database Connection</h3>
+                        <p class="modal-subtext">Connect your personal MongoDB Atlas read-only database</p>
                     </div>
                 </div>
-                <button class="db-modal-close" onclick="closeWorkspaceModal()" aria-label="Close modal">&times;</button>
+                <button class="db-modal-close" onclick="closeDbModal()" aria-label="Close modal">&times;</button>
             </div>
             
             <div class="db-modal-body">
-                <!-- Section 1: MongoDB Database Connection -->
                 <div class="workspace-section">
                     <div class="ws-section-header">
                         <h4>MongoDB Data Source</h4>
@@ -1764,36 +1864,6 @@
                     <div class="ws-btn-row">
                         <button class="btn-db-save" onclick="saveCustomDb()">Connect Database</button>
                         <button class="btn-db-reset" onclick="resetDefaultDb()">Reset to Default</button>
-                    </div>
-                </div>
-
-                <div class="ws-divider"></div>
-
-                <!-- Section 2: Account & Cloud Sync (Netlify Identity) -->
-                <div class="workspace-section">
-                    <div class="ws-section-header">
-                        <h4>Multi-Device Sync</h4>
-                        <span class="ws-status-badge neutral" id="modal-auth-badge">Not Signed In</span>
-                    </div>
-                    <p class="db-modal-desc">
-                        Sign in with passwordless Email Magic Link to keep your workspace and database in sync across all your devices.
-                    </p>
-                    <div class="auth-box" id="auth-box-logged-out">
-                        <button class="btn-auth-action" onclick="openIdentityModal()">
-                            <span>✉️</span> Sign In with Email Magic Link
-                        </button>
-                    </div>
-                    <div class="auth-box" id="auth-box-logged-in" style="display: none;">
-                        <div class="user-info-row">
-                            <div class="user-left-info">
-                                <div class="user-avatar" id="modal-user-avatar">👤</div>
-                                <div class="user-details">
-                                    <span class="user-email" id="modal-user-email">user@example.com</span>
-                                    <span class="user-sub">Account verified via Netlify</span>
-                                </div>
-                            </div>
-                            <button class="btn-auth-logout" onclick="logoutIdentity()">Sign Out</button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1946,7 +2016,7 @@
                             <div class="empty-ws-icon">⚡</div>
                             <h3>No Database Connected</h3>
                             <p>JobBuddy is operating in private workspace mode. Connect your scraper's read-only MongoDB Atlas URI to load your scraped jobs, active profile, and custom location filters.</p>
-                            <button class="btn-db-save" onclick="openWorkspaceModal()" style="padding:10px 22px;font-size:0.88rem;">Connect Your Database</button>
+                            <button class="btn-db-save" onclick="openDbModal()" style="padding:10px 22px;font-size:0.88rem;">Connect Your Database</button>
                         </div>
                     `;
                     renderPagination();
@@ -2385,8 +2455,8 @@
         }
 
         // Workspace Modal Management
-        function openWorkspaceModal() {
-            const modal = document.getElementById('workspace-modal');
+        function openDbModal() {
+            const modal = document.getElementById('db-modal');
             const input = document.getElementById('custom-mongo-input');
             const currentUri = localStorage.getItem("jobbuddy_custom_mongo_uri") || "";
             if (input) input.value = currentUri;
@@ -2394,8 +2464,8 @@
             if (modal) modal.style.display = 'flex';
         }
 
-        function closeWorkspaceModal() {
-            const modal = document.getElementById('workspace-modal');
+        function closeDbModal() {
+            const modal = document.getElementById('db-modal');
             if (modal) modal.style.display = 'none';
         }
 
@@ -2412,7 +2482,7 @@
             }
             localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
             updateWorkspaceIndicator();
-            closeWorkspaceModal();
+            closeDbModal();
             clearAllCache();
             activeCat = "all";
             activeLoc = "all";
@@ -2425,7 +2495,7 @@
             const input = document.getElementById('custom-mongo-input');
             if (input) input.value = "";
             updateWorkspaceIndicator();
-            closeWorkspaceModal();
+            closeDbModal();
             clearAllCache();
             activeCat = "all";
             activeLoc = "all";
