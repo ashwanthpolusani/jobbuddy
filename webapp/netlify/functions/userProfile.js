@@ -1,14 +1,42 @@
-const { getStore } = require("@netlify/blobs");
+const { getDatabase } = require("@netlify/database");
 
-// In-memory fallback for local development or non-Netlify environments
+// In-memory fallback for local development or environments without Netlify Database
 const localMemoryStore = new Map();
 
-function getBlobStore() {
+let dbInstance = null;
+let dbCheckAttempted = false;
+let tableChecked = false;
+
+function getDb() {
+    if (dbInstance) return dbInstance;
+    if (dbCheckAttempted) return null;
+    dbCheckAttempted = true;
     try {
-        return getStore("user-profiles");
+        const connString = process.env.NETLIFY_DB_URL;
+        dbInstance = connString ? getDatabase({ connectionString: connString }) : getDatabase();
+        return dbInstance;
     } catch (e) {
-        // Fallback for local testing or unconfigured environments
+        // Netlify Database unconfigured in local non-CLI dev or missing NETLIFY_DB_URL
         return null;
+    }
+}
+
+async function ensureTable(db) {
+    if (tableChecked || !db) return;
+    try {
+        await db.sql`
+            CREATE TABLE IF NOT EXISTS user_profiles (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL UNIQUE,
+                custom_mongo_uri TEXT DEFAULT '',
+                saved_jobs JSONB DEFAULT '[]'::jsonb,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `;
+        tableChecked = true;
+    } catch (e) {
+        // Schema is maintained via netlify/database/migrations/
     }
 }
 
@@ -33,7 +61,7 @@ exports.handler = async (event, context) => {
     const query = event.queryStringParameters || {};
 
     // Identify user by header or query parameter
-    const userId = headers["x-user-id"] || query.userId || headers["x-user-email"] || query.email || "";
+    const userId = (headers["x-user-id"] || query.userId || headers["x-user-email"] || query.email || "").toLowerCase().trim();
 
     if (!userId) {
         return {
@@ -43,28 +71,45 @@ exports.handler = async (event, context) => {
         };
     }
 
-    const key = `user_${userId.toLowerCase().trim()}`;
-    const store = getBlobStore();
+    const db = getDb();
 
     try {
         if (event.httpMethod === "GET") {
-            let data = null;
-            if (store) {
+            let profileData = null;
+
+            if (db) {
                 try {
-                    data = await store.get(key, { type: "json" });
-                } catch (err) {
-                    console.warn("Blobs get error, using fallback:", err.message);
+                    await ensureTable(db);
+                    const rows = await db.sql`
+                        SELECT user_id, custom_mongo_uri, saved_jobs, updated_at
+                        FROM user_profiles
+                        WHERE user_id = ${userId}
+                        LIMIT 1
+                    `;
+                    if (rows && rows.length > 0) {
+                        const row = rows[0];
+                        profileData = {
+                            user_id: row.user_id,
+                            custom_mongo_uri: row.custom_mongo_uri || "",
+                            saved_jobs: typeof row.saved_jobs === "string" ? JSON.parse(row.saved_jobs) : (row.saved_jobs || []),
+                            updated_at: row.updated_at
+                        };
+                    }
+                } catch (dbErr) {
+                    console.warn("Netlify Database read fallback:", dbErr.message);
                 }
             }
-            if (!data && localMemoryStore.has(key)) {
-                data = localMemoryStore.get(key);
+
+            if (!profileData && localMemoryStore.has(userId)) {
+                profileData = localMemoryStore.get(userId);
             }
 
             return {
                 statusCode: 200,
                 headers: CORS_HEADERS,
                 body: JSON.stringify({
-                    profile: data || {
+                    profile: profileData || {
+                        user_id: userId,
                         custom_mongo_uri: "",
                         saved_jobs: [],
                         updated_at: null
@@ -76,7 +121,7 @@ exports.handler = async (event, context) => {
         if (event.httpMethod === "POST") {
             let body = {};
             try {
-                body = JSON.parse(event.body || "{}");
+                body = typeof event.body === "string" ? JSON.parse(event.body || "{}") : (event.body || {});
             } catch (e) {
                 return {
                     statusCode: 400,
@@ -93,7 +138,7 @@ exports.handler = async (event, context) => {
                 return {
                     statusCode: 400,
                     headers: CORS_HEADERS,
-                    body: JSON.stringify({ error: "Invalid MongoDB connection string" })
+                    body: JSON.stringify({ error: "Invalid MongoDB connection string. Must start with mongodb:// or mongodb+srv://" })
                 };
             }
 
@@ -104,35 +149,51 @@ exports.handler = async (event, context) => {
                 updated_at: new Date().toISOString()
             };
 
-            if (store) {
+            let savedToDb = false;
+            if (db) {
                 try {
-                    await store.setJSON(key, record);
-                } catch (err) {
-                    console.warn("Blobs set error, saving to local fallback:", err.message);
-                    localMemoryStore.set(key, record);
+                    await ensureTable(db);
+                    const savedJobsJson = JSON.stringify(savedJobs);
+                    await db.sql`
+                        INSERT INTO user_profiles (user_id, custom_mongo_uri, saved_jobs, updated_at)
+                        VALUES (${userId}, ${customMongoUri}, ${savedJobsJson}::jsonb, NOW())
+                        ON CONFLICT (user_id)
+                        DO UPDATE SET
+                            custom_mongo_uri = EXCLUDED.custom_mongo_uri,
+                            saved_jobs = EXCLUDED.saved_jobs,
+                            updated_at = NOW()
+                    `;
+                    savedToDb = true;
+                } catch (dbErr) {
+                    console.warn("Netlify Database write fallback:", dbErr.message);
                 }
-            } else {
-                localMemoryStore.set(key, record);
             }
+
+            // Keep local fallback updated
+            localMemoryStore.set(userId, record);
 
             return {
                 statusCode: 200,
                 headers: CORS_HEADERS,
                 body: JSON.stringify({
                     success: true,
-                    message: "User profile updated successfully in Netlify cloud database",
+                    storage: savedToDb ? "netlify-database" : "local-fallback",
+                    message: "User profile updated successfully in Netlify Database",
                     profile: record
                 })
             };
         }
 
         if (event.httpMethod === "DELETE") {
-            if (store) {
+            if (db) {
                 try {
-                    await store.delete(key);
-                } catch (e) {}
+                    await ensureTable(db);
+                    await db.sql`DELETE FROM user_profiles WHERE user_id = ${userId}`;
+                } catch (dbErr) {
+                    console.warn("Netlify Database delete error:", dbErr.message);
+                }
             }
-            localMemoryStore.delete(key);
+            localMemoryStore.delete(userId);
 
             return {
                 statusCode: 200,
