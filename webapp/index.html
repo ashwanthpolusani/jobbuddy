@@ -1923,6 +1923,7 @@
                 <div class="header-actions">
                     <nav class="header-nav-links" aria-label="Main Navigation">
                         <a href="/" class="header-nav-link active" id="nav-live-jobs" onclick="if(currentUser){currentPage=1;fetchJobs(1);}">Live Jobs</a>
+                        <a href="/scraper-guide" class="header-nav-link">Scraper Setup</a>
                         <a href="/interview-prep" class="header-nav-link">Interview Prep</a>
                         <a href="/resume-guide" class="header-nav-link">Resume Guide</a>
                     </nav>
@@ -2059,12 +2060,41 @@
                     <div class="panel-main">
 
                         <!-- Demo Mode Notice Banner -->
-                        <div id="sample-demo-banner" style="display: none; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 10px 16px; margin-bottom: 14px; font-size: 0.82rem; color: var(--text); display: none; align-items: center; justify-content: space-between; gap: 12px;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 1.1rem;">🌟</span>
-                                <span><strong>Demo Mode Active:</strong> Browsing verified sample requisitions. Connect your personal MongoDB Atlas URI in Account Settings to browse your live scraped jobs.</span>
+                        <div id="sample-demo-banner" style="display: none; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; font-size: 0.82rem; color: var(--text); flex-direction: column; gap: 10px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 1.15rem;">🌟</span>
+                                    <span><strong>Demo Mode Active:</strong> Showing 2 placeholder mock jobs. Learn how to run your companion scraper and connect your MongoDB Atlas cluster.</span>
+                                </div>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <a href="/scraper-guide" class="btn-guest-secondary" style="padding: 6px 12px; font-size: 0.78rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">📖 Scraper Setup Guide</a>
+                                    <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 6px 12px; font-size: 0.78rem; white-space: nowrap;">⚙️ Connect MongoDB</button>
+                                </div>
                             </div>
-                            <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 6px 14px; font-size: 0.78rem; white-space: nowrap;">⚙️ Connect MongoDB</button>
+                        </div>
+
+                        <!-- Demo Onboarding Quickstart Card -->
+                        <div id="demo-quickstart-card" style="display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
+                                    <span>🚀</span> How to Connect Your Scraper to JobBuddy
+                                </h4>
+                                <a href="/scraper-guide" style="font-size: 0.76rem; font-weight: 600; color: var(--accent); text-decoration: none;">Full Setup Guide &rarr;</a>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.80rem; line-height: 1.5; color: var(--text2);">
+                                <div style="background: var(--surface2); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border2);">
+                                    <strong style="color: var(--accent); display: block; margin-bottom: 3px;">1. Run Backend Scraper</strong>
+                                    Run <code>jobbuddy-scraper</code> to collect live requisitions into your MongoDB Atlas cluster.
+                                </div>
+                                <div style="background: var(--surface2); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border2);">
+                                    <strong style="color: var(--accent); display: block; margin-bottom: 3px;">2. Create Read-Only User</strong>
+                                    In MongoDB Atlas, create a <code>webapp_reader</code> user with read permissions for safety.
+                                </div>
+                                <div style="background: var(--surface2); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border2);">
+                                    <strong style="color: var(--accent); display: block; margin-bottom: 3px;">3. Connect on Frontend</strong>
+                                    Sign in, click Account Settings, paste your MongoDB URI, and save to your private Netlify profile.
+                                </div>
+                            </div>
                         </div>
 
                         <!-- 1. View Switcher (Job Openings vs Company Career Pages) -->
@@ -2234,6 +2264,7 @@
                     <div class="footer-col">
                         <h4 class="footer-heading">Career Resources</h4>
                         <ul class="footer-nav-list">
+                            <li><a href="/scraper-guide">Scraper Setup Guide</a></li>
                             <li><a href="/interview-prep">Interview Blueprint</a></li>
                             <li><a href="/resume-guide">ATS Resume Guide</a></li>
                         </ul>
@@ -2518,11 +2549,15 @@
             const pageInd = document.getElementById('page-indicator');
             const cnt = document.getElementById('jobs-container');
             const banner = document.getElementById('sample-demo-banner');
+            const quickstart = document.getElementById('demo-quickstart-card');
 
-            // Toggle demo banner visibility
+            // Toggle demo banner and quickstart guide visibility
             const isSample = Boolean(latestMeta && latestMeta.isSampleData);
             if (banner) {
                 banner.style.display = isSample ? 'flex' : 'none';
+            }
+            if (quickstart) {
+                quickstart.style.display = isSample ? 'block' : 'none';
             }
 
             // Update badge counts on switcher tabs

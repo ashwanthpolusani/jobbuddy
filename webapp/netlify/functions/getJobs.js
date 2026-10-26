@@ -178,7 +178,7 @@ exports.handler = async (event, context) => {
         const directCount = sampleJobs.filter(j => (j.link_type || 'direct_apply') === 'direct_apply').length;
         const portalCount = sampleJobs.filter(j => (j.link_type || 'direct_apply') !== 'direct_apply').length;
 
-        const categories = [...new Set(sampleJobs.map(j => j.category).filter(Boolean))];
+        const categories = ['software_engineering', 'data_ml', 'devops_cloud', 'cybersecurity', 'product_design'];
         const locations = [
             { id: 'all', label: 'All Locations' },
             { id: 'remote', label: 'Remote' },

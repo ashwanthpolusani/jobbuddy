@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Scraper Setup Guide — JobBuddy</title>
+    <meta name="description" content="Step-by-step guide to setting up your companion job scraper, configuring MongoDB Atlas, and connecting your read-only URI to the JobBuddy frontend.">
+    <meta name="theme-color" content="#0a66c2">
+    <meta property="og:title" content="Backend Scraper Setup Guide — JobBuddy">
+    <meta property="og:description" content="Step-by-step guide to setting up your companion job scraper, configuring MongoDB Atlas, and connecting your read-only URI to the JobBuddy frontend.">
+    <meta property="og:url" content="https://buddyjob.netlify.app/scraper-guide">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Backend Scraper Setup Guide — JobBuddy">
+    <meta name="twitter:description" content="Step-by-step guide to running jobbuddy-scraper and connecting your private MongoDB database to the JobBuddy frontend.">
+    <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="canonical" href="https://buddyjob.netlify.app/scraper-guide">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f3f2ef;
+            --surface: #ffffff;
+            --surface2: #f8f9fa;
+            --border: #e0e0e0;
+            --border2: #d1d5db;
+            --accent: #0a66c2;
+            --accent-dim: rgba(10, 102, 194, 0.08);
+            --green: #15803d;
+            --text: #1f2328;
+            --text2: #374151;
+            --muted: #4b5563;
+            --radius: 8px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Suppress Netlify badge */
+        a[href*="netlify.com"][style*="fixed"],
+        a[href*="netlify.app"][style*="fixed"],
+        [data-netlify-deploy-id],
+        #nl-badge-frame,
+        .netlify-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            background: rgba(255, 255, 255, 0.96);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 58px;
+        }
+
+        .brand-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-logo { width: 36px; height: 36px; flex-shrink: 0; }
+
+        .wordmark {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.04em;
+        }
+
+        .wordmark .accent { color: var(--accent); }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-link {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text2);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .header-link:hover, .header-link.active { color: var(--accent); font-weight: 600; }
+
+        .doc-wrap {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .badge-tag {
+            display: inline-block;
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .doc-wrap h1 {
+            font-size: 2.1rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 12px;
+            color: var(--text);
+            line-height: 1.25;
+        }
+
+        .doc-subtitle {
+            font-size: 1.05rem;
+            color: var(--muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .doc-meta {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 32px;
+            display: flex;
+            gap: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .doc-wrap h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 38px;
+            margin-bottom: 14px;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .doc-wrap h3 {
+            font-size: 1.08rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 22px;
+            margin-bottom: 8px;
+        }
+
+        .doc-wrap p {
+            font-size: 0.92rem;
+            color: var(--text2);
+            margin-bottom: 14px;
+        }
+
+        .step-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 20px 0 28px;
+        }
+
+        .step-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 14px 18px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            margin: 10px 0 16px;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.82rem;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .callout {
+            background: var(--surface);
+            border-left: 4px solid var(--accent);
+            padding: 18px 20px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin: 24px 0;
+            border-top: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .callout.security {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.04);
+        }
+
+        .callout h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .doc-wrap ul, .doc-wrap ol {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .doc-wrap li {
+            font-size: 0.92rem;
+            color: var(--text2);
+            margin-bottom: 8px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.15s;
+            margin-top: 8px;
+        }
+
+        .btn-action:hover { background: #084d94; }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border2);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.15s;
+            margin-left: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-secondary:hover { background: var(--surface2); }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 32px 24px;
+            background: var(--surface);
+            margin-top: 60px;
+        }
+
+        .footer-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-copy {
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 16px;
+        }
+
+        .footer-links a {
+            font-size: 0.82rem;
+            color: var(--muted);
+            text-decoration: none;
+        }
+
+        .footer-links a:hover { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <a class="brand-block" href="/">
+            <svg class="brand-logo" viewBox="0 0 40 40" fill="none" aria-label="JobBuddy Logo">
+                <rect width="40" height="40" rx="10" fill="var(--surface2)" />
+                <path d="M12 28L20 12L28 28" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
+                <circle cx="20" cy="22" r="3" fill="var(--accent)" />
+            </svg>
+            <span class="wordmark">Job<span class="accent">Buddy</span></span>
+        </a>
+        <nav class="header-nav">
+            <a class="header-link" href="/">Live Jobs</a>
+            <a class="header-link" href="/interview-prep">Interview Prep</a>
+            <a class="header-link" href="/resume-guide">Resume Guide</a>
+            <a class="header-link active" href="/scraper-guide">Scraper Setup</a>
+        </nav>
+    </div>
+</header>
+
+<main class="doc-wrap">
+    <span class="badge-tag">Documentation &amp; Setup Guide</span>
+    <h1>How to Connect Your Scraper to JobBuddy</h1>
+    <p class="doc-subtitle">A comprehensive guide on running the backend job scraper, configuring a free MongoDB Atlas cluster, and connecting your read-only database URL to the JobBuddy frontend.</p>
+
+    <div class="doc-meta">
+        <span>📖 Setup &amp; Architecture Guide</span>
+        <span>⚡ 3-Step Walkthrough</span>
+        <span>🔒 Zero Admin Exposure</span>
+    </div>
+
+    <h2>1. Understanding the JobBuddy Architecture</h2>
+    <p>JobBuddy is an <strong>open, candidate-owned tech career discovery platform</strong>. It decouples the web frontend from the scraping engine so that every user has full ownership over what jobs they track, which companies they scrape, and how often they refresh their feed.</p>
+    
+    <div class="callout">
+        <h4>The Decoupled Architecture</h4>
+        <p><strong>1. Backend Scraper (<code>jobbuddy-scraper</code>):</strong> Runs locally on your machine or on a scheduled cloud runner (e.g., GitHub Actions, Railway). It collects active requisitions directly from Workday, Lever, and Greenhouse systems and saves them to your MongoDB database.</p>
+        <p><strong>2. MongoDB Atlas Database:</strong> Stores your scraped jobs collection (<code>job_aggregator.jobs</code>). You control who has access with a read-only user.</p>
+        <p><strong>3. JobBuddy WebApp:</strong> Reads your jobs via your secure, read-only MongoDB URL. Netlify Database stores your user profile so your preferences sync anywhere you sign in.</p>
+    </div>
+
+    <h2>2. Three-Step Setup Process</h2>
+
+    <div class="step-cards">
+        <!-- STEP 1 -->
+        <div class="step-card">
+            <div class="step-header">
+                <span class="step-number">1</span>
+                <span class="step-title">Run Your Companion Backend Scraper</span>
+            </div>
+            <p>Clone the open-source scraper repository and install its dependencies in Python 3.10+:</p>
+            <pre><code># 1. Clone the companion scraper repository
+git clone https://github.com/ashwanthpolusani/jobbuddy-scraper.git
+cd jobbuddy-scraper
+
+# 2. Set up virtual environment and dependencies
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3. Configure target roles and cities in scraper_config.yaml
+# 4. Run the scraper to populate your MongoDB cluster
+python main.py</code></pre>
+            <p>The scraper queries company ATS job boards directly, deduplicates postings, classifies experience requirements, and writes normalized documents to your MongoDB <code>jobs</code> collection.</p>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step-card">
+            <div class="step-header">
+                <span class="step-number">2</span>
+                <span class="step-title">Configure MongoDB Atlas &amp; Read-Only User</span>
+            </div>
+            <p>Create a free cluster on <a href="https://www.mongodb.com/cloud/atlas" target="_blank" rel="noopener noreferrer" style="color:var(--accent);font-weight:600;">MongoDB Atlas</a> (M0 tier is 100% free forever):</p>
+            <ol>
+                <li>In MongoDB Atlas, navigate to <strong>Database Access &rarr; Add New Database User</strong>.</li>
+                <li>Set authentication method to <strong>Password</strong> and enter a username, such as <code>webapp_reader</code>.</li>
+                <li>Under <strong>Database User Privileges</strong>, assign the <strong>Built-in Role: readAnyDatabase</strong> (or grant <code>read</code> access specifically on the <code>job_aggregator</code> database).</li>
+                <li>In <strong>Network Access</strong>, ensure your cluster allows connections from serverless functions by adding IP <code>0.0.0.0/0</code> (Allow Access from Anywhere).</li>
+                <li>Click <strong>Connect &rarr; Drivers (Node.js)</strong> to copy your connection string:</li>
+            </ol>
+            <pre><code>mongodb+srv://webapp_reader:&lt;PASSWORD&gt;@your-cluster.xxxxx.mongodb.net/job_aggregator?retryWrites=true&w=majority</code></pre>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step-card">
+            <div class="step-header">
+                <span class="step-number">3</span>
+                <span class="step-title">Login and Add MongoDB URL on JobBuddy Frontend</span>
+            </div>
+            <p>Once you have your <code>webapp_reader</code> connection string, plug it into the JobBuddy frontend:</p>
+            <ol>
+                <li>Click <strong>Sign In / Workspace</strong> in the top-right header of JobBuddy (authenticate via Netlify email magic link).</li>
+                <li>Click your account pill in the header to open the <strong>Account &amp; Workspace</strong> modal.</li>
+                <li>Paste your read-only connection string into the <strong>MongoDB Read-Only URI</strong> field.</li>
+                <li>Click <strong>Save to Netlify Profile</strong>.</li>
+            </ol>
+            <p>Your connection string is stored securely in your private Netlify cloud PostgreSQL profile. Every time you log in from any phone, laptop, or browser, your personal feed will load automatically.</p>
+        </div>
+    </div>
+
+    <div class="callout security">
+        <h4>🔒 Security Best Practices</h4>
+        <p><strong>1. Always use a Read-Only User:</strong> Never use your cluster admin or primary scraper writer credentials in the web frontend. Creating a dedicated <code>webapp_reader</code> user ensures the browser can never write, delete, or alter any documents.</p>
+        <p><strong>2. Encrypted Transmission:</strong> Your connection string is never included in URL parameters or browser history. It is sent exclusively via encrypted HTTPS request headers.</p>
+        <p><strong>3. 1-Click Disconnect:</strong> You can disconnect your database or switch back to demo mode anytime by clicking <strong>Disconnect Database</strong> in the Account modal.</p>
+    </div>
+
+    <h2>3. Frequently Asked Questions</h2>
+    
+    <h3>What if my scraper uses custom job categories?</h3>
+    <p>JobBuddy's frontend dynamically inspects the distinct categories present in your MongoDB collection. If your scraper discovers <code>devops_cloud</code> or <code>product_design</code>, matching category pills will automatically generate on your dashboard.</p>
+
+    <h3>Can I use JobBuddy with my existing scraper instead of jobbuddy-scraper?</h3>
+    <p>Yes! JobBuddy requires only standard job document fields in your MongoDB <code>jobs</code> collection: <code>title</code>, <code>company_name</code>, <code>location</code>, <code>link</code>, <code>link_type</code> (direct_apply or filtered_list), and optional <code>category</code>.</p>
+
+    <div class="callout" style="text-align: center; padding: 28px 20px;">
+        <h4 style="font-size: 1.15rem; margin-bottom: 8px;">Ready to explore the workspace?</h4>
+        <p style="margin-bottom: 16px;">Try our demo workspace with placeholder jobs, or sign in to connect your live MongoDB database.</p>
+        <a href="/" class="btn-action">Go to Live Workspace &rarr;</a>
+        <a href="/#connect" class="btn-secondary" onclick="localStorage.setItem('jobbuddy_open_modal', '1');">Open Connection Settings</a>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <span class="footer-copy">JobBuddy — Independent Tech Discovery Platform &middot; Universal Scraper Hub</span>
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/interview-prep">Interview Prep</a>
+            <a href="/resume-guide">Resume Guide</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

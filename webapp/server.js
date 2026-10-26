@@ -16,6 +16,7 @@ app.use(express.json());
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
 // Explicit static publisher routes (matching Netlify _redirects)
+app.get('/scraper-guide', (req, res) => res.sendFile(path.join(__dirname, 'scraper-guide.html')));
 app.get('/interview-prep', (req, res) => res.sendFile(path.join(__dirname, 'interview-prep.html')));
 app.get('/resume-guide', (req, res) => res.sendFile(path.join(__dirname, 'resume-guide.html')));
 app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'privacy.html')));
