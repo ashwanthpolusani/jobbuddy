@@ -4,17 +4,29 @@ function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Connection pool cache keyed by URI
+// Bounded connection pool cache keyed by URI (Max 6 clients to prevent memory leaks)
+const MAX_CACHED_CLIENTS = 6;
 const cachedClients = new Map();
 
 async function connectToDatabase(customUri) {
     const uri = (customUri && customUri.trim()) || process.env.MONGODB_URI;
     if (!uri) throw new Error("No MongoDB connection URI provided");
-    
+
     if (cachedClients.has(uri)) {
         return cachedClients.get(uri);
     }
-    
+
+    if (cachedClients.size >= MAX_CACHED_CLIENTS) {
+        // Evict oldest non-default client
+        for (const [key, clientToClose] of cachedClients.entries()) {
+            if (key !== process.env.MONGODB_URI) {
+                clientToClose.close().catch(() => {});
+                cachedClients.delete(key);
+                break;
+            }
+        }
+    }
+
     const client = new MongoClient(uri, {
         maxPoolSize: 5,
         serverSelectionTimeoutMS: 6000
@@ -57,9 +69,15 @@ function buildQueryFilter({ category, link_type, verdict, location, search }) {
                 clauses.push({ location: { $regex: INDIA_REGEX, $options: 'i' } });
             } else if (locKey === 'global' || locKey === 'overseas') {
                 clauses.push({
+                    location: { $exists: true, $nin: ['', null] },
                     $or: [
                         { location: { $regex: OVERSEAS_REGEX, $options: 'i' } },
-                        { location: { $not: { $regex: INDIA_REGEX, $options: 'i' } } }
+                        {
+                            $and: [
+                                { location: { $not: { $regex: INDIA_REGEX, $options: 'i' } } },
+                                { location: { $not: { $regex: '^(\\s*remote\\s*|\\s*work from home\\s*)$', $options: 'i' } } }
+                            ]
+                        }
                     ]
                 });
             } else {
@@ -95,9 +113,23 @@ exports.handler = async (event, context) => {
     // Allows Netlify to freeze process and reuse DB connection
     context.callbackWaitsForEmptyEventLoop = false;
 
+    // Handle CORS Preflight
+    if (event.httpMethod === "OPTIONS") {
+        return {
+            statusCode: 204,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization, x-mongo-uri, X-Mongo-Uri",
+                "Access-Control-Allow-Methods": "GET, OPTIONS"
+            },
+            body: ""
+        };
+    }
+
     const params = event.queryStringParameters || {};
     const headers = event.headers || {};
-    const customUri = headers['x-mongo-uri'] || headers['X-Mongo-Uri'] || params.db_uri || "";
+    // Only accept connection string via secure encrypted header, not query parameters
+    const customUri = headers['x-mongo-uri'] || headers['X-Mongo-Uri'] || "";
 
     const category   = params.category   || null;
     const link_type  = params.link_type  || "direct_apply"; // Default to direct apply
@@ -133,7 +165,15 @@ exports.handler = async (event, context) => {
 
     try {
         const client = await connectToDatabase(activeUri);
-        const db = client.db("job_aggregator");
+        // Automatically inherit database from custom connection string if specified, or fallback to job_aggregator
+        let db;
+        try {
+            db = client.db();
+            if (!db || !db.databaseName) db = client.db("job_aggregator");
+        } catch (e) {
+            db = client.db("job_aggregator");
+        }
+
         const collection = db.collection("jobs");
 
         const filter = buildQueryFilter({ category, link_type, verdict, location, search });
@@ -210,13 +250,25 @@ exports.handler = async (event, context) => {
         locPills.push({ id: "india", label: "India Tech Hubs" });
         locPills.push({ id: "overseas", label: "Overseas / Visa" });
 
-        // Map to clean response objects with defense-in-depth URL deduplication
+        // Map to clean response objects with sanitized requirements text
         const seenLinks = new Set();
         const jobs = [];
         for (const j of rawJobs) {
             const linkKey = (j.link && j.link !== '#') ? j.link.trim().toLowerCase() : j._id.toString();
             if (!seenLinks.has(linkKey)) {
                 seenLinks.add(linkKey);
+
+                // Sanitize scraper bot artifacts / cookie blocker text from core_requirements
+                let cleanReqs = (j.core_requirements || "").trim();
+                if (
+                    cleanReqs.toLowerCase().includes("javascript to run") ||
+                    cleanReqs.toLowerCase().includes("enable javascript") ||
+                    cleanReqs.toLowerCase().includes("corporate website and landing page") ||
+                    cleanReqs.toLowerCase().includes("not a specific job description")
+                ) {
+                    cleanReqs = "";
+                }
+
                 jobs.push({
                     _id: j._id,
                     title: j.title || 'Untitled',
@@ -226,7 +278,7 @@ exports.handler = async (event, context) => {
                     link: j.link || '#',
                     link_type: j.link_type || 'direct_apply',
                     experience_verdict: j.experience_verdict || null,
-                    core_requirements: j.core_requirements || '',
+                    core_requirements: cleanReqs,
                     scraped_at: j.scraped_at || null,
                     first_seen: j.first_seen || j.scraped_at || null
                 });
@@ -238,6 +290,7 @@ exports.handler = async (event, context) => {
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
+                "Vary": "Accept-Encoding, x-mongo-uri",
                 "Cache-Control": customUri ? "no-store" : "public, max-age=180, s-maxage=180, stale-while-revalidate=360",
             },
             body: JSON.stringify({
@@ -264,7 +317,10 @@ exports.handler = async (event, context) => {
         console.error("getJobs error:", error);
         return {
             statusCode: 500,
-            headers: { "Access-Control-Allow-Origin": "*" },
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            },
             body: JSON.stringify({ error: "Failed fetching jobs: " + (error.message || "Database connection error") }),
         };
     }

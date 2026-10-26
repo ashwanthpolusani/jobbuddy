@@ -85,6 +85,10 @@ exports.handler = async (event, context) => {
         console.error("getSiteStats error:", error);
         return {
             statusCode: 500,
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            },
             body: JSON.stringify({ error: "Failed fetching site stats" }),
         };
     }

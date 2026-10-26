@@ -11,6 +11,12 @@
     <meta property="og:description"
         content="300+ company career pages scraped daily. Only genuine 0-experience tech roles.">
     <meta property="og:url" content="https://buddyjob.netlify.app/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="JobBuddy">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="JobBuddy — Entry-Level Tech Jobs, Daily">
+    <meta name="twitter:description"
+        content="300+ company career pages scraped daily. Only genuine 0-experience tech roles.">
     <meta name="theme-color" content="#0a66c2">
     <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1018,6 +1024,23 @@
             flex-shrink: 1;
         }
 
+        .job-title-link {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+
+        .job-title-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        .job-date {
+            font-size: 0.72rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
         .tag-new {
             font-size: 0.74rem;
             font-weight: 700;
@@ -1479,6 +1502,14 @@
             .job-title {
                 white-space: normal;
             }
+        }
+
+        .header-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
         .header-nav-link {
             font-size: 0.8rem;
             font-weight: 600;
@@ -1491,11 +1522,11 @@
 
         .header-nav-link:hover {
             color: var(--accent);
-            background: var(--accent-dim);
+            background: var(--surface2);
         }
 
-        @media (max-width: 680px) {
-            .header-nav-link { display: none; }
+        @media (max-width: 720px) {
+            .header-nav-links { display: none; }
         }
 
         .sidebar-card {
@@ -1611,26 +1642,27 @@
                     </div>
                 </a>
                 <div class="header-actions">
-                    <button class="btn-header-db" id="btn-db-connect" onclick="openDbModal()" title="Configure database data source" aria-label="Connect Database">
-                        <span class="db-dot" id="db-indicator"></span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-                        </svg>
-                        <span id="db-btn-label">Connect Database</span>
-                    </button>
+                    <nav class="header-nav-links" aria-label="Main Navigation">
+                        <a href="/" class="header-nav-link active" id="nav-live-jobs">Live Jobs</a>
+                        <a href="/interview-prep" class="header-nav-link">Interview Prep</a>
+                        <a href="/resume-guide" class="header-nav-link">Resume Guide</a>
+                    </nav>
                     <div class="auth-wrapper" id="auth-header-wrapper">
-                        <button class="btn-header-auth" id="btn-header-signin" onclick="openIdentityModal()" aria-label="Sign In">
-                            Sign In
+                        <!-- Unauthenticated State: Sign In / Connect DB -->
+                        <button class="btn-header-auth" id="btn-header-signin" onclick="handleAccountButtonClick()" aria-label="Sign In or Connect Workspace">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span>Sign In / Workspace</span>
                         </button>
-                        <div class="user-pill" id="user-header-pill" style="display: none;">
+
+                        <!-- Authenticated State: User Pill & DB Status -->
+                        <button class="user-pill" id="user-header-pill" onclick="openDbModal()" style="display: none;" title="Account & Database Settings" aria-label="Account and Workspace Settings">
                             <span class="user-avatar-small" id="header-avatar">&#128100;</span>
                             <span class="user-email-header" id="header-user-email">user@domain.com</span>
-                            <button class="btn-logout-small" onclick="logoutIdentity()" title="Sign Out" aria-label="Sign Out">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                            </button>
-                        </div>
+                            <span class="db-status-pill" id="header-db-status" title="Default Community Feed"></span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1829,40 +1861,68 @@
 
     </div>
 
-    <!-- DATABASE CONNECTION MODAL -->
+    <!-- UNIFIED ACCOUNT & WORKSPACE MODAL -->
     <div id="db-modal" class="db-modal-overlay" style="display: none;" onclick="if(event.target===this)closeDbModal()">
         <div class="db-modal-card">
             <div class="db-modal-header">
                 <div class="db-modal-title-wrap">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
                     </svg>
                     <div>
-                        <h3>Database Connection</h3>
-                        <p class="modal-subtext">Connect your personal MongoDB Atlas read-only database</p>
+                        <h3>Account & Workspace</h3>
+                        <p class="modal-subtext">Manage cloud-synced MongoDB data sources via Netlify</p>
                     </div>
                 </div>
                 <button class="db-modal-close" onclick="closeDbModal()" aria-label="Close modal">&times;</button>
             </div>
             
             <div class="db-modal-body">
+                <!-- User Account Details (Active when signed in) -->
+                <div id="modal-user-section" style="display: none; margin-bottom: 20px;">
+                    <div class="user-info-row">
+                        <div class="user-left-info">
+                            <span class="user-avatar" id="modal-user-avatar">&#128100;</span>
+                            <div class="user-details">
+                                <span class="user-email" id="modal-account-email">user@domain.com</span>
+                                <span class="user-sub">&#10003; Synced to Netlify Cloud Profile</span>
+                            </div>
+                        </div>
+                        <button class="btn-auth-logout" onclick="logoutIdentity()">Sign Out</button>
+                    </div>
+                </div>
+
+                <!-- Guest Login Notice (Active when signed out) -->
+                <div id="modal-guest-section" style="display: block; margin-bottom: 20px;">
+                    <div class="empty-workspace-hero" style="margin: 0 0 16px; padding: 22px 18px;">
+                        <div class="empty-ws-icon" style="font-size: 1.8rem; margin-bottom: 8px;">🔐</div>
+                        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 6px;">Sign In to Connect Your Database</h4>
+                        <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">
+                            Sign in with your email magic link to connect your private MongoDB scraper feed and sync settings across devices using Netlify's cloud database.
+                        </p>
+                        <button class="btn-header-auth" onclick="openIdentityModal()" style="padding: 9px 20px; font-size: 0.84rem;">
+                            Sign In / Create Account
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Database Configuration Section -->
                 <div class="workspace-section">
                     <div class="ws-section-header">
-                        <h4>MongoDB Data Source</h4>
-                        <span class="ws-status-badge" id="modal-db-badge">Default Community Feed</span>
+                        <h4>MongoDB Atlas Data Source</h4>
+                        <span class="ws-status-badge neutral" id="modal-db-badge">Default Community Feed</span>
                     </div>
                     <p class="db-modal-desc">
-                        Connect your scraper's read-only MongoDB URI (<code>webapp_reader</code>) to load your personally scraped jobs, custom categories, and targeted cities.
+                        Connect your scraper's read-only MongoDB URI (<code>webapp_reader</code>) to load your personally scraped jobs, custom categories, and targeted cities. Stored securely in your Netlify cloud profile.
                     </p>
                     <div class="db-input-group">
                         <label for="custom-mongo-input">MongoDB Read-Only URI</label>
                         <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://webapp_reader:password@cluster.mongodb.net/" autocomplete="off" />
-                        <span class="db-hint">&#128274; Stored securely in your private browser session. Read-only role prevents any data modification.</span>
+                        <span class="db-hint">&#128274; Saved to your private Netlify user database. Read-only role prevents any data modification.</span>
                     </div>
                     <div class="ws-btn-row">
-                        <button class="btn-db-save" onclick="saveCustomDb()">Connect Database</button>
+                        <button class="btn-db-save" onclick="saveCustomDb()">Save to Netlify Profile</button>
                         <button class="btn-db-reset" onclick="resetDefaultDb()">Reset to Default</button>
                     </div>
                 </div>
@@ -1890,7 +1950,10 @@
         let cardIdx = 0;
         let isLoading = true;
 
-        let CURRENT_CACHE_KEY = 'jb_jobs_v5';
+        let currentUser = null;
+        let userProfile = null;
+
+        let CURRENT_CACHE_KEY = 'jb_v6_cache';
         const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
         // View Switcher (Job Openings vs Company Career Pages)
@@ -1899,10 +1962,16 @@
             activeViewType = type;
             const isDirect = type === 'direct_apply';
 
-            document.getElementById('tab-direct').classList.toggle('active', isDirect);
-            document.getElementById('tab-portals').classList.toggle('active', !isDirect);
-            document.getElementById('tab-direct').setAttribute('aria-selected', isDirect);
-            document.getElementById('tab-portals').setAttribute('aria-selected', !isDirect);
+            const tabDir = document.getElementById('tab-direct');
+            const tabPort = document.getElementById('tab-portals');
+            if (tabDir) {
+                tabDir.classList.toggle('active', isDirect);
+                tabDir.setAttribute('aria-selected', isDirect);
+            }
+            if (tabPort) {
+                tabPort.classList.toggle('active', !isDirect);
+                tabPort.setAttribute('aria-selected', !isDirect);
+            }
 
             // Category, Location, and Confidence filters apply to individual Job Openings
             const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
@@ -1923,7 +1992,7 @@
             fetchJobs(1);
         }
 
-        // Category
+        // Category Filter
         function setCat(cat, btn) {
             activeCat = cat;
             document.querySelectorAll('.cat-btn').forEach(b => {
@@ -1954,16 +2023,35 @@
             fetchJobs(1);
         }
 
-        // Confidence filter
+        // Confidence filter with color-coded active states
         function setConf(val, btn) {
             activeConf = val;
             ['conf-all', 'conf-safe', 'conf-possible'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.className = 'filt-btn';
             });
-            if (btn) btn.className = 'filt-btn active-blue';
+            if (btn) {
+                if (val === 'SAFE') btn.className = 'filt-btn active-green';
+                else if (val === 'POSSIBLE') btn.className = 'filt-btn active-amber';
+                else btn.className = 'filt-btn active-blue';
+            }
             currentPage = 1;
             fetchJobs(1);
+        }
+
+        // Dynamic Document Title
+        function updatePageTitle() {
+            if (activeViewType === 'filtered_list') {
+                document.title = 'Company Fresher Portals & Directories — JobBuddy';
+            } else if (activeCat !== 'all' || activeLoc !== 'all') {
+                const catStr = activeCat !== 'all' ? activeCat.replace(/_/g, ' ') : 'Tech';
+                const locStr = activeLoc !== 'all' ? activeLoc.replace(/_/g, ' ') : '';
+                const capCat = catStr.charAt(0).toUpperCase() + catStr.slice(1);
+                const capLoc = locStr ? ` in ${locStr.charAt(0).toUpperCase() + locStr.slice(1)}` : '';
+                document.title = `${capCat} Jobs for Freshers${capLoc} — JobBuddy`;
+            } else {
+                document.title = 'JobBuddy — Entry-Level Tech Jobs, Daily';
+            }
         }
 
         // Update URL for Programmatic SEO
@@ -1978,10 +2066,30 @@
                 path = prefix;
             }
             window.history.pushState({ loc: activeLoc, cat: activeCat, view: activeViewType }, '', path);
+            updatePageTitle();
         }
 
         // Helpers
         function isNew(d) { return d && (Date.now() - new Date(d).getTime()) < 48 * 3600 * 1000; }
+        
+        function formatRelativeDate(iso) {
+            if (!iso) return '';
+            try {
+                const diffMs = Date.now() - new Date(iso).getTime();
+                if (isNaN(diffMs)) return '';
+                const hours = Math.floor(diffMs / (3600 * 1000));
+                if (hours < 1) return 'Just now';
+                if (hours < 24) return `${hours}h ago`;
+                const days = Math.floor(hours / 24);
+                if (days === 1) return 'Yesterday';
+                if (days < 7) return `${days}d ago`;
+                const d = new Date(iso);
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            } catch (e) {
+                return '';
+            }
+        }
+
         function esc(s) {
             return String(s || '')
                 .replace(/&/g, '&amp;')
@@ -1989,6 +2097,7 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
         }
+
         function ltOf(j) { return j.link_type || 'direct_apply'; }
 
         let latestMeta = null;
@@ -2016,7 +2125,7 @@
                             <div class="empty-ws-icon">⚡</div>
                             <h3>No Database Connected</h3>
                             <p>JobBuddy is operating in private workspace mode. Connect your scraper's read-only MongoDB Atlas URI to load your scraped jobs, active profile, and custom location filters.</p>
-                            <button class="btn-db-save" onclick="openDbModal()" style="padding:10px 22px;font-size:0.88rem;">Connect Your Database</button>
+                            <button class="btn-db-save" onclick="handleAccountButtonClick()" style="padding:10px 22px;font-size:0.88rem;">Connect Your Database</button>
                         </div>
                     `;
                     renderPagination();
@@ -2039,7 +2148,7 @@
             renderPagination();
         }
 
-        // Build a job card
+        // Build a job card with clickable title and relative posting age
         function buildCard(job) {
             const id = 'c' + (cardIdx++);
             const isDirect = ltOf(job) === 'direct_apply';
@@ -2047,7 +2156,16 @@
             const newTag = isNew(job.first_seen || job.scraped_at) ? '<span class="tag-new">New</span>' : '';
             const rawReason = job.core_requirements || '';
             const portalFallback = 'Curated company portal for early-career, graduate & fresher opportunities.';
-            const reason = rawReason || (!isDirect ? portalFallback : '');
+            
+            // Filter out scraper artifacts / cookie blocker text if any slipped through
+            let cleanReason = rawReason;
+            if (
+                cleanReason.toLowerCase().includes("javascript to run") ||
+                cleanReason.toLowerCase().includes("corporate website and landing page")
+            ) {
+                cleanReason = '';
+            }
+            const reason = cleanReason || (!isDirect ? portalFallback : '');
             const cat = (job.category || 'other').replace(/_/g, ' ');
 
             let vbadge = '';
@@ -2073,14 +2191,22 @@
                 ? '<a href="' + esc(job.link || '#') + '" class="apply-btn direct-btn" target="_blank" rel="noopener noreferrer" aria-label="Apply to ' + jobTitleEsc + ' at ' + compEsc + '">Apply &#8594;</a>'
                 : '<a href="' + esc(job.link || '#') + '" class="apply-btn browse-btn" target="_blank" rel="noopener noreferrer" aria-label="Explore early-career opportunities at ' + compEsc + '">Explore Portal &#8594;</a>';
 
+            // Relative date formatting
+            const relDate = formatRelativeDate(job.first_seen || job.scraped_at);
+            const dateHtml = relDate ? '<span class="meta-sep">&middot;</span><span class="job-date" title="Discovered ' + esc(job.first_seen || job.scraped_at) + '">' + esc(relDate) + '</span>' : '';
+
+            // Clickable job title
+            const titleLink = '<a href="' + esc(job.link || '#') + '" class="job-title-link" target="_blank" rel="noopener noreferrer">' + jobTitleEsc + '</a>';
+
             return '<div class="job-card">'
                 + '<div class="job-left">'
-                + '<div class="job-title-row"><div class="job-title">' + esc(job.title || 'Untitled') + '</div>' + newTag + '</div>'
+                + '<div class="job-title-row"><div class="job-title">' + titleLink + '</div>' + newTag + '</div>'
                 + '<div class="job-meta">'
                 + (job.company_name ? '<span class="job-company">' + esc(job.company_name) + '</span>' : '')
                 + (job.company_name && job.location ? '<span class="meta-sep">/</span>' : '')
                 + (job.location ? '<span class="job-loc">' + esc(job.location) + '</span>' : '')
                 + (cat ? '<span class="meta-sep">&middot;</span><span class="job-cat">' + esc(cat) + '</span>' : '')
+                + dateHtml
                 + '</div>'
                 + reasonHtml
                 + '</div>'
@@ -2171,10 +2297,18 @@
             }
         }
 
-        // Cache
+        // Bounded Cache Management
         function saveCache(data) {
-            try { localStorage.setItem(CURRENT_CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch (e) { }
+            try {
+                // Prune old jb_v6_ cache entries if exceeding 25 to prevent QuotaExceededError
+                const jbKeys = Object.keys(localStorage).filter(k => k.startsWith('jb_v6_'));
+                if (jbKeys.length >= 25) {
+                    jbKeys.slice(0, 10).forEach(k => localStorage.removeItem(k));
+                }
+                localStorage.setItem(CURRENT_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+            } catch (e) { }
         }
+
         function loadCache() {
             try {
                 const raw = localStorage.getItem(CURRENT_CACHE_KEY);
@@ -2183,6 +2317,14 @@
                 if (Date.now() - ts > CACHE_TTL) return null;
                 return data;
             } catch (e) { return null; }
+        }
+
+        function clearAllCache() {
+            try {
+                Object.keys(localStorage).forEach(k => {
+                    if (k.startsWith("jb_")) localStorage.removeItem(k);
+                });
+            } catch (e) {}
         }
 
         // Background sync indicator
@@ -2281,10 +2423,15 @@
                 isLoading = false;
                 const msg = e.message || 'Unknown error';
                 if (allJobs.length === 0) {
+                    const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
+                    const resetBtnHtml = isCustom
+                        ? `<button onclick="resetDefaultDb()" style="padding:8px 18px;margin-left:10px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;">Reset to Community Feed</button>`
+                        : '';
                     document.getElementById('jobs-container').innerHTML =
                         '<div class="state">'
-                        + '<p style="color:var(--red);margin-bottom:14px">' + msg + '</p>'
+                        + '<p style="color:var(--red);margin-bottom:14px">' + esc(msg) + '</p>'
                         + '<button onclick="fetchJobs(' + page + ')" style="padding:8px 22px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;">Retry</button>'
+                        + resetBtnHtml
                         + '</div>';
                 }
             }
@@ -2292,106 +2439,12 @@
 
         // Suppress Netlify badge
         function hideNBadge() {
-            document.querySelectorAll('a[href*="netlify.com"], #nl-badge-frame').forEach(el => {
+            document.querySelectorAll('a[href*="netlify.com"], [data-netlify-deploy-id], #nl-badge-frame, .netlify-badge').forEach(el => {
                 el.style.setProperty('display', 'none', 'important');
+                el.style.setProperty('visibility', 'hidden', 'important');
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Clean up legacy localStorage cache keys
-            try {
-                Object.keys(localStorage).forEach(k => {
-                    if (k.startsWith('jb_jobs_') && k !== CURRENT_CACHE_KEY) localStorage.removeItem(k);
-                    if (k.startsWith('jb_v4_') || k.startsWith('jb_v3_') || k.startsWith('jb_v2_') || k.startsWith('jb_v1_')) {
-                        localStorage.removeItem(k);
-                    }
-                });
-            } catch (e) { }
-
-            // Parse URL for programmatic SEO / initial state
-            const path = window.location.pathname;
-            if (path && path !== '/' && path !== '/index.html') {
-                let cleanPath = path;
-                if (cleanPath.startsWith('/portals')) {
-                    activeViewType = 'filtered_list';
-                    cleanPath = cleanPath.replace('/portals', '') || '/';
-                    const tabDir = document.getElementById('tab-direct');
-                    const tabPort = document.getElementById('tab-portals');
-                    if (tabDir) { tabDir.classList.remove('active'); tabDir.setAttribute('aria-selected', 'false'); }
-                    if (tabPort) { tabPort.classList.add('active'); tabPort.setAttribute('aria-selected', 'true'); }
-                    const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
-                    const filterRow = document.getElementById('filter-row');
-                    if (catContainer) catContainer.style.display = 'none';
-                    if (filterRow) filterRow.style.display = 'none';
-                }
-                const parts = cleanPath.split('/').filter(p => p);
-                if (parts.length === 2) {
-                    const urlLoc = parts[0];
-                    const urlCat = parts[1];
-
-                    if (urlLoc !== 'anywhere') activeLoc = urlLoc;
-                    if (urlCat !== 'all-roles') activeCat = urlCat;
-
-                    // visually update buttons
-                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                    const cBtn = document.querySelector(`[data-cat="${activeCat}"]`);
-                    if (cBtn) cBtn.classList.add('active');
-
-                    ['loc-all', 'loc-remote', 'loc-india', 'loc-global'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) el.className = 'filt-btn';
-                    });
-                    const locBtnId = activeLoc === 'all' ? 'loc-all' : `loc-${activeLoc}`;
-                    const lBtn = document.getElementById(locBtnId);
-                    if (lBtn) lBtn.className = 'filt-btn active-blue';
-                }
-            }
-
-            // Category horizontal scroll fade indicator (RAF-batched to prevent forced reflow)
-            const cWrap = document.getElementById('cat-scroll-wrap');
-            const cCont = document.getElementById('cat-scroll-container');
-            if (cWrap && cCont) {
-                let rafId = null;
-                const checkScrollEnd = () => {
-                    if (cCont.style.display === 'none') return;
-                    if (rafId) cancelAnimationFrame(rafId);
-                    rafId = requestAnimationFrame(() => {
-                        const atEnd = cWrap.scrollLeft + cWrap.clientWidth >= cWrap.scrollWidth - 10;
-                        cCont.classList.toggle('is-at-end', atEnd);
-                    });
-                };
-                cWrap.addEventListener('scroll', checkScrollEnd, { passive: true });
-                window.addEventListener('resize', checkScrollEnd, { passive: true });
-                checkScrollEnd();
-            }
-
-            fetchJobs(1);
-            setTimeout(hideNBadge, 500);
-            setTimeout(hideNBadge, 2000);
-            setTimeout(hideNBadge, 5000);
-        });
-
-        // Defer Google AdSense script until main thread is idle to maximize Core Web Vitals
-        window.addEventListener('load', () => {
-            const loadAds = () => {
-                if (window.innerWidth <= 880) return;
-                const ins = document.querySelector('ins.adsbygoogle');
-                if (!ins || ins.getAttribute('data-ad-slot') === 'XXXXXXXXXX') return;
-                const adScript = document.createElement('script');
-                adScript.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3809813018120427';
-                adScript.async = true;
-                adScript.crossOrigin = 'anonymous';
-                adScript.onload = () => {
-                    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
-                };
-                document.head.appendChild(adScript);
-            };
-            if ('requestIdleCallback' in window) {
-                requestIdleCallback(loadAds, { timeout: 2500 });
-            } else {
-                setTimeout(loadAds, 1200);
-            }
-        });
         // Dynamic Filter Adaptation
         function updateDynamicFilters(meta) {
             if (!meta) return;
@@ -2454,13 +2507,18 @@
             }
         }
 
-        // Workspace Modal Management
+        // ── UNIFIED ACCOUNT & WORKSPACE (NETLIFY IDENTITY & DATABASE) ─
+        function handleAccountButtonClick() {
+            if (!currentUser) {
+                openIdentityModal();
+            } else {
+                openDbModal();
+            }
+        }
+
         function openDbModal() {
             const modal = document.getElementById('db-modal');
-            const input = document.getElementById('custom-mongo-input');
-            const currentUri = localStorage.getItem("jobbuddy_custom_mongo_uri") || "";
-            if (input) input.value = currentUri;
-            updateWorkspaceIndicator();
+            updateWorkspaceModalUI();
             if (modal) modal.style.display = 'flex';
         }
 
@@ -2469,7 +2527,38 @@
             if (modal) modal.style.display = 'none';
         }
 
-        function saveCustomDb() {
+        async function fetchUserProfile(user) {
+            if (!user) return;
+            try {
+                const res = await fetch(`/.netlify/functions/userProfile?email=${encodeURIComponent(user.email)}`, {
+                    headers: {
+                        'x-user-id': user.id || '',
+                        'x-user-email': user.email || ''
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    userProfile = data.profile || null;
+                    if (userProfile && userProfile.custom_mongo_uri) {
+                        localStorage.setItem("jobbuddy_custom_mongo_uri", userProfile.custom_mongo_uri);
+                        clearAllCache();
+                        updateWorkspaceIndicator();
+                        currentPage = 1;
+                        fetchJobs(1);
+                    }
+                }
+            } catch (e) {
+                console.warn("Could not fetch user profile from Netlify database:", e);
+            }
+        }
+
+        async function saveCustomDb() {
+            if (!currentUser) {
+                alert("Please sign in first to connect and sync your database to your Netlify account profile.");
+                openIdentityModal();
+                return;
+            }
+
             const input = document.getElementById('custom-mongo-input');
             const uri = input ? input.value.trim() : "";
             if (!uri) {
@@ -2480,23 +2569,63 @@
                 alert("Please enter a valid MongoDB connection string (starts with mongodb:// or mongodb+srv://)");
                 return;
             }
-            localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
-            updateWorkspaceIndicator();
-            closeDbModal();
-            clearAllCache();
-            activeCat = "all";
-            activeLoc = "all";
-            currentPage = 1;
-            fetchJobs(1);
+
+            const btn = document.querySelector('.btn-db-save');
+            if (btn) btn.textContent = 'Saving to Netlify DB...';
+
+            try {
+                // Save to Netlify's cloud database via userProfile function
+                const res = await fetch('/.netlify/functions/userProfile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-user-id': currentUser.id || '',
+                        'x-user-email': currentUser.email || ''
+                    },
+                    body: JSON.stringify({
+                        custom_mongo_uri: uri
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || 'Failed to save');
+                }
+
+                localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
+                clearAllCache();
+                updateWorkspaceIndicator();
+                closeDbModal();
+                activeCat = "all";
+                activeLoc = "all";
+                currentPage = 1;
+                fetchJobs(1);
+            } catch (err) {
+                alert("Error saving to Netlify database: " + err.message);
+            } finally {
+                if (btn) btn.textContent = 'Save to Netlify Profile';
+            }
         }
 
-        function resetDefaultDb() {
+        async function resetDefaultDb() {
+            if (currentUser) {
+                try {
+                    await fetch('/.netlify/functions/userProfile', {
+                        method: 'DELETE',
+                        headers: {
+                            'x-user-id': currentUser.id || '',
+                            'x-user-email': currentUser.email || ''
+                        }
+                    });
+                } catch (e) {}
+            }
+
             localStorage.removeItem("jobbuddy_custom_mongo_uri");
             const input = document.getElementById('custom-mongo-input');
             if (input) input.value = "";
+            clearAllCache();
             updateWorkspaceIndicator();
             closeDbModal();
-            clearAllCache();
             activeCat = "all";
             activeLoc = "all";
             currentPage = 1;
@@ -2504,34 +2633,61 @@
         }
 
         function updateWorkspaceIndicator() {
-            const btn = document.getElementById('btn-workspace');
-            const label = document.getElementById('ws-btn-label');
-            const modalBadge = document.getElementById('modal-db-badge');
+            const userPill = document.getElementById('user-header-pill');
+            const signInBtn = document.getElementById('btn-header-signin');
+            const headerEmail = document.getElementById('header-user-email');
+            const headerAvatar = document.getElementById('header-avatar');
+            const statusDot = document.getElementById('header-db-status');
             const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
-            
-            if (btn) btn.classList.toggle('is-custom', isCustom);
-            if (label) label.textContent = isCustom ? 'Personal DB' : 'Workspace';
-            if (modalBadge) {
-                modalBadge.textContent = isCustom ? 'Custom Database Active' : 'Default Community Feed';
-                modalBadge.className = isCustom ? 'ws-status-badge' : 'ws-status-badge neutral';
+
+            if (currentUser) {
+                if (signInBtn) signInBtn.style.display = 'none';
+                if (userPill) userPill.style.display = 'inline-flex';
+                if (headerEmail) headerEmail.textContent = currentUser.email;
+                if (headerAvatar) headerAvatar.textContent = (currentUser.email ? currentUser.email[0].toUpperCase() : '👤');
+                if (statusDot) {
+                    statusDot.className = isCustom ? 'db-status-pill is-custom' : 'db-status-pill';
+                    statusDot.title = isCustom ? 'Personal MongoDB Connected' : 'Default Community Feed';
+                }
+            } else {
+                if (signInBtn) signInBtn.style.display = 'inline-flex';
+                if (userPill) userPill.style.display = 'none';
             }
         }
 
-        function clearAllCache() {
-            try {
-                Object.keys(sessionStorage).forEach(k => {
-                    if (k.startsWith("jb_")) sessionStorage.removeItem(k);
-                });
-            } catch (e) {}
+        function updateWorkspaceModalUI() {
+            const userSection = document.getElementById('modal-user-section');
+            const guestSection = document.getElementById('modal-guest-section');
+            const modalEmail = document.getElementById('modal-account-email');
+            const modalDbBadge = document.getElementById('modal-db-badge');
+            const input = document.getElementById('custom-mongo-input');
+            const currentUri = localStorage.getItem("jobbuddy_custom_mongo_uri") || "";
+            const isCustom = Boolean(currentUri);
+
+            if (input) input.value = currentUri;
+
+            if (modalDbBadge) {
+                modalDbBadge.textContent = isCustom ? 'Custom Database Active' : 'Default Community Feed';
+                modalDbBadge.className = isCustom ? 'ws-status-badge' : 'ws-status-badge neutral';
+            }
+
+            if (currentUser) {
+                if (userSection) userSection.style.display = 'block';
+                if (guestSection) guestSection.style.display = 'none';
+                if (modalEmail) modalEmail.textContent = currentUser.email;
+            } else {
+                if (userSection) userSection.style.display = 'none';
+                if (guestSection) guestSection.style.display = 'block';
+            }
         }
 
-        // ── NETLIFY IDENTITY (PASSWORDLESS EMAIL MAGIC LINK) ───────────
+        // Netlify Identity Authentication
         function openIdentityModal() {
-            if (!window.netlifyIdentity) {
-                alert("Identity service is initializing, please try again in a moment.");
-                return;
+            if (window.netlifyIdentity) {
+                window.netlifyIdentity.open();
+            } else {
+                alert("Netlify Identity is initializing. Please verify Identity is enabled on your Netlify dashboard.");
             }
-            window.netlifyIdentity.open();
         }
 
         function logoutIdentity() {
@@ -2541,33 +2697,118 @@
         }
 
         function updateAuthState(user) {
-            const authBadge = document.getElementById('modal-auth-badge');
-            const boxLoggedOut = document.getElementById('auth-box-logged-out');
-            const boxLoggedIn = document.getElementById('auth-box-logged-in');
-            const userEmail = document.getElementById('modal-user-email');
-            const userAvatar = document.getElementById('modal-user-avatar');
-
+            currentUser = user;
+            updateWorkspaceIndicator();
             if (user) {
-                if (authBadge) {
-                    authBadge.textContent = 'Signed In';
-                    authBadge.className = 'ws-status-badge';
-                }
-                if (boxLoggedOut) boxLoggedOut.style.display = 'none';
-                if (boxLoggedIn) boxLoggedIn.style.display = 'block';
-                if (userEmail) userEmail.textContent = user.email || 'Verified Account';
-                if (userAvatar) userAvatar.textContent = (user.email ? user.email[0].toUpperCase() : '👤');
+                fetchUserProfile(user);
             } else {
-                if (authBadge) {
-                    authBadge.textContent = 'Not Signed In';
-                    authBadge.className = 'ws-status-badge neutral';
-                }
-                if (boxLoggedOut) boxLoggedOut.style.display = 'block';
-                if (boxLoggedIn) boxLoggedIn.style.display = 'none';
+                // Logged out: reset to community feed
+                localStorage.removeItem("jobbuddy_custom_mongo_uri");
+                userProfile = null;
+                clearAllCache();
+                updateWorkspaceIndicator();
+                currentPage = 1;
+                fetchJobs(1);
             }
         }
 
+        // Browser Back / Forward Popstate Navigation
+        window.addEventListener('popstate', (e) => {
+            const path = window.location.pathname;
+            let cleanPath = path || '/';
+            activeViewType = cleanPath.startsWith('/portals') ? 'filtered_list' : 'direct_apply';
+
+            const isDirect = activeViewType === 'direct_apply';
+            const tabDir = document.getElementById('tab-direct');
+            const tabPort = document.getElementById('tab-portals');
+            if (tabDir) { tabDir.classList.toggle('active', isDirect); tabDir.setAttribute('aria-selected', isDirect); }
+            if (tabPort) { tabPort.classList.toggle('active', !isDirect); tabPort.setAttribute('aria-selected', !isDirect); }
+
+            const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
+            const filterRow = document.getElementById('filter-row');
+            if (catContainer) catContainer.style.display = isDirect ? 'block' : 'none';
+            if (filterRow) filterRow.style.display = isDirect ? 'flex' : 'none';
+
+            if (cleanPath.startsWith('/portals')) {
+                cleanPath = cleanPath.replace('/portals', '') || '/';
+            }
+            const parts = cleanPath.split('/').filter(p => p);
+            if (parts.length === 2) {
+                activeLoc = parts[0] === 'anywhere' ? 'all' : parts[0];
+                activeCat = parts[1] === 'all-roles' ? 'all' : parts[1];
+            } else {
+                activeLoc = 'all';
+                activeCat = 'all';
+            }
+
+            updatePageTitle();
+            currentPage = 1;
+            fetchJobs(1);
+        });
+
         // Initialize Everything on Load
         document.addEventListener('DOMContentLoaded', () => {
+            // Clean up legacy localStorage cache keys
+            clearAllCache();
+
+            // Parse URL for programmatic SEO / initial state
+            const path = window.location.pathname;
+            if (path && path !== '/' && path !== '/index.html') {
+                let cleanPath = path;
+                if (cleanPath.startsWith('/portals')) {
+                    activeViewType = 'filtered_list';
+                    cleanPath = cleanPath.replace('/portals', '') || '/';
+                    const tabDir = document.getElementById('tab-direct');
+                    const tabPort = document.getElementById('tab-portals');
+                    if (tabDir) { tabDir.classList.remove('active'); tabDir.setAttribute('aria-selected', 'false'); }
+                    if (tabPort) { tabPort.classList.add('active'); tabPort.setAttribute('aria-selected', 'true'); }
+                    const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
+                    const filterRow = document.getElementById('filter-row');
+                    if (catContainer) catContainer.style.display = 'none';
+                    if (filterRow) filterRow.style.display = 'none';
+                }
+                const parts = cleanPath.split('/').filter(p => p);
+                if (parts.length === 2) {
+                    const urlLoc = parts[0];
+                    const urlCat = parts[1];
+
+                    if (urlLoc !== 'anywhere') activeLoc = urlLoc;
+                    if (urlCat !== 'all-roles') activeCat = urlCat;
+
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    const cBtn = document.querySelector(`[data-cat="${activeCat}"]`);
+                    if (cBtn) cBtn.classList.add('active');
+
+                    ['loc-all', 'loc-remote', 'loc-india', 'loc-global'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.className = 'filt-btn';
+                    });
+                    const locBtnId = activeLoc === 'all' ? 'loc-all' : `loc-${activeLoc}`;
+                    const lBtn = document.getElementById(locBtnId);
+                    if (lBtn) lBtn.className = 'filt-btn active-blue';
+                }
+            }
+            updatePageTitle();
+
+            // Category horizontal scroll fade indicator (RAF-batched)
+            const cWrap = document.getElementById('cat-scroll-wrap');
+            const cCont = document.getElementById('cat-scroll-container');
+            if (cWrap && cCont) {
+                let rafId = null;
+                const checkScrollEnd = () => {
+                    if (cCont.style.display === 'none') return;
+                    if (rafId) cancelAnimationFrame(rafId);
+                    rafId = requestAnimationFrame(() => {
+                        const atEnd = cWrap.scrollLeft + cWrap.clientWidth >= cWrap.scrollWidth - 10;
+                        cCont.classList.toggle('is-at-end', atEnd);
+                    });
+                };
+                cWrap.addEventListener('scroll', checkScrollEnd, { passive: true });
+                window.addEventListener('resize', checkScrollEnd, { passive: true });
+                checkScrollEnd();
+            }
+
+            // Initialize Netlify Identity
             updateWorkspaceIndicator();
             if (window.netlifyIdentity) {
                 window.netlifyIdentity.on('init', user => updateAuthState(user));
@@ -2577,7 +2818,12 @@
                 });
                 window.netlifyIdentity.on('logout', () => updateAuthState(null));
             }
-            
+
+            fetchJobs(1);
+            setTimeout(hideNBadge, 500);
+            setTimeout(hideNBadge, 2000);
+            setTimeout(hideNBadge, 5000);
+
             // Continuous Netlify Badge Annihilator
             const killBadgeObserver = new MutationObserver(() => {
                 document.querySelectorAll('a[href*="netlify.com"], [data-netlify-deploy-id], #nl-badge-frame, .netlify-badge').forEach(el => {

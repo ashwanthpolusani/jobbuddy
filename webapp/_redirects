@@ -1,9 +1,12 @@
 /privacy.html          /privacy            301!
 /terms.html            /terms              301!
+/interview-prep.html   /interview-prep     301!
+/resume-guide.html     /resume-guide       301!
 /privacy               /privacy.html       200
 /terms                 /terms.html         200
 /interview-prep        /interview-prep.html 200
 /resume-guide          /resume-guide.html  200
+/portals               /index.html         200
 /robots.txt            /robots.txt         200
 /sitemap.xml           /sitemap.xml        200
 /ads.txt               /ads.txt            200
