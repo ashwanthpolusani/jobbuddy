@@ -139,7 +139,79 @@ exports.handler = async (event, context) => {
     const location   = params.location   || "all";
     const search     = params.search     || "";
 
-    const activeUri = (customUri && customUri.trim()) || process.env.MONGODB_URI || "";
+    // Every user connects their own custom MongoDB cluster
+    const activeUri = (customUri && customUri.trim()) || "";
+    const isSampleRequested = params.sample === "true" || params.demo === "true";
+
+    if (!activeUri && isSampleRequested) {
+        let sampleJobs = [];
+        try {
+            sampleJobs = require("./sampleJobs.json");
+        } catch (e) {
+            sampleJobs = [];
+        }
+
+        let filtered = sampleJobs.filter(job => {
+            if (link_type && link_type !== 'all' && (job.link_type || 'direct_apply') !== link_type) return false;
+            if (category && category !== 'all' && job.category !== category) return false;
+            if (verdict && verdict !== 'all' && job.experience_verdict !== verdict) return false;
+            if (location && location !== 'all') {
+                const locStr = (job.location || '').toLowerCase();
+                if (location === 'remote' && !locStr.includes('remote')) return false;
+                if (location === 'india' && !locStr.includes('india') && !locStr.includes('bengaluru') && !locStr.includes('bangalore') && !locStr.includes('pune') && !locStr.includes('hyderabad') && !locStr.includes('delhi') && !locStr.includes('mumbai')) return false;
+                if (location === 'global' && (locStr.includes('india') || locStr.includes('bengaluru') || locStr.includes('bangalore') || locStr.includes('pune') || locStr.includes('hyderabad'))) return false;
+            }
+            if (search && search.trim()) {
+                const q = search.trim().toLowerCase();
+                const matchTitle = (job.title || '').toLowerCase().includes(q);
+                const matchComp = (job.company_name || '').toLowerCase().includes(q);
+                const matchReq = (job.core_requirements || '').toLowerCase().includes(q);
+                const matchLoc = (job.location || '').toLowerCase().includes(q);
+                if (!matchTitle && !matchComp && !matchReq && !matchLoc) return false;
+            }
+            return true;
+        });
+
+        const total = filtered.length;
+        const totalPages = Math.ceil(total / limit) || 1;
+        const pagedJobs = filtered.slice((page - 1) * limit, page * limit);
+        const directCount = sampleJobs.filter(j => (j.link_type || 'direct_apply') === 'direct_apply').length;
+        const portalCount = sampleJobs.filter(j => (j.link_type || 'direct_apply') !== 'direct_apply').length;
+
+        const categories = [...new Set(sampleJobs.map(j => j.category).filter(Boolean))];
+        const locations = [
+            { id: 'all', label: 'All Locations' },
+            { id: 'remote', label: 'Remote' },
+            { id: 'india', label: 'India' },
+            { id: 'global', label: 'Global' }
+        ];
+
+        return {
+            statusCode: 200,
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Cache-Control": "public, max-age=60"
+            },
+            body: JSON.stringify({
+                jobs: pagedJobs,
+                total,
+                page,
+                limit,
+                totalPages,
+                directCount,
+                portalCount,
+                meta: {
+                    isSampleData: true,
+                    noDb: true,
+                    isCustomDb: false,
+                    categories,
+                    locations
+                }
+            })
+        };
+    }
+
     if (!activeUri) {
         return {
             statusCode: 200,
@@ -316,12 +388,22 @@ exports.handler = async (event, context) => {
     } catch (error) {
         console.error("getJobs error:", error);
         return {
-            statusCode: 500,
+            statusCode: 200,
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*"
             },
-            body: JSON.stringify({ error: "Failed fetching jobs: " + (error.message || "Database connection error") }),
+            body: JSON.stringify({
+                jobs: [],
+                total: 0,
+                directCount: 0,
+                portalCount: 0,
+                error: "Database connection failed: " + (error.message || "Invalid connection string or unreachable host"),
+                meta: {
+                    dbError: true,
+                    errorMessage: error.message
+                }
+            }),
         };
     }
 };

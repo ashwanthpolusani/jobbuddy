@@ -4,19 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobBuddy — Entry-Level Tech Jobs, Daily</title>
+    <title>JobBuddy — Universal Tech Job Discovery & Scraper Hub</title>
     <meta name="description"
-        content="JobBuddy scrapes 300+ company career pages every day and surfaces only genuine entry-level and fresher tech roles. No experience required.">
-    <meta property="og:title" content="JobBuddy — Entry-Level Tech Jobs, Daily">
+        content="A customizable tech job discovery frontend for your scraper database. Connect your read-only MongoDB Atlas connection string to filter, search, and track tech opportunities across any role and experience level.">
+    <meta property="og:title" content="JobBuddy — Universal Tech Job Discovery & Scraper Hub">
     <meta property="og:description"
-        content="300+ company career pages scraped daily. Only genuine 0-experience tech roles.">
+        content="Personalized job discovery frontend. Connect your scraper's MongoDB URL to visualize, search, and filter tech opportunities.">
     <meta property="og:url" content="https://buddyjob.netlify.app/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="JobBuddy">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="JobBuddy — Entry-Level Tech Jobs, Daily">
+    <meta name="twitter:title" content="JobBuddy — Universal Tech Job Discovery & Scraper Hub">
     <meta name="twitter:description"
-        content="300+ company career pages scraped daily. Only genuine 0-experience tech roles.">
+        content="Personalized job discovery frontend. Connect your scraper's MongoDB URL to visualize, search, and filter tech opportunities.">
     <meta name="theme-color" content="#0a66c2">
     <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -264,6 +264,25 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .db-status-pill {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9ca3af;
+            border: 1.5px solid var(--surface);
+        }
+
+        .db-status-pill.is-custom {
+            background: #10b981;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+        }
+
+        .db-status-pill.is-sample {
+            background: #3b82f6;
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
         }
 
         .btn-logout-small {
@@ -1898,12 +1917,12 @@
                     </svg>
                     <div>
                         <h1 class="wordmark">Job<span class="accent">Buddy</span></h1>
-                        <div class="header-sub">Daily tech jobs for freshers &middot; No experience required</div>
+                        <div class="header-sub">Universal Tech Job Discovery &middot; Connect your custom scraper database</div>
                     </div>
                 </a>
                 <div class="header-actions">
                     <nav class="header-nav-links" aria-label="Main Navigation">
-                        <a href="/" class="header-nav-link active" id="nav-live-jobs">Live Jobs</a>
+                        <a href="/" class="header-nav-link active" id="nav-live-jobs" onclick="if(currentUser){currentPage=1;fetchJobs(1);}">Live Jobs</a>
                         <a href="/interview-prep" class="header-nav-link">Interview Prep</a>
                         <a href="/resume-guide" class="header-nav-link">Resume Guide</a>
                     </nav>
@@ -1921,7 +1940,7 @@
                         <button class="user-pill" id="user-header-pill" onclick="openDbModal()" style="display: none;" title="Account & Database Settings" aria-label="Account and Workspace Settings">
                             <span class="user-avatar-small" id="header-avatar">&#128100;</span>
                             <span class="user-email-header" id="header-user-email">user@domain.com</span>
-                            <span class="db-status-pill" id="header-db-status" title="Default Community Feed"></span>
+                            <span class="db-status-pill" id="header-db-status" title="Custom Scraper MongoDB"></span>
                         </button>
                     </div>
                 </div>
@@ -1939,28 +1958,28 @@
                     <!-- Hero Card -->
                     <div class="guest-hero-card">
                         <div class="guest-badge-pill">
-                            <span>⚡</span> Direct ATS Portals &middot; 0-2 YOE Tech Opportunities
+                            <span>⚡</span> Universal Career Workspace &middot; Any Role &middot; Any Experience Level
                         </div>
                         <h2 class="guest-hero-title">
-                            Verified Early-Career Tech Jobs Straight from <span class="accent-text">Company Career Portals</span>
+                            The Custom Job Discovery Platform for <span class="accent-text">Your Scraper Database</span>
                         </h2>
                         <p class="guest-hero-desc">
-                            Stop wasting hours on agency spam, ghost listings, and fake junior roles. JobBuddy tracks official Workday, Lever, and Greenhouse portals for genuine entry-level roles. Sign in to unlock live search, multi-factor filters, and your Netlify Database workspace.
+                            Plug in your read-only MongoDB URL to instantly visualize, search, and filter job postings scraped from Workday, Lever, Greenhouse, and company portals. Built for freshers, experienced engineers, and tech professionals alike.
                         </p>
                         <div class="guest-cta-row">
-                            <button class="btn-guest-primary" onclick="openIdentityModal()" aria-label="Sign in with Netlify">
+                            <button class="btn-guest-primary" onclick="handleAccountButtonClick()" aria-label="Sign in to your workspace">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                                     <polyline points="10 17 15 12 10 7"/>
                                     <line x1="15" y1="12" x2="3" y2="12"/>
                                 </svg>
-                                Sign In to Unlock Feed
+                                Sign In to Your Workspace
                             </button>
                             <button class="btn-guest-secondary" onclick="loginDemoUser()" aria-label="Explore demo workspace">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <polygon points="5 3 19 12 5 21 5 3"/>
                                 </svg>
-                                Try Demo Workspace
+                                Explore Demo Workspace
                             </button>
                         </div>
                     </div>
@@ -1970,17 +1989,17 @@
                         <div class="guest-feature-card">
                             <div class="guest-feature-icon">⚡</div>
                             <div class="guest-feature-title">Direct ATS Applications</div>
-                            <div class="guest-feature-text">Apply directly on Workday, Lever, and Greenhouse systems. Zero recruiters or third-party tracking middlemen.</div>
+                            <div class="guest-feature-text">Apply directly on Workday, Lever, and Greenhouse systems. Zero recruiters, agency spam, or outdated third-party boards.</div>
                         </div>
                         <div class="guest-feature-card">
                             <div class="guest-feature-icon">🎯</div>
-                            <div class="guest-feature-title">Strict 0–2 YOE Filtering</div>
-                            <div class="guest-feature-text">Heuristic parser filters out misleading "junior" postings asking for 5+ years of experience. Tailored for graduates.</div>
+                            <div class="guest-feature-title">All Experience Levels &amp; Tracks</div>
+                            <div class="guest-feature-text">Universal filtering for Software Engineering, Data/AI, Cloud/DevOps, and more — from early career to staff and lead roles.</div>
                         </div>
                         <div class="guest-feature-card">
                             <div class="guest-feature-icon">🔒</div>
-                            <div class="guest-feature-title">Netlify Database Sync</div>
-                            <div class="guest-feature-text">Connect your private MongoDB cluster. Settings and saved listings sync across devices via Netlify Database.</div>
+                            <div class="guest-feature-title">Netlify Database Cloud Sync</div>
+                            <div class="guest-feature-text">Connect your private MongoDB cluster. Settings and preferences sync seamlessly across devices via Netlify Database.</div>
                         </div>
                     </div>
 
@@ -1988,47 +2007,47 @@
                     <div class="guest-preview-wrapper">
                         <div class="guest-preview-header">
                             <span class="guest-preview-badge">Live Opportunities Preview</span>
-                            <span style="font-size: 0.72rem; color: var(--accent); font-weight: 600;">🔒 Sign In Required for Full Feed</span>
+                            <span style="font-size: 0.72rem; color: var(--accent); font-weight: 600;">🔒 Connect Database or Sign In for Live Feed</span>
                         </div>
                         <div class="guest-sample-cards">
                             <div class="guest-sample-card">
                                 <div class="guest-sample-left">
                                     <div class="guest-sample-title">Associate Software Development Engineer</div>
                                     <div class="guest-sample-meta">
-                                        <span>Stripe</span> &middot; <span>Remote / Bengaluru</span> &middot; <span style="color:var(--green); font-weight:600;">Confirmed 0-1 YOE</span>
+                                        <span>Stripe</span> &middot; <span>Remote / Bengaluru</span> &middot; <span style="color:var(--green); font-weight:600;">Early Career (0-2 YOE)</span>
                                     </div>
                                 </div>
-                                <span class="badge badge-confirmed">Confirmed</span>
+                                <span class="badge badge-confirmed">Confirmed Match</span>
                             </div>
                             <div class="guest-sample-card">
                                 <div class="guest-sample-left">
-                                    <div class="guest-sample-title">Junior Data &amp; AI Systems Engineer</div>
+                                    <div class="guest-sample-title">Senior Distributed Systems / Backend Engineer</div>
                                     <div class="guest-sample-meta">
-                                        <span>Snowflake</span> &middot; <span>Hyderabad / Hybrid</span> &middot; <span style="color:var(--green); font-weight:600;">Fresh Grad 2025/2026</span>
+                                        <span>Netflix</span> &middot; <span>Remote Tech Hub</span> &middot; <span style="color:var(--accent); font-weight:600;">Experienced (5+ YOE)</span>
                                     </div>
                                 </div>
-                                <span class="badge badge-confirmed">Confirmed</span>
+                                <span class="badge badge-confirmed">Confirmed Match</span>
                             </div>
                             <div class="guest-sample-card">
                                 <div class="guest-sample-left">
-                                    <div class="guest-sample-title">Cloud DevOps &amp; Site Reliability Associate</div>
+                                    <div class="guest-sample-title">Staff Cloud Infrastructure &amp; SRE Architect</div>
                                     <div class="guest-sample-meta">
-                                        <span>Atlassian</span> &middot; <span>Remote Tech Hub</span> &middot; <span style="color:var(--amber); font-weight:600;">Early Career</span>
+                                        <span>Snowflake</span> &middot; <span>Hyderabad / Hybrid</span> &middot; <span style="color:var(--amber); font-weight:600;">Lead / Staff (8+ YOE)</span>
                                     </div>
                                 </div>
-                                <span class="badge badge-likely">Likely</span>
+                                <span class="badge badge-likely">Likely Match</span>
                             </div>
                         </div>
 
                         <!-- Lock Overlay -->
                         <div class="guest-lock-overlay">
-                            <div class="guest-lock-title">Sign in to unlock interactive search, track filters &amp; direct apply links</div>
+                            <div class="guest-lock-title">Sign in to connect your MongoDB cluster or test live filters in demo mode</div>
                             <div class="guest-cta-row" style="margin-top: 6px;">
-                                <button class="btn-guest-primary" onclick="openIdentityModal()" style="padding: 9px 20px; font-size: 0.82rem;">
-                                    Sign In with Netlify
+                                <button class="btn-guest-primary" onclick="handleAccountButtonClick()" style="padding: 9px 20px; font-size: 0.82rem;">
+                                    Sign In / Get Started
                                 </button>
                                 <button class="btn-guest-secondary" onclick="loginDemoUser()" style="padding: 9px 16px; font-size: 0.82rem;">
-                                    Explore as Demo User
+                                    Explore Demo Workspace
                                 </button>
                             </div>
                         </div>
@@ -2038,6 +2057,15 @@
                 <!-- 2. AUTHENTICATED WORKSPACE VIEW (SHOWN ONLY AFTER SIGN-IN) -->
                 <div id="authenticated-workspace-view" style="display: none;">
                     <div class="panel-main">
+
+                        <!-- Demo Mode Notice Banner -->
+                        <div id="sample-demo-banner" style="display: none; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 10px 16px; margin-bottom: 14px; font-size: 0.82rem; color: var(--text); display: none; align-items: center; justify-content: space-between; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.1rem;">🌟</span>
+                                <span><strong>Demo Mode Active:</strong> Browsing verified sample requisitions. Connect your personal MongoDB Atlas URI in Account Settings to browse your live scraped jobs.</span>
+                            </div>
+                            <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 6px 14px; font-size: 0.78rem; white-space: nowrap;">⚙️ Connect MongoDB</button>
+                        </div>
 
                         <!-- 1. View Switcher (Job Openings vs Company Career Pages) -->
                         <div class="view-switcher-bar">
@@ -2075,8 +2103,12 @@
                         <div class="cat-scroll-container" id="cat-scroll-container">
                             <div class="cat-scroll-wrap" id="cat-scroll-wrap">
                                 <div class="cat-tabs" id="cat-tabs" role="tablist" aria-label="Job categories">
-                                    <button class="cat-btn active" data-cat="all" id="cat-all" role="tab" aria-selected="true"
-                                        onclick="setCat('all',this)">All</button>
+                                    <button class="cat-btn active" data-cat="all" id="cat-all" role="tab" aria-selected="true" onclick="setCat('all',this)">All</button>
+                                    <button class="cat-btn" data-cat="software_engineering" id="cat-software_engineering" role="tab" aria-selected="false" onclick="setCat('software_engineering',this)">Software Eng</button>
+                                    <button class="cat-btn" data-cat="data_ml" id="cat-data_ml" role="tab" aria-selected="false" onclick="setCat('data_ml',this)">Data / AI</button>
+                                    <button class="cat-btn" data-cat="devops_cloud" id="cat-devops_cloud" role="tab" aria-selected="false" onclick="setCat('devops_cloud',this)">DevOps / Cloud</button>
+                                    <button class="cat-btn" data-cat="cybersecurity" id="cat-cybersecurity" role="tab" aria-selected="false" onclick="setCat('cybersecurity',this)">Security</button>
+                                    <button class="cat-btn" data-cat="product_design" id="cat-product_design" role="tab" aria-selected="false" onclick="setCat('product_design',this)">Product</button>
                                 </div>
                             </div>
                         </div>
@@ -2090,7 +2122,7 @@
                                     <path d="m21 21-4.35-4.35" />
                                 </svg>
                                 <input class="search-input" id="search-input" type="text"
-                                    placeholder="Search title, company, location&#8230;" oninput="debounceSearch()"
+                                    placeholder="Search title, company, location, skills, experience level&#8230;" oninput="debounceSearch()"
                                     autocomplete="off" aria-label="Search jobs">
                             </div>
 
@@ -2171,7 +2203,7 @@
                 <div class="sidebar-card">
                     <span class="sidebar-card-badge">Interview Blueprint</span>
                     <h4>Ace Tech Interviews</h4>
-                    <p>Master the 8 core DSA patterns, fresher system design principles, and behavioral STAR formulas.</p>
+                    <p>Master core DSA patterns, scalable system design principles, and behavioral STAR formulas.</p>
                     <a href="/interview-prep" class="sidebar-card-link">View Preparation Guide &rarr;</a>
                 </div>
 
@@ -2194,9 +2226,9 @@
                             <span class="footer-brand">Job<span class="accent">Buddy</span></span>
                         </div>
                         <p class="footer-mission">
-                            Indexing verified entry-level software engineering requisitions and official career portals directly from source ATS feeds. No experience required.
+                            Universal career discovery platform and custom frontend for your job scrapers. Indexing verified tech requisitions and official career portals directly from source ATS feeds for all experience levels.
                         </p>
-                        <div class="footer-copy">&copy; 2026 JobBuddy. Built for freshers.</div>
+                        <div class="footer-copy">&copy; 2026 JobBuddy. Open, customizable job discovery for every tech career stage.</div>
                     </div>
 
                     <div class="footer-col">
@@ -2264,11 +2296,16 @@
                         <div class="empty-ws-icon" style="font-size: 1.8rem; margin-bottom: 8px;">🔐</div>
                         <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 6px;">Sign In to Connect Your Database</h4>
                         <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">
-                            Sign in with your email magic link to connect your private MongoDB scraper feed and sync settings across devices using Netlify's cloud database.
+                            Sign in with your email to connect your private MongoDB scraper feed and sync settings across devices using Netlify Database.
                         </p>
-                        <button class="btn-header-auth" onclick="openIdentityModal()" style="padding: 9px 20px; font-size: 0.84rem;">
-                            Sign In / Create Account
-                        </button>
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                            <button class="btn-header-auth" onclick="openIdentityModal()" style="padding: 9px 20px; font-size: 0.84rem;">
+                                Sign In / Create Account
+                            </button>
+                            <button class="btn-guest-secondary" onclick="loginDemoUser(); closeDbModal();" style="padding: 9px 16px; font-size: 0.84rem;">
+                                Try Demo Mode
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -2276,19 +2313,19 @@
                 <div class="workspace-section">
                     <div class="ws-section-header">
                         <h4>MongoDB Atlas Data Source</h4>
-                        <span class="ws-status-badge neutral" id="modal-db-badge">Default Community Feed</span>
+                        <span class="ws-status-badge neutral" id="modal-db-badge">No Database Connected</span>
                     </div>
                     <p class="db-modal-desc">
-                        Connect your scraper's read-only MongoDB URI (<code>webapp_reader</code>) to load your personally scraped jobs, custom categories, and targeted cities. Stored securely in your Netlify cloud profile.
+                        Connect your scraper's read-only MongoDB URI (<code>webapp_reader</code>) to load your personally scraped jobs, custom categories, and targeted cities. Stored securely in your Netlify cloud database profile.
                     </p>
                     <div class="db-input-group">
                         <label for="custom-mongo-input">MongoDB Read-Only URI</label>
-                        <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://webapp_reader:password@cluster.mongodb.net/" autocomplete="off" />
-                        <span class="db-hint">&#128274; Saved to your private Netlify user database. Read-only role prevents any data modification.</span>
+                        <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://webapp_reader:password@cluster.mongodb.net/job_aggregator" autocomplete="off" />
+                        <span class="db-hint">&#128274; Saved to your Netlify cloud database profile. Read-only role prevents any data modification.</span>
                     </div>
                     <div class="ws-btn-row">
                         <button class="btn-db-save" onclick="saveCustomDb()">Save to Netlify Profile</button>
-                        <button class="btn-db-reset" onclick="resetDefaultDb()">Reset to Default</button>
+                        <button class="btn-db-reset" onclick="disconnectDatabase()">Disconnect Database</button>
                     </div>
                 </div>
             </div>
@@ -2407,15 +2444,15 @@
         // Dynamic Document Title
         function updatePageTitle() {
             if (activeViewType === 'filtered_list') {
-                document.title = 'Company Fresher Portals & Directories — JobBuddy';
+                document.title = 'Company Career Portals & Directories — JobBuddy';
             } else if (activeCat !== 'all' || activeLoc !== 'all') {
                 const catStr = activeCat !== 'all' ? activeCat.replace(/_/g, ' ') : 'Tech';
                 const locStr = activeLoc !== 'all' ? activeLoc.replace(/_/g, ' ') : '';
                 const capCat = catStr.charAt(0).toUpperCase() + catStr.slice(1);
                 const capLoc = locStr ? ` in ${locStr.charAt(0).toUpperCase() + locStr.slice(1)}` : '';
-                document.title = `${capCat} Jobs for Freshers${capLoc} — JobBuddy`;
+                document.title = `${capCat} Tech Jobs${capLoc} — JobBuddy`;
             } else {
-                document.title = 'JobBuddy — Entry-Level Tech Jobs, Daily';
+                document.title = 'JobBuddy — Universal Tech Job Discovery & Scraper Hub';
             }
         }
 
@@ -2466,12 +2503,27 @@
         function ltOf(j) { return j.link_type || 'direct_apply'; }
 
         let latestMeta = null;
+        let isSampleMode = false;
+
+        function loadSampleJobs() {
+            isSampleMode = true;
+            clearAllCache();
+            currentPage = 1;
+            fetchJobs(1);
+        }
 
         // Render Jobs
         function renderJobs() {
             const countEl = document.getElementById('result-count');
             const pageInd = document.getElementById('page-indicator');
             const cnt = document.getElementById('jobs-container');
+            const banner = document.getElementById('sample-demo-banner');
+
+            // Toggle demo banner visibility
+            const isSample = Boolean(latestMeta && latestMeta.isSampleData);
+            if (banner) {
+                banner.style.display = isSample ? 'flex' : 'none';
+            }
 
             // Update badge counts on switcher tabs
             const badgeDir = document.getElementById('badge-direct');
@@ -2479,42 +2531,75 @@
             if (badgeDir) badgeDir.textContent = directTotal;
             if (badgePort) badgePort.textContent = portalTotal;
 
-            const viewLabel = activeViewType === 'direct_apply' ? 'Direct Job Links' : 'Company Fresher Portals';
+            const viewLabel = activeViewType === 'direct_apply' ? 'Direct Job Links' : 'Company Career Portals';
+            const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
 
             if (!allJobs.length) {
-                if (latestMeta && latestMeta.noDb) {
-                    countEl.innerHTML = `Workspace Database Required`;
+                if (latestMeta && latestMeta.dbError) {
+                    countEl.innerHTML = `<span style="color:var(--red);">MongoDB Connection Issue</span>`;
                     pageInd.textContent = '';
                     cnt.innerHTML = `
-                        <div class="empty-workspace-hero">
-                            <div class="empty-ws-icon">⚡</div>
-                            <h3>No Database Connected</h3>
-                            <p>JobBuddy is operating in private workspace mode. Connect your scraper's read-only MongoDB Atlas URI to load your scraped jobs, active profile, and custom location filters.</p>
-                            <button class="btn-db-save" onclick="handleAccountButtonClick()" style="padding:10px 22px;font-size:0.88rem;">Connect Your Database</button>
+                        <div class="empty-workspace-hero" style="border-color: rgba(239, 68, 68, 0.3);">
+                            <div class="empty-ws-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--red);">⚠️</div>
+                            <h3 style="color: var(--text);">MongoDB Connection Failed</h3>
+                            <p style="color: var(--muted); margin-bottom: 12px;">Could not connect to your configured database cluster:</p>
+                            <div style="background: rgba(239, 68, 68, 0.07); color: var(--red); font-family: monospace; font-size: 0.8rem; padding: 10px 14px; border-radius: 8px; margin-bottom: 18px; word-break: break-all;">
+                                ${esc(latestMeta.errorMessage || 'Invalid connection string or unreachable database host')}
+                            </div>
+                            <div class="connected-empty-actions" style="justify-content: center;">
+                                <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 9px 18px; font-size: 0.82rem;">⚙️ Update Connection URI</button>
+                                <button class="btn-guest-secondary" onclick="loadSampleJobs()" style="padding: 9px 18px; font-size: 0.82rem;">📂 Browse Sample Jobs Instead</button>
+                                <button class="btn-guest-secondary" onclick="fetchJobs(1)" style="padding: 9px 18px; font-size: 0.82rem;">🔄 Retry</button>
+                            </div>
                         </div>
                     `;
                     renderPagination();
                     return;
                 }
-                countEl.innerHTML = `No <strong>${esc(viewLabel.toLowerCase())}</strong> in active workspace`;
+
+                if (latestMeta && latestMeta.noDb && !isSample) {
+                    countEl.innerHTML = `No Database Connected`;
+                    pageInd.textContent = '';
+                    cnt.innerHTML = `
+                        <div class="empty-workspace-hero">
+                            <div class="empty-ws-icon">⚡</div>
+                            <h3>Connect Your Scraper Database</h3>
+                            <p>JobBuddy is a custom viewer for your scraper. Connect your personal read-only MongoDB Atlas URI in Account Settings to browse your private scraper feed, or explore with verified sample listings.</p>
+                            <div class="connected-empty-actions" style="justify-content: center; margin-top: 18px;">
+                                <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 10px 22px; font-size: 0.86rem;">
+                                    ⚙️ Connect MongoDB URI
+                                </button>
+                                <button class="btn-guest-secondary" onclick="loadSampleJobs()" style="padding: 10px 20px; font-size: 0.86rem;">
+                                    📂 Load Sample Demo Jobs
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    renderPagination();
+                    return;
+                }
+
+                // If connected or sample data, but no jobs match active filters
+                countEl.innerHTML = `No <strong>${esc(viewLabel.toLowerCase())}</strong> matching filters`;
                 pageInd.textContent = '';
-                const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
-                const dbName = isCustom ? "Custom Scraper Database" : "Community Demo Database";
+                const dbName = isSample ? "Sample Demo Data" : (isCustom ? "Personal Scraper Database" : "Connected Database");
                 cnt.innerHTML = `
                     <div class="connected-empty-state">
                         <div class="connected-empty-icon">📦</div>
-                        <div class="connected-empty-title">Your Workspace is Connected</div>
+                        <div class="connected-empty-title">No Matching Requisitions</div>
                         <div class="connected-empty-desc">
-                            Connected to <strong>${esc(dbName)}</strong>, but no active listings match the current filters. Run your scraper or adjust your track filters.
+                            Active source: <strong>${esc(dbName)}</strong>. No postings match the selected track, location, or search query.
                         </div>
                         <div class="connected-empty-actions">
-                            <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 9px 18px; font-size: 0.82rem;">
+                            <button class="btn-guest-primary" onclick="clearFilters()" style="padding: 9px 18px; font-size: 0.82rem;">
+                                ✕ Clear Active Filters
+                            </button>
+                            <button class="btn-guest-secondary" onclick="openDbModal()" style="padding: 9px 18px; font-size: 0.82rem;">
                                 ⚙️ Workspace Settings
                             </button>
                             <button class="btn-guest-secondary" onclick="fetchJobs(1)" style="padding: 9px 18px; font-size: 0.82rem;">
-                                🔄 Refresh Feed
+                                🔄 Refresh
                             </button>
-                            ${(activeCat !== 'all' || activeLoc !== 'all' || (document.getElementById('search-input') && document.getElementById('search-input').value)) ? `<button class="btn-guest-secondary" onclick="clearFilters()" style="padding: 9px 18px; font-size: 0.82rem;">Clear Active Filters</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -2539,7 +2624,7 @@
             const verdict = job.experience_verdict || null;
             const newTag = isNew(job.first_seen || job.scraped_at) ? '<span class="tag-new">New</span>' : '';
             const rawReason = job.core_requirements || '';
-            const portalFallback = 'Curated company portal for early-career, graduate & fresher opportunities.';
+            const portalFallback = 'Official corporate ATS career portal for verified tech opportunities.';
             
             // Filter out scraper artifacts / cookie blocker text if any slipped through
             let cleanReason = rawReason;
@@ -2555,11 +2640,11 @@
             let vbadge = '';
             if (isDirect) {
                 // Actual individual openings get verification badges
-                if (verdict === 'SAFE') vbadge = '<span class="badge badge-confirmed">Confirmed</span>';
-                else if (verdict === 'POSSIBLE') vbadge = '<span class="badge badge-likely">Likely</span>';
+                if (verdict === 'SAFE') vbadge = '<span class="badge badge-confirmed">Confirmed Match</span>';
+                else if (verdict === 'POSSIBLE') vbadge = '<span class="badge badge-likely">Likely Match</span>';
             } else {
-                // Curated company fresher directory pages get clean portal badge
-                vbadge = '<span class="badge badge-portal">Fresher Portal</span>';
+                // Curated company career directory pages get clean portal badge
+                vbadge = '<span class="badge badge-portal">Career Portal</span>';
             }
 
             const reasonLabel = isDirect ? 'Core Requirements:' : 'Overview:';
@@ -2747,8 +2832,10 @@
             const locParam = activeViewType === 'direct_apply' ? activeLoc : 'all';
             const confParam = activeViewType === 'direct_apply' ? activeConf : 'all';
             const customDbUri = localStorage.getItem("jobbuddy_custom_mongo_uri");
-            const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}`;
-            CURRENT_CACHE_KEY = "jb_v6_" + (customDbUri ? "c_" : "d_") + encodeURIComponent(url);
+            const isSample = isSampleMode && !customDbUri;
+            const sampleParam = isSample ? "&sample=true" : "";
+            const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}${sampleParam}`;
+            CURRENT_CACHE_KEY = "jb_v7_" + (customDbUri ? "c_" : (isSample ? "s_" : "d_")) + encodeURIComponent(url);
 
             const cached = loadCache();
             if (cached && cached.jobs) {
@@ -2805,19 +2892,10 @@
             } catch (e) {
                 setSyncing(false);
                 isLoading = false;
-                const msg = e.message || 'Unknown error';
-                if (allJobs.length === 0) {
-                    const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
-                    const resetBtnHtml = isCustom
-                        ? `<button onclick="resetDefaultDb()" style="padding:8px 18px;margin-left:10px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;">Reset to Community Feed</button>`
-                        : '';
-                    document.getElementById('jobs-container').innerHTML =
-                        '<div class="state">'
-                        + '<p style="color:var(--red);margin-bottom:14px">' + esc(msg) + '</p>'
-                        + '<button onclick="fetchJobs(' + page + ')" style="padding:8px 22px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;">Retry</button>'
-                        + resetBtnHtml
-                        + '</div>';
-                }
+                const msg = e.message || 'Unknown network error';
+                latestMeta = { dbError: true, errorMessage: msg };
+                allJobs = [];
+                renderJobs();
             }
         }
 
@@ -2977,6 +3055,7 @@
                 }
 
                 localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
+                isSampleMode = false;
                 clearAllCache();
                 updateWorkspaceIndicator();
                 closeDbModal();
@@ -2991,7 +3070,7 @@
             }
         }
 
-        async function resetDefaultDb() {
+        async function disconnectDatabase() {
             if (currentUser) {
                 try {
                     await fetch('/.netlify/functions/userProfile', {
@@ -3005,6 +3084,7 @@
             }
 
             localStorage.removeItem("jobbuddy_custom_mongo_uri");
+            isSampleMode = false;
             const input = document.getElementById('custom-mongo-input');
             if (input) input.value = "";
             clearAllCache();
@@ -3015,6 +3095,7 @@
             currentPage = 1;
             fetchJobs(1);
         }
+        window.resetDefaultDb = disconnectDatabase;
 
         function updateWorkspaceIndicator() {
             const userPill = document.getElementById('user-header-pill');
@@ -3030,8 +3111,16 @@
                 if (headerEmail) headerEmail.textContent = currentUser.email;
                 if (headerAvatar) headerAvatar.textContent = (currentUser.email ? currentUser.email[0].toUpperCase() : '👤');
                 if (statusDot) {
-                    statusDot.className = isCustom ? 'db-status-pill is-custom' : 'db-status-pill';
-                    statusDot.title = isCustom ? 'Personal MongoDB Connected' : 'Default Community Feed';
+                    if (isCustom) {
+                        statusDot.className = 'db-status-pill is-custom';
+                        statusDot.title = 'Personal MongoDB Connected';
+                    } else if (isSampleMode) {
+                        statusDot.className = 'db-status-pill is-sample';
+                        statusDot.title = 'Sample Demo Feed';
+                    } else {
+                        statusDot.className = 'db-status-pill';
+                        statusDot.title = 'No MongoDB Connected';
+                    }
                 }
             } else {
                 if (signInBtn) signInBtn.style.display = 'inline-flex';
@@ -3051,7 +3140,7 @@
             if (input) input.value = currentUri;
 
             if (modalDbBadge) {
-                modalDbBadge.textContent = isCustom ? 'Custom Database Active' : 'Default Community Feed';
+                modalDbBadge.textContent = isCustom ? 'Personal MongoDB Active (Netlify Cloud)' : 'No Database Connected';
                 modalDbBadge.className = isCustom ? 'ws-status-badge' : 'ws-status-badge neutral';
             }
 
@@ -3100,6 +3189,7 @@
 
         // Demo Candidate Login (for previewing filters & workspace instantly)
         function loginDemoUser() {
+            isSampleMode = true;
             const demoUser = {
                 email: "demo.candidate@jobbuddy.io",
                 id: "demo-user-1",
@@ -3124,6 +3214,8 @@
             if (window.netlifyIdentity) {
                 try { window.netlifyIdentity.logout(); } catch (e) {}
             }
+            closeDbModal();
+            isSampleMode = false;
             updateAuthState(null);
         }
 
@@ -3139,6 +3231,7 @@
                     localStorage.removeItem("jobbuddy_custom_mongo_uri");
                 } catch (e) {}
                 userProfile = null;
+                isSampleMode = false;
                 clearAllCache();
             }
             updateWorkspaceIndicator();
