@@ -21,6 +21,7 @@
     <link rel="ai-catalog" type="application/json" href="/ai-catalog.json">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="canonical" href="https://buddyjob.netlify.app/">
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
     <style>
         *,
         *::before,
@@ -1280,6 +1281,33 @@
         .sidebar-card-link:hover {
             text-decoration: underline;
         }
+
+        .btn-auth {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text2);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-auth:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .btn-auth.is-logged-in {
+            border-color: var(--green-border);
+            color: var(--green);
+            background: var(--green-dim);
+        }
     </style>
 </head>
 
@@ -1323,6 +1351,9 @@
                     <button class="btn-db-connect" id="btn-db-connect" onclick="openDbModal()" aria-label="Database Settings" title="Connect personal database">
                         <span class="db-indicator" id="db-indicator"></span>
                         <span id="db-btn-label">Connect DB</span>
+                    </button>
+                    <button class="btn-auth" id="btn-auth" onclick="handleAuthClick()" aria-label="Sign In" title="Sign in with Email Magic Link">
+                        <span id="auth-btn-label">Sign In</span>
                     </button>
                 </div>
             </div>
@@ -2165,8 +2196,49 @@
             } catch (e) {}
         }
 
+        // ── NETLIFY IDENTITY (PASSWORDLESS / MAGIC LINK) ───────────────
+        function handleAuthClick() {
+            if (!window.netlifyIdentity) {
+                alert("Identity service is initializing, please try again in a moment.");
+                return;
+            }
+            const user = window.netlifyIdentity.currentUser();
+            if (user) {
+                const email = user.email || "your account";
+                if (confirm(`Logged in as ${email}.\n\nDo you want to sign out?`)) {
+                    window.netlifyIdentity.logout();
+                }
+            } else {
+                window.netlifyIdentity.open();
+            }
+        }
+
+        function updateAuthState(user) {
+            const label = document.getElementById('auth-btn-label');
+            const btn = document.getElementById('btn-auth');
+            if (!label || !btn) return;
+            if (user) {
+                const name = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'User');
+                label.textContent = name;
+                btn.classList.add('is-logged-in');
+                btn.setAttribute('title', `Logged in as ${user.email} (Click to sign out)`);
+            } else {
+                label.textContent = 'Sign In';
+                btn.classList.remove('is-logged-in');
+                btn.setAttribute('title', 'Sign in with Email Magic Link');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             updateDbIndicator();
+            if (window.netlifyIdentity) {
+                window.netlifyIdentity.on('init', user => updateAuthState(user));
+                window.netlifyIdentity.on('login', user => {
+                    updateAuthState(user);
+                    if (window.netlifyIdentity.close) window.netlifyIdentity.close();
+                });
+                window.netlifyIdentity.on('logout', () => updateAuthState(null));
+            }
         });
     </script>
 
