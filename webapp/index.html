@@ -158,6 +158,220 @@
             margin-top: 3px;
         }
 
+        /* ── DB CONNECTION MODAL & BUTTON ────────────────────────── */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-db-connect {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.80rem;
+            font-weight: 600;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+        }
+
+        .btn-db-connect:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(10, 102, 194, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-db-connect.is-custom {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.08);
+            color: #065f46;
+        }
+
+        .db-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9ca3af;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-db-connect.is-custom .db-indicator {
+            background: #10b981;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+        }
+
+        .db-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            animation: fadeIn 0.18s ease-out;
+        }
+
+        .db-modal-card {
+            background: #fff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .db-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .db-modal-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .db-modal-title-wrap h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .db-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            line-height: 1;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: color 0.15s;
+        }
+
+        .db-modal-close:hover {
+            color: #111827;
+        }
+
+        .db-modal-body {
+            padding: 20px 22px;
+        }
+
+        .db-modal-desc {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #4b5563;
+            margin-bottom: 18px;
+        }
+
+        .db-input-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .db-input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            box-sizing: border-box;
+        }
+
+        .db-input-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.15);
+        }
+
+        .db-hint {
+            display: block;
+            font-size: 0.74rem;
+            color: #6b7280;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .db-modal-actions {
+            display: flex;
+            gap: 10px;
+            padding: 16px 22px;
+            background: #f9fafb;
+            border-top: 1px solid var(--border);
+            justify-content: flex-end;
+        }
+
+        .btn-db-save {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-db-save:hover {
+            background: #084e96;
+        }
+
+        .btn-db-reset {
+            background: transparent;
+            color: #6b7280;
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-db-reset:hover {
+            color: #ef4444;
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(16px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         /* ── PANEL ────────────────────────────────────────────────── */
         .panel-main {
             padding: 20px 0 80px;
@@ -1036,6 +1250,12 @@
                         <div class="header-sub">Daily tech jobs for freshers &middot; No experience required</div>
                     </div>
                 </a>
+                <div class="header-actions">
+                    <button class="btn-db-connect" id="btn-db-connect" onclick="openDbModal()" aria-label="Database Settings" title="Connect personal database">
+                        <span class="db-indicator" id="db-indicator"></span>
+                        <span id="db-btn-label">Connect DB</span>
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -1073,7 +1293,7 @@
                                     <line x1="9" y1="18" x2="9" y2="18.01" />
                                     <line x1="15" y1="18" x2="15" y2="18.01" />
                                 </svg>
-                                Company Fresher Portals <span class="tab-badge" id="badge-portals">...</span>
+                                <span id="label-portals">Company Portals</span> <span class="tab-badge" id="badge-portals">...</span>
                             </button>
                         </div>
                     </div>
@@ -1084,18 +1304,6 @@
                             <div class="cat-tabs" id="cat-tabs" role="tablist" aria-label="Job categories">
                                 <button class="cat-btn active" data-cat="all" id="cat-all" role="tab" aria-selected="true"
                                     onclick="setCat('all',this)">All</button>
-                                <button class="cat-btn" data-cat="software_engineering" id="cat-swe" role="tab" aria-selected="false"
-                                    onclick="setCat('software_engineering',this)">Software Eng</button>
-                                <button class="cat-btn" data-cat="data_ml" id="cat-dataml" role="tab" aria-selected="false"
-                                    onclick="setCat('data_ml',this)">Data / ML</button>
-                                <button class="cat-btn" data-cat="devops_cloud" id="cat-devops" role="tab" aria-selected="false"
-                                    onclick="setCat('devops_cloud',this)">DevOps</button>
-                                <button class="cat-btn" data-cat="cybersecurity" id="cat-cyber" role="tab" aria-selected="false"
-                                    onclick="setCat('cybersecurity',this)">Security</button>
-                                <button class="cat-btn" data-cat="product_design" id="cat-product" role="tab" aria-selected="false"
-                                    onclick="setCat('product_design',this)">Product</button>
-                                <button class="cat-btn" data-cat="other" id="cat-other" role="tab" aria-selected="false"
-                                    onclick="setCat('other',this)">Other Roles</button>
                             </div>
                         </div>
                     </div>
@@ -1116,7 +1324,7 @@
                         <div class="filter-row" id="filter-row">
                             <div class="filter-group-item">
                                 <span class="filter-label">Location</span>
-                                <div class="filter-pill-wrap">
+                                <div class="filter-pill-wrap" id="location-pill-wrap">
                                     <button class="filt-btn active-blue" id="loc-all" onclick="setLoc('all',this)">All</button>
                                     <button class="filt-btn" id="loc-remote" onclick="setLoc('remote',this)">Remote</button>
                                     <button class="filt-btn" id="loc-india" onclick="setLoc('india',this)">India</button>
@@ -1282,13 +1490,15 @@
             fetchJobs(1);
         }
 
-        // Location filter
+        // Location filter (supports dynamic cities)
         function setLoc(val, btn) {
             activeLoc = val;
-            ['loc-all', 'loc-remote', 'loc-india', 'loc-global'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.className = 'filt-btn';
-            });
+            const container = document.getElementById('location-pill-wrap') || document.querySelector('.filter-group-item .filter-pill-wrap');
+            if (container) {
+                container.querySelectorAll('.filt-btn').forEach(b => {
+                    b.className = 'filt-btn';
+                });
+            }
             if (btn) btn.className = 'filt-btn active-blue';
             updateURL();
             currentPage = 1;
@@ -1545,8 +1755,9 @@
             const catParam = activeViewType === 'direct_apply' ? (activeCat === 'all' ? '' : activeCat) : '';
             const locParam = activeViewType === 'direct_apply' ? activeLoc : 'all';
             const confParam = activeViewType === 'direct_apply' ? activeConf : 'all';
+            const customDbUri = localStorage.getItem("jobbuddy_custom_mongo_uri");
             const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}`;
-            CURRENT_CACHE_KEY = "jb_v5_" + encodeURIComponent(url);
+            CURRENT_CACHE_KEY = "jb_v6_" + (customDbUri ? "c_" : "d_") + encodeURIComponent(url);
 
             const cached = loadCache();
             if (cached && cached.jobs) {
@@ -1567,7 +1778,11 @@
             }
 
             try {
-                const res = await fetch(url);
+                const headers = {};
+                if (customDbUri) {
+                    headers['x-mongo-uri'] = customDbUri;
+                }
+                const res = await fetch(url, { headers });
                 const data = await res.json();
 
                 // Seamlessly handle both new metadata response and legacy array response
@@ -1584,6 +1799,9 @@
                     currentPage = data.page ?? page;
                     directTotal = data.directCount ?? directTotal;
                     portalTotal = data.portalCount ?? portalTotal;
+                    if (data.meta) {
+                        updateDynamicFilters(data.meta);
+                    }
                 } else {
                     throw new Error(data.error || 'Bad response from server');
                 }
@@ -1709,6 +1927,169 @@
             }
         });
     </script>
+
+    <!-- DATABASE CONNECTION MODAL -->
+    <div id="db-modal" class="db-modal-overlay" style="display: none;" onclick="if(event.target===this)closeDbModal()">
+        <div class="db-modal-card">
+            <div class="db-modal-header">
+                <div class="db-modal-title-wrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                    </svg>
+                    <h3>Connect Your Database</h3>
+                </div>
+                <button class="db-modal-close" onclick="closeDbModal()" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="db-modal-body">
+                <p class="db-modal-desc">
+                    Paste your MongoDB Read-Only URI to view your personally scraped jobs, custom categories, and targeted location filters in real-time.
+                </p>
+                <div class="db-input-group">
+                    <label for="custom-mongo-input">MongoDB Read-Only URI</label>
+                    <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://user:password@cluster.mongodb.net/" autocomplete="off" />
+                    <span class="db-hint">&#128161; Tip: Create a read-only Atlas user (Role: read on job_aggregator). Stored locally in your browser session.</span>
+                </div>
+            </div>
+            <div class="db-modal-actions">
+                <button class="btn-db-reset" onclick="resetDefaultDb()">Reset to Default</button>
+                <button class="btn-db-save" onclick="saveCustomDb()">Connect Database</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateDynamicFilters(meta) {
+            if (!meta) return;
+
+            // 1. Dynamic Categories
+            if (Array.isArray(meta.categories) && meta.categories.length > 0) {
+                const container = document.getElementById('cat-tabs');
+                if (container) {
+                    const currentCats = Array.from(container.querySelectorAll('.cat-btn')).map(b => b.dataset.cat).join(',');
+                    const newCats = ['all', ...meta.categories].join(',');
+                    if (currentCats !== newCats) {
+                        const labelMap = {
+                            'software_engineering': 'Software Eng',
+                            'data_ml': 'Data / ML',
+                            'devops_cloud': 'DevOps',
+                            'cybersecurity': 'Security',
+                            'product_design': 'Product',
+                            'human_resources': 'HR / People',
+                            'marketing_sales': 'Marketing',
+                            'finance_legal': 'Finance',
+                            'operations': 'Operations',
+                            'other': 'Other Roles'
+                        };
+                        let html = `<button class="cat-btn ${activeCat === 'all' ? 'active' : ''}" data-cat="all" id="cat-all" role="tab" aria-selected="${activeCat === 'all'}" onclick="setCat('all',this)">All</button>`;
+                        meta.categories.forEach(cat => {
+                            const label = labelMap[cat] || cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                            const isActive = activeCat === cat;
+                            html += `<button class="cat-btn ${isActive ? 'active' : ''}" data-cat="${cat}" id="cat-${cat}" role="tab" aria-selected="${isActive}" onclick="setCat('${cat}',this)">${label}</button>`;
+                        });
+                        container.innerHTML = html;
+                    }
+                }
+            }
+
+            // 2. Dynamic Locations
+            if (Array.isArray(meta.locations) && meta.locations.length > 0) {
+                const locWrap = document.getElementById('location-pill-wrap');
+                if (locWrap) {
+                    const currentLocs = Array.from(locWrap.querySelectorAll('.filt-btn')).map(b => b.dataset.loc).join(',');
+                    const newLocs = meta.locations.map(l => l.id).join(',');
+                    if (currentLocs !== newLocs) {
+                        let html = '';
+                        meta.locations.forEach(loc => {
+                            const isActive = activeLoc === loc.id;
+                            html += `<button class="filt-btn ${isActive ? 'active-blue' : ''}" id="loc-${loc.id}" data-loc="${loc.id}" onclick="setLoc('${loc.id}',this)">${loc.label}</button>`;
+                        });
+                        locWrap.innerHTML = html;
+                    }
+                }
+            }
+
+            // 3. Dynamic Profile Subtitle
+            if (meta.profile && meta.profile.role_title) {
+                const sub = document.querySelector('.header-sub');
+                if (sub) {
+                    const citiesStr = Array.isArray(meta.profile.allowed_cities) ? meta.profile.allowed_cities.join(', ') : '';
+                    const cityNotice = citiesStr && !citiesStr.toLowerCase().includes('all india') ? ` \u00b7 ${citiesStr}` : '';
+                    sub.textContent = `${meta.profile.role_title} Jobs \u00b7 Verified Opportunities${cityNotice}`;
+                }
+            }
+        }
+
+        // DB Modal Management
+        function openDbModal() {
+            const modal = document.getElementById('db-modal');
+            const input = document.getElementById('custom-mongo-input');
+            const currentUri = localStorage.getItem("jobbuddy_custom_mongo_uri") || "";
+            if (input) input.value = currentUri;
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeDbModal() {
+            const modal = document.getElementById('db-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function saveCustomDb() {
+            const input = document.getElementById('custom-mongo-input');
+            const uri = input ? input.value.trim() : "";
+            if (!uri) {
+                resetDefaultDb();
+                return;
+            }
+            if (!uri.startsWith("mongodb://") && !uri.startsWith("mongodb+srv://")) {
+                alert("Please enter a valid MongoDB connection string (starts with mongodb:// or mongodb+srv://)");
+                return;
+            }
+            localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
+            updateDbIndicator();
+            closeDbModal();
+            clearAllCache();
+            activeCat = "all";
+            activeLoc = "all";
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        function resetDefaultDb() {
+            localStorage.removeItem("jobbuddy_custom_mongo_uri");
+            const input = document.getElementById('custom-mongo-input');
+            if (input) input.value = "";
+            updateDbIndicator();
+            closeDbModal();
+            clearAllCache();
+            activeCat = "all";
+            activeLoc = "all";
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        function updateDbIndicator() {
+            const btn = document.getElementById('btn-db-connect');
+            const label = document.getElementById('db-btn-label');
+            const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
+            if (btn) btn.classList.toggle('is-custom', isCustom);
+            if (label) label.textContent = isCustom ? 'Custom DB' : 'Connect DB';
+        }
+
+        function clearAllCache() {
+            try {
+                Object.keys(sessionStorage).forEach(k => {
+                    if (k.startsWith("jb_")) sessionStorage.removeItem(k);
+                });
+            } catch (e) {}
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDbIndicator();
+        });
+    </script>
+
 </body>
 
 </html>

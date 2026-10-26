@@ -9,3 +9,4 @@ scratch/
 *.log
 *.bak
 mongodb_export/
+mongodb/

@@ -14,14 +14,14 @@ const PORT = process.env.PORT || 8888;
 app.use(express.static(__dirname));
 
 app.get('/.netlify/functions/getJobs', async (req, res) => {
-    const event = { queryStringParameters: req.query };
+    const event = { queryStringParameters: req.query, headers: req.headers };
     const context = { callbackWaitsForEmptyEventLoop: false };
     const result = await getJobsHandler(event, context);
     res.status(result.statusCode).set(result.headers || {}).send(result.body);
 });
 
 app.get('/.netlify/functions/getSiteStats', async (req, res) => {
-    const event = { queryStringParameters: req.query };
+    const event = { queryStringParameters: req.query, headers: req.headers };
     const context = { callbackWaitsForEmptyEventLoop: false };
     const result = await getSiteStatsHandler(event, context);
     res.status(result.statusCode).set(result.headers || {}).send(result.body);
