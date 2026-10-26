@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Interview Preparation Guide — JobBuddy</title>
+    <meta name="description" content="A comprehensive, practical preparation guide for fresher and early-career tech interviews. Master core DSA patterns, entry-level system design, and the STAR behavioral method.">
+    <meta name="theme-color" content="#0a66c2">
+    <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="canonical" href="https://buddyjob.netlify.app/interview-prep">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f3f2ef;
+            --surface: #ffffff;
+            --surface2: #f8f9fa;
+            --border: #e0e0e0;
+            --border2: #d1d5db;
+            --accent: #0a66c2;
+            --accent-dim: rgba(10, 102, 194, 0.08);
+            --green: #15803d;
+            --text: #1f2328;
+            --text2: #374151;
+            --muted: #4b5563;
+            --radius: 8px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            background: rgba(255, 255, 255, 0.96);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 58px;
+        }
+
+        .brand-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-logo { width: 36px; height: 36px; flex-shrink: 0; }
+
+        .wordmark {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.04em;
+        }
+
+        .wordmark .accent { color: var(--accent); }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-link {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text2);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .header-link:hover { color: var(--accent); }
+
+        .doc-wrap {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .badge-tag {
+            display: inline-block;
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .doc-wrap h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 12px;
+            color: var(--text);
+            line-height: 1.25;
+        }
+
+        .doc-subtitle {
+            font-size: 1.05rem;
+            color: var(--muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .doc-meta {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 32px;
+            display: flex;
+            gap: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .doc-wrap h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 36px;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .doc-wrap h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        .doc-wrap p {
+            font-size: 0.92rem;
+            color: var(--text2);
+            margin-bottom: 14px;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0 28px;
+        }
+
+        @media (max-width: 680px) {
+            .pattern-grid { grid-template-columns: 1fr; }
+        }
+
+        .pattern-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .pattern-card h4 {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .pattern-card p {
+            font-size: 0.82rem;
+            color: var(--text2);
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        .callout {
+            background: var(--surface);
+            border-left: 4px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin: 24px 0;
+            border-top: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .callout h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .callout p {
+            font-size: 0.88rem;
+            margin-bottom: 0;
+        }
+
+        .code-box {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.82rem;
+            overflow-x: auto;
+            margin: 14px 0 20px;
+            line-height: 1.6;
+        }
+
+        .doc-wrap ul, .doc-wrap ol {
+            padding-left: 22px;
+            margin-bottom: 16px;
+        }
+
+        .doc-wrap li {
+            font-size: 0.9rem;
+            color: var(--text2);
+            margin-bottom: 6px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 40px 0;
+        }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 24px;
+            background: var(--surface);
+        }
+
+        .footer-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-copy { font-size: 0.75rem; color: var(--muted); }
+        .footer-links { display: flex; gap: 20px; }
+        .footer-links a { font-size: 0.75rem; color: var(--muted); text-decoration: none; }
+        .footer-links a:hover { color: var(--text2); }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <a class="brand-block" href="/" aria-label="JobBuddy Home">
+            <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+                <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+                <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+                <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+                <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+                <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+                <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+            </svg>
+            <div class="wordmark">Job<span class="accent">Buddy</span></div>
+        </a>
+        <nav class="header-nav">
+            <a class="header-link" href="/">Job Feed</a>
+            <a class="header-link" href="/resume-guide">Resume Guide</a>
+            <a class="header-link" href="/privacy">Privacy</a>
+        </nav>
+    </div>
+</header>
+
+<main class="doc-wrap">
+    <span class="badge-tag">Career Intelligence</span>
+    <h1>The Tech Interview Preparation Guide (0–2 YOE)</h1>
+    <p class="doc-subtitle">A battle-tested blueprint to ace coding rounds, early-career system design, and behavioral interviews at top tech employers.</p>
+    
+    <div class="doc-meta">
+        <span>Curated by JobBuddy Career Research</span>
+        <span>•</span>
+        <span>Updated Monthly</span>
+        <span>•</span>
+        <span>12 min read</span>
+    </div>
+
+    <h2>1. The 8 Core Coding Patterns You Actually Need</h2>
+    <p>Most candidates waste months trying to memorize 500+ LeetCode problems. Engineering hiring teams evaluate your ability to identify <strong>underlying data patterns</strong>. Over 85% of fresher tech interview questions map directly to these 8 patterns:</p>
+
+    <div class="pattern-grid">
+        <div class="pattern-card">
+            <h4>1. Two Pointers</h4>
+            <p>Used on sorted arrays or strings. Moving pointers inward or outward at varying speeds. Perfect for pair-sum queries, palindrome validation, and trapping rainwater.</p>
+        </div>
+        <div class="pattern-card">
+            <h4>2. Sliding Window</h4>
+            <p>Maintains a dynamic range over linear sequences. Essential for longest substring without repeating characters, minimum sub-array length, and anagram tracking.</p>
+        </div>
+        <div class="pattern-card">
+            <h4>3. Fast & Slow Pointers</h4>
+            <p>Floyd's Cycle-Finding algorithm. Uses two pointers moving at 1x and 2x speed. Used for linked-list loop detection, middle element location, and happy number cycles.</p>
+        </div>
+        <div class="pattern-card">
+            <h4>4. Binary Search on Answer</h4>
+            <p>Searching over a monotonic solution range rather than a physical array. Used for capacity-planning problems (e.g., Koko eating bananas, book allocation).</p>
+        </div>
+        <div class="pattern-card">
+            <h4>5. Monotonic Stack</h4>
+            <p>A stack strictly maintaining increasing or decreasing order. Solves next greater element, daily temperatures, and largest rectangle in histogram in O(N) time.</p>
+        </div>
+        <div class="pattern-card">
+            <h4>6. Graph Traversal (BFS vs DFS)</h4>
+            <p>BFS for shortest-path queries in unweighted networks; DFS for connected components, topological sorting, and cycle detection.</p>
+        </div>
+        <div class="pattern-card">
+            <h4>7. Top-K Elements (Heaps)</h4>
+            <p>Avoids full O(N log N) sorting. Using a Min-Heap of size K to maintain the largest elements in streaming data in O(N log K) time.</p>
+        </div>
+        <div class="pattern-card">
+            <h4>8. Dynamic Programming (Tabulation)</h4>
+            <p>Breaking overlapping subproblems into an iterative memoized table. Focus on 0/1 Knapsack, Longest Common Subsequence, and Coin Change.</p>
+        </div>
+    </div>
+
+    <div class="callout">
+        <h4>The 4-Step Communication Framework in Live Coding</h4>
+        <p>Never start typing code immediately. First, rephrase the problem and state assumptions (e.g., negative numbers, empty arrays). Second, state the brute-force time complexity. Third, propose the optimized approach and state Time & Space complexity. Only begin coding after the interviewer approves the approach.</p>
+    </div>
+
+    <h2>2. System Design Foundations for Entry-Level Roles</h2>
+    <p>Entry-level interviews rarely ask you to design Netflix end-to-end. Instead, interviewers test your understanding of <strong>fundamental system building blocks</strong>:</p>
+
+    <ul>
+        <li><strong>Stateless vs. Stateful Architecture:</strong> Why web application servers should be stateless, storing sessions in Redis, to allow horizontal scaling behind a Load Balancer.</li>
+        <li><strong>Database Indexing (B-Trees):</strong> How single and composite indexes accelerate SELECT queries from O(N) full-table scans to O(log N) lookups, and the write-performance trade-off on INSERT/UPDATE.</li>
+        <li><strong>SQL vs. NoSQL Trade-offs:</strong> When to choose relational ACID compliance (financial ledger, user auth) versus document/key-value elasticity (JobBuddy ATS scrapers, session cache).</li>
+        <li><strong>Caching Patterns:</strong> Cache-aside vs. write-through caching, cache invalidation strategies, and Time-To-Live (TTL) expiry.</li>
+    </ul>
+
+    <h2>3. The STAR Behavioral Framework</h2>
+    <p>Many technically competent candidates fail the behavioral round because their answers are rambling or unfocused. Always structure project answers using the <strong>STAR</strong> method:</p>
+
+    <ul>
+        <li><strong>Situation:</strong> Context of the project, company, or hackathon (1–2 sentences).</li>
+        <li><strong>Task:</strong> The specific challenge or obstacle you were assigned to solve.</li>
+        <li><strong>Action:</strong> The explicit technical decisions, trade-offs, and tools <em>you</em> personally wrote or chose. Use "I", not "we".</li>
+        <li><strong>Result:</strong> Quantifiable outcomes (e.g., "Reduced latency by 35%", "Indexed 300+ career portals daily at $0 infrastructure cost").</li>
+    </ul>
+
+    <h2>4. SQL & Analytical Interview Checklist</h2>
+    <p>If you are applying for Data Engineering, Data Analyst, or Backend Engineering positions, expect practical SQL live queries:</p>
+
+    <div class="code-box">-- Example: Finding the 2nd highest salary by department without subquery limits
+WITH RankedSalaries AS (
+    SELECT employee_id, department_id, salary,
+           DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) as rank_order
+    FROM employees
+)
+SELECT department_id, salary 
+FROM RankedSalaries 
+WHERE rank_order = 2;</div>
+
+    <p>Ensure you are fluent in <strong>Window Functions</strong> (<code>ROW_NUMBER()</code>, <code>RANK()</code>, <code>DENSE_RANK()</code>), <code>GROUP BY</code> with <code>HAVING</code>, and inner vs. outer joins on nullable columns.</p>
+
+    <hr>
+
+    <div class="callout">
+        <h4>Explore Entry-Level Tech Openings</h4>
+        <p>Ready to put your preparation to the test? Check out today's verified opportunities directly on our main board.</p>
+        <p style="margin-top: 8px;"><a href="/" style="font-weight: 600; color: var(--accent); text-decoration: underline;">View Live Fresher Job Feed &rarr;</a></p>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <span class="footer-copy">JobBuddy — Independent Tech Discovery Platform</span>
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/resume-guide">Resume Guide</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

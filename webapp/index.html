@@ -20,6 +20,7 @@
     <link rel="ai-catalog" type="application/json" href="/.well-known/ai-catalog.json">
     <link rel="ai-catalog" type="application/json" href="/ai-catalog.json">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="canonical" href="https://buddyjob.netlify.app/">
     <style>
         *,
         *::before,
@@ -1212,6 +1213,72 @@
             .job-title {
                 white-space: normal;
             }
+        .header-nav-link {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text2);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            transition: all 0.15s ease;
+        }
+
+        .header-nav-link:hover {
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        @media (max-width: 680px) {
+            .header-nav-link { display: none; }
+        }
+
+        .sidebar-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .sidebar-card-badge {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-card h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .sidebar-card p {
+            font-size: 0.8rem;
+            color: var(--text2);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-card-link {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .sidebar-card-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -1251,6 +1318,8 @@
                     </div>
                 </a>
                 <div class="header-actions">
+                    <a href="/interview-prep" class="header-nav-link">Interview Prep</a>
+                    <a href="/resume-guide" class="header-nav-link">Resume Guide</a>
                     <button class="btn-db-connect" id="btn-db-connect" onclick="openDbModal()" aria-label="Database Settings" title="Connect personal database">
                         <span class="db-indicator" id="db-indicator"></span>
                         <span id="db-btn-label">Connect DB</span>
@@ -1392,13 +1461,20 @@
                 </div>
             </main>
 
-            <!-- SIDEBAR — AdSense (hidden on mobile via CSS) -->
-            <aside class="sidebar-col" aria-label="Sponsored content">
-                <div class="sidebar-ad-wrap">
-                    <div class="sidebar-ad-label">Sponsored</div>
-                    <!-- Google AdSense 300x250 — replace data-ad-client and data-ad-slot with your real values -->
-                    <ins class="adsbygoogle sidebar-ad-slot" data-ad-client="ca-pub-3809813018120427"
-                        data-ad-slot="XXXXXXXXXX" data-ad-format="rectangle" data-full-width-responsive="false"></ins>
+            <!-- SIDEBAR — Career Guides & Resources -->
+            <aside class="sidebar-col" aria-label="Career Resources">
+                <div class="sidebar-card">
+                    <span class="sidebar-card-badge">Interview Blueprint</span>
+                    <h4>Ace Tech Interviews</h4>
+                    <p>Master the 8 core DSA patterns, fresher system design principles, and behavioral STAR formulas.</p>
+                    <a href="/interview-prep" class="sidebar-card-link">View Preparation Guide &rarr;</a>
+                </div>
+
+                <div class="sidebar-card">
+                    <span class="sidebar-card-badge">ATS Guide</span>
+                    <h4>Resume Optimization</h4>
+                    <p>Learn how Workday, Lever & Greenhouse screen resumes. Use Google's X-Y-Z formula to avoid auto-rejection.</p>
+                    <a href="/resume-guide" class="sidebar-card-link">Read Resume Guide &rarr;</a>
                 </div>
             </aside>
 
@@ -1411,10 +1487,14 @@
                     <span class="footer-brand">Job<span class="accent">Buddy</span></span>
                     <span class="footer-tagline">Daily tech opportunities for freshers &middot; No experience required</span>
                 </div>
-                <nav class="footer-links" aria-label="Footer legal links">
-                    <a href="/privacy.html">Privacy Policy</a>
+                <nav class="footer-links" aria-label="Footer navigation links">
+                    <a href="/interview-prep">Interview Prep</a>
                     <span class="footer-sep">&middot;</span>
-                    <a href="/terms.html">Terms of Service</a>
+                    <a href="/resume-guide">Resume Guide</a>
+                    <span class="footer-sep">&middot;</span>
+                    <a href="/privacy">Privacy Policy</a>
+                    <span class="footer-sep">&middot;</span>
+                    <a href="/terms">Terms of Service</a>
                 </nav>
             </div>
             <div class="footer-disclaimer">

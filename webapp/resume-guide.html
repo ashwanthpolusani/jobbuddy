@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ultimate ATS Resume Optimization Guide — JobBuddy</title>
+    <meta name="description" content="Learn how Applicant Tracking Systems (Workday, Greenhouse, Lever) parse and filter tech resumes. Master the Google X-Y-Z bullet formula and avoid auto-rejection traps.">
+    <meta name="theme-color" content="#0a66c2">
+    <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="canonical" href="https://buddyjob.netlify.app/resume-guide">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f3f2ef;
+            --surface: #ffffff;
+            --surface2: #f8f9fa;
+            --border: #e0e0e0;
+            --border2: #d1d5db;
+            --accent: #0a66c2;
+            --accent-dim: rgba(10, 102, 194, 0.08);
+            --green: #15803d;
+            --red: #dc2626;
+            --text: #1f2328;
+            --text2: #374151;
+            --muted: #4b5563;
+            --radius: 8px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            background: rgba(255, 255, 255, 0.96);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 58px;
+        }
+
+        .brand-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-logo { width: 36px; height: 36px; flex-shrink: 0; }
+
+        .wordmark {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.04em;
+        }
+
+        .wordmark .accent { color: var(--accent); }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-link {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text2);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .header-link:hover { color: var(--accent); }
+
+        .doc-wrap {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .badge-tag {
+            display: inline-block;
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .doc-wrap h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-bottom: 12px;
+            color: var(--text);
+            line-height: 1.25;
+        }
+
+        .doc-subtitle {
+            font-size: 1.05rem;
+            color: var(--muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .doc-meta {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 32px;
+            display: flex;
+            gap: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .doc-wrap h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 36px;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .doc-wrap h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        .doc-wrap p {
+            font-size: 0.92rem;
+            color: var(--text2);
+            margin-bottom: 14px;
+        }
+
+        .comparison-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0 28px;
+        }
+
+        @media (max-width: 680px) {
+            .comparison-box { grid-template-columns: 1fr; }
+        }
+
+        .bad-card {
+            background: rgba(220, 38, 38, 0.05);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .good-card {
+            background: rgba(21, 128, 61, 0.05);
+            border: 1px solid rgba(21, 128, 61, 0.2);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .bad-card h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--red);
+            margin-bottom: 8px;
+        }
+
+        .good-card h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--green);
+            margin-bottom: 8px;
+        }
+
+        .bad-card p, .good-card p {
+            font-size: 0.82rem;
+            color: var(--text2);
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+
+        .callout {
+            background: var(--surface);
+            border-left: 4px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin: 24px 0;
+            border-top: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .callout h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .callout p {
+            font-size: 0.88rem;
+            margin-bottom: 0;
+        }
+
+        .doc-wrap ul, .doc-wrap ol {
+            padding-left: 22px;
+            margin-bottom: 16px;
+        }
+
+        .doc-wrap li {
+            font-size: 0.9rem;
+            color: var(--text2);
+            margin-bottom: 6px;
+        }
+
+        .template-box {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 18px 22px;
+            border-radius: var(--radius);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.82rem;
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            line-height: 1.6;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 40px 0;
+        }
+
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 24px;
+            background: var(--surface);
+        }
+
+        .footer-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-copy { font-size: 0.75rem; color: var(--muted); }
+        .footer-links { display: flex; gap: 20px; }
+        .footer-links a { font-size: 0.75rem; color: var(--muted); text-decoration: none; }
+        .footer-links a:hover { color: var(--text2); }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <a class="brand-block" href="/" aria-label="JobBuddy Home">
+            <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+                <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+                <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+                <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+                <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+                <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+                <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+            </svg>
+            <div class="wordmark">Job<span class="accent">Buddy</span></div>
+        </a>
+        <nav class="header-nav">
+            <a class="header-link" href="/">Job Feed</a>
+            <a class="header-link" href="/interview-prep">Interview Prep</a>
+            <a class="header-link" href="/privacy">Privacy</a>
+        </nav>
+    </div>
+</header>
+
+<main class="doc-wrap">
+    <span class="badge-tag">Career Intelligence</span>
+    <h1>The Ultimate ATS Resume Optimization Guide</h1>
+    <p class="doc-subtitle">A deep dive into how corporate Applicant Tracking Systems screen tech resumes, how to beat automated keyword filters, and how to format every bullet point for maximum recruiter callbacks.</p>
+    
+    <div class="doc-meta">
+        <span>Curated by JobBuddy Career Research</span>
+        <span>•</span>
+        <span>Updated Monthly</span>
+        <span>•</span>
+        <span>10 min read</span>
+    </div>
+
+    <h2>1. How Corporate ATS Platforms Actually Screen You</h2>
+    <p>Over 95% of Fortune 500 tech companies and venture-backed startups use Applicant Tracking Systems like <strong>Workday, Greenhouse, Lever, and SmartRecruiters</strong>. Contrary to popular myths, the ATS does not "throw resumes in the trash." Instead, it performs two distinct operations:</p>
+
+    <ul>
+        <li><strong>Text Parsing & Tokenization:</strong> The ATS strips your PDF into raw unformatted plaintext, identifying headers (Experience, Education, Skills) and mapping dates to calculate Years of Experience (YOE).</li>
+        <li><strong>Boolean Keyword Matching:</strong> Recruiters type search queries into their dashboard (e.g., <code>(Python OR Go) AND (Docker OR Kubernetes) AND "Fresher"</code>). Resumes with missing exact-match keywords are ranked at the bottom of the candidate pool.</li>
+    </ul>
+
+    <h2>2. The Google "X-Y-Z" Formula for Bullet Points</h2>
+    <p>Laszlo Bock, former SVP of People Operations at Google, revealed the single most effective formula to write bullet points that impress both software parsers and human hiring managers:</p>
+
+    <div class="callout">
+        <h4>The Google Formula</h4>
+        <p><strong>"Accomplished [X], as measured by [Y], by doing [Z]"</strong></p>
+    </div>
+
+    <p>Compare how typical student bullets look versus Google X-Y-Z formatted bullets:</p>
+
+    <div class="comparison-box">
+        <div class="bad-card">
+            <h4>❌ Weak / Passive (Ignored by Recruiters)</h4>
+            <p>"Worked on backend APIs using Python and FastAPI for college project."</p>
+        </div>
+        <div class="good-card">
+            <h4>✅ High-Impact X-Y-Z (Gets Callbacks)</h4>
+            <p>"Architected 14 REST API endpoints handling 2,000 requests/sec with under 45ms latency by implementing Redis caching and connection pooling in FastAPI."</p>
+        </div>
+    </div>
+
+    <div class="comparison-box">
+        <div class="bad-card">
+            <h4>❌ Weak / Passive</h4>
+            <p>"Built an automated web scraper for company jobs."</p>
+        </div>
+        <div class="good-card">
+            <h4>✅ High-Impact X-Y-Z</h4>
+            <p>"Engineered a two-stage distributed ATS scraper aggregating 300+ career portals daily with zero AI cost using Playwright and SHA-256 tombstone hashing."</p>
+        </div>
+    </div>
+
+    <h2>3. The 6 Fatal ATS Formatting Mistakes</h2>
+    <p>If your resume contains any of these formatting errors, it may fail parsing and produce gibberish in the recruiter's system:</p>
+
+    <ol>
+        <li><strong>Two-Column Layouts & Tables:</strong> ATS parsers read left-to-right across the entire page, merging text across both columns into unreadable sentences. Always use a clean <strong>single-column layout</strong>.</li>
+        <li><strong>Graphics, Icons & Skill Meter Bars:</strong> An ATS cannot read a "4 out of 5 stars" graphic for Python. Spell out your skills explicitly in plain text.</li>
+        <li><strong>Text Inside Headers & Footers:</strong> Many older ATS engines ignore Word/PDF header and footer zones. Keep your email, phone, and LinkedIn in the main document body.</li>
+        <li><strong>Non-Standard Section Headings:</strong> Use standard headings: <code>Work Experience</code>, <code>Technical Skills</code>, <code>Education</code>, <code>Projects</code>. Avoid fancy labels like "Where I've Been" or "Proficiencies".</li>
+        <li><strong>Conflicting Date Formats:</strong> Use consistent standard date notations (e.g., <code>Aug 2024 – Present</code> or <code>08/2024 – Present</code>).</li>
+        <li><strong>Sending Complex PDFs:</strong> Always save as a standard PDF generated directly from text (e.g., Word or Google Docs). Never submit an image-based scanned PDF.</li>
+    </ol>
+
+    <h2>4. Clean, ATS-Approved Plaintext Structure</h2>
+    <p>Below is the recommended structural hierarchy proven to score 95%+ parse accuracy on Workday and Greenhouse:</p>
+
+    <div class="template-box">FIRST LAST NAME
+Bengaluru, India | +91 9876543210 | email@example.com | linkedin.com/in/username | github.com/username
+
+TECHNICAL SKILLS
+• Languages: Python, JavaScript/TypeScript, SQL, Go
+• Frameworks & Libraries: FastAPI, Node.js, Express, React, TailwindCSS
+• Databases & Cloud: PostgreSQL, MongoDB, Redis, Docker, AWS (S3, EC2), Netlify
+• Tools: Git, GitHub Actions, Linux, Postman, Playwright
+
+EDUCATION
+Bachelor of Technology in Computer Science & Engineering
+XYZ Institute of Technology, Hyderabad | CGPA: 8.6/10 | 2021 – 2025
+
+TECHNICAL PROJECTS
+JobBuddy Scraper & Discovery Engine | Python, MongoDB, Gemini AI, Playwright
+• Built automated ATS scraper monitoring 300+ career boards, extracting 500+ verified fresher openings daily.
+• Optimized Stage 1 memory by implementing 64-byte SHA-256 tombstones, reducing storage overhead by 92%.
+• Integrated Google Gemini 2.5 Flash API with exponential backoff to verify eligibility against strict YOE constraints.
+
+Distributed Task Queue | Go, Redis, Docker
+• Implemented concurrent task execution worker pool processing 10,000 asynchronous jobs/min.</div>
+
+    <hr>
+
+    <div class="callout">
+        <h4>Find Jobs That Match Your Resume</h4>
+        <p>JobBuddy indexes verified early-career and fresher openings directly from company career portals every day.</p>
+        <p style="margin-top: 8px;"><a href="/" style="font-weight: 600; color: var(--accent); text-decoration: underline;">Explore Today's Verified Openings &rarr;</a></p>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <span class="footer-copy">JobBuddy — Independent Tech Discovery Platform</span>
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/interview-prep">Interview Prep</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
