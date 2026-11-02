@@ -1,12 +1,43 @@
+# OS & Editor files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Environment variables & secrets (CRITICAL)
+.env
+.env.*
+!.env.example
+webapp/.env
+webapp/.env.*
+!.webapp/.env.example
+
+# Logs & Temporary Scratch Files
+*.log
+logs/
+scratch/
+scratch_*
+temp/
+tmp/
+*.tmp
+*.bak
+
+# Node Dependencies & Build Output
 node_modules/
+webapp/node_modules/
+.netlify/
+dist/
+build/
+
+# Python Virtual Environments & Bytecode
 venv/
 scraper/venv/
-.env
+env/
 __pycache__/
 *.pyc
-.netlify/
-scratch/
-*.log
-*.bak
+
+# Local Database Dumps
 mongodb_export/
 mongodb/

@@ -1,10 +1,15 @@
-# JobBuddy - Entry-Level Tech Jobs & Fresher Portals
+# Rolenaut - Direct-to-ATS Tech Jobs & Career Discovery
 
-> JobBuddy aggregates entry-level, fresher, and internship software engineering, data science, DevOps, and cyber security opportunities across 300+ vetted companies.
+> Rolenaut autonomously indexes official enterprise career portals (Greenhouse, Lever, Workday, Ashby, SmartRecruiters) to deliver verified direct-to-ATS technical requisitions across all experience levels with zero recruiter spam.
 
-## Links
-- [Job Openings](https://buddyjob.netlify.app/)
-- [Company Fresher Portals](https://buddyjob.netlify.app/portals)
-- [API Documentation](https://buddyjob.netlify.app/.netlify/functions/getJobs)
-- [Privacy Policy](https://buddyjob.netlify.app/privacy)
-- [Terms of Service](https://buddyjob.netlify.app/terms)
+## Canonical Platform Links
+- [Live Tech Job Feed](https://rolenaut.netlify.app/jobs)
+- [Home Overview](https://rolenaut.netlify.app/)
+- [Company Career Portals](https://rolenaut.netlify.app/jobs/portals)
+- [About Rolenaut](https://rolenaut.netlify.app/about)
+- [Technical Interview Blueprint](https://rolenaut.netlify.app/interview-prep)
+- [ATS Resume Guide](https://rolenaut.netlify.app/resume-guide)
+- [Custom Scraper Setup Guide](https://rolenaut.netlify.app/scraper-guide)
+- [API Documentation (JSON Feed)](https://rolenaut.netlify.app/.netlify/functions/getJobs)
+- [Terms of Service](https://rolenaut.netlify.app/terms)
+- [Privacy Policy](https://rolenaut.netlify.app/privacy)

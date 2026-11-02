@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Profile & Data Rights — Rolenaut</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
+    <script src="/auth-core.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface2: #f1f5f9;
+            --surface3: #e2e8f0;
+            --border: #e2e8f0;
+            --border2: #cbd5e1;
+            --accent: #0a66c2;
+            --accent-hover: #08519c;
+            --accent-dim: rgba(10, 102, 194, 0.08);
+            --green: #15803d;
+            --green-dim: rgba(21, 128, 61, 0.1);
+            --amber: #92400e;
+            --red: #dc2626;
+            --red-dim: rgba(220, 38, 38, 0.08);
+            --text: #0f172a;
+            --text2: #334155;
+            --muted: #64748b;
+            --radius: 10px;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: inherit; text-decoration: none; }
+        .wordmark .accent { color: var(--accent); }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+            padding: 8px 14px;
+            border-radius: var(--radius);
+            transition: all 0.15s ease;
+        }
+        .btn-back:hover { background: var(--surface2); color: var(--text); }
+
+        .profile-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 24px 60px;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .page-sub {
+            font-size: 0.90rem;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        .settings-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; gap: 6px; }
+        }
+        .field-label {
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+        .field-value {
+            font-size: 0.90rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .input-inline {
+            padding: 9px 12px;
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            font-size: 0.88rem;
+            outline: none;
+            max-width: 340px;
+            width: 100%;
+        }
+        .input-inline:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .status-pill.curated {
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(21, 128, 61, 0.25);
+        }
+        .status-pill.custom {
+            background: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+            border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+
+        .btn-small {
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border2);
+            background: var(--surface);
+            color: var(--text2);
+            transition: all 0.15s ease;
+        }
+        .btn-small:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--surface2);
+        }
+        .btn-primary-sm {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        .btn-primary-sm:hover {
+            background: var(--accent-hover);
+            color: white;
+        }
+
+        .edit-source-box {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px;
+            margin-top: 14px;
+            display: none;
+        }
+
+        .danger-card {
+            border-color: rgba(220, 38, 38, 0.3);
+            background: #fffdfd;
+        }
+        .danger-card .card-title {
+            color: var(--red);
+        }
+
+        .danger-action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(220, 38, 38, 0.15);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .danger-action-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .danger-desc {
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .btn-danger {
+            background: white;
+            border: 1px solid var(--red);
+            color: var(--red);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-danger:hover {
+            background: var(--red);
+            color: white;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+        <link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-inner">
+            <a class="brand-block" href="/" aria-label="Rolenaut home">
+                <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                <div class="brand-text-wrap">
+                    <div class="wordmark">Role<span class="accent">naut</span></div>
+                    <div class="header-sub">Navigate your next leap &middot; Your career has no ceiling.</div>
+                </div>
+            </a>
+            <div class="header-actions">
+                <nav class="header-nav-links" aria-label="Main Navigation">
+                    <a href="/jobs" class="header-nav-link " >Live Jobs</a>
+                    <a href="/scraper-guide" class="header-nav-link ">Scraper Setup</a>
+                    <a href="/interview-prep" class="header-nav-link ">Interview Prep</a>
+                    <a href="/resume-guide" class="header-nav-link ">Resume Guide</a>
+                    <a href="/about" class="header-nav-link ">About</a>
+                </nav>
+                <div class="auth-wrapper" id="auth-header-wrapper">
+                    <!-- Managed synchronously by auth-core.js -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-container">
+        <h1 class="page-title">Candidate Profile &amp; Privacy</h1>
+        <p class="page-sub">Manage your preferences, data connection, and GDPR compliance rights.</p>
+
+        <!-- CARD 1: Identity & Profile -->
+        <section class="settings-card">
+            <div class="card-header">
+                <h2 class="card-title">👤 Account Information</h2>
+            </div>
+
+            <div class="form-row">
+                <div class="field-label">Email Address</div>
+                <div class="field-value" id="profile-email">Loading...</div>
+            </div>
+
+            <div class="form-row">
+                <div class="field-label">Display Name</div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <input type="text" id="profile-name-input" class="input-inline" placeholder="Enter your name">
+                    <button class="btn-small btn-primary-sm" onclick="saveDisplayName()">Save Name</button>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field-label">Member Since</div>
+                <div class="field-value" id="profile-created">November 2026</div>
+            </div>
+        </section>
+
+        <!-- CARD 2: Job Data Source -->
+        <section class="settings-card">
+            <div class="card-header">
+                <h2 class="card-title">🗄️ Job Data Source &amp; Scraper Connection</h2>
+                <button class="btn-small" id="btn-toggle-source-edit" onclick="toggleSourceEdit()">Edit Source</button>
+            </div>
+
+            <div class="form-row">
+                <div class="field-label">Active Source</div>
+                <div id="source-status-display">
+                    <span class="status-pill curated" id="source-pill">🟢 Inbuilt Curated Stream</span>
+                </div>
+            </div>
+
+            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 8px;">
+                You can switch between our verified fresher stream and your personal MongoDB Atlas database populated by your scraper.
+            </p>
+
+            <!-- Edit source drawer -->
+            <div class="edit-source-box" id="edit-source-box">
+                <div style="font-size: 0.86rem; font-weight: 700; color: var(--text); margin-bottom: 10px;">Select Job Stream:</div>
+                
+                <div style="margin-bottom: 14px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">
+                        <input type="radio" name="source-choice" id="choice-inbuilt" value="inbuilt" checked onchange="handleSourceChoiceChange()">
+                        <span>Use Inbuilt Curated Stream (Recommended)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                        <input type="radio" name="source-choice" id="choice-custom" value="custom" onchange="handleSourceChoiceChange()">
+                        <span>Connect Custom MongoDB Atlas Connection String</span>
+                    </label>
+                </div>
+
+                <div id="custom-uri-input-box" style="display: none; margin-bottom: 14px;">
+                    <label class="field-label" style="display: block; margin-bottom: 6px;">New MongoDB Atlas Connection URI</label>
+                    <input type="password" id="new-mongo-uri-input" class="input-inline" style="max-width: 100%;" placeholder="mongodb+srv://<user>:<password>@cluster.mongodb.net/job_aggregator">
+                    <div style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">
+                        🔒 Never revealed publicly. Verified server-side and stored securely in Netlify Database.
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-small btn-primary-sm" onclick="saveSourceChanges()">Save Data Source</button>
+                    <button class="btn-small" onclick="toggleSourceEdit(false)">Cancel</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARD 3: GDPR Data Portability & Rights -->
+        <section class="settings-card">
+            <div class="card-header">
+                <h2 class="card-title">📜 GDPR Data Portability (Right of Access)</h2>
+            </div>
+            <p style="font-size: 0.84rem; color: var(--text2); margin-bottom: 16px;">
+                Under Article 20 of GDPR and global data protection standards, you have the right to receive all personal data held about you in a structured, commonly used machine-readable format.
+            </p>
+
+            <button class="btn-small" onclick="exportUserData()">
+                📥 Download My Complete Data Profile (JSON)
+            </button>
+        </section>
+
+        <!-- CARD 4: Danger Zone -->
+        <section class="settings-card danger-card">
+            <div class="card-header">
+                <h2 class="card-title">⚠️ Danger Zone &amp; Account Erasure</h2>
+            </div>
+
+            <div class="danger-action-row">
+                <div>
+                    <div style="font-size: 0.88rem; font-weight: 700; color: var(--red);">Permanently Delete Account (Right to Erasure)</div>
+                    <div class="danger-desc">Purges your profile record, custom database connection, and settings from our database.</div>
+                </div>
+                <button class="btn-danger" onclick="deleteAccountPermanently()">Delete Account</button>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast">Changes saved</div>
+
+    <script>
+        let currentProfile = null;
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        async function getAuthToken() {
+            if (window.JobBuddyAuth) {
+                return await window.JobBuddyAuth.getToken();
+            }
+            const user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+            if (!user) return null;
+            return await user.jwt();
+        }
+
+        async function loadProfile() {
+            const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : (window.netlifyIdentity && window.netlifyIdentity.currentUser());
+            if (!user) {
+                // Wait briefly before redirecting
+                setTimeout(() => {
+                    const retry = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+                    if (!retry) window.location.href = '/';
+                }, 800);
+                return;
+            }
+
+            document.getElementById('profile-email').textContent = user.email || '—';
+
+            try {
+                const token = await getAuthToken();
+                const res = await fetch('/api/user-profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data && data.profile) {
+                    currentProfile = data.profile;
+                    document.getElementById('profile-name-input').value = currentProfile.display_name || '';
+
+                    const pill = document.getElementById('source-pill');
+                    if (currentProfile.db_mode === 'custom' || currentProfile.has_custom_db) {
+                        pill.className = 'status-pill custom';
+                        pill.textContent = '🟣 Custom Scraper MongoDB Active';
+                        document.getElementById('choice-custom').checked = true;
+                    } else {
+                        pill.className = 'status-pill curated';
+                        pill.textContent = '🟢 Inbuilt Curated Stream';
+                        document.getElementById('choice-inbuilt').checked = true;
+                    }
+
+                    if (currentProfile.created_at) {
+                        const d = new Date(currentProfile.created_at);
+                        document.getElementById('profile-created').textContent = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                    }
+                }
+            } catch (e) {
+                console.error('Profile fetch error:', e);
+            }
+        }
+
+        async function saveDisplayName() {
+            const newName = document.getElementById('profile-name-input').value.trim();
+            const token = await getAuthToken();
+            if (!token) return;
+
+            try {
+                const res = await fetch('/api/user-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ display_name: newName })
+                });
+                if (res.ok) {
+                    showToast('Display name updated!');
+                }
+            } catch (e) {
+                showToast('Failed to update name');
+            }
+        }
+
+        function toggleSourceEdit(show) {
+            const box = document.getElementById('edit-source-box');
+            if (show !== undefined) {
+                box.style.display = show ? 'block' : 'none';
+            } else {
+                box.style.display = box.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        function handleSourceChoiceChange() {
+            const isCustom = document.getElementById('choice-custom').checked;
+            document.getElementById('custom-uri-input-box').style.display = isCustom ? 'block' : 'none';
+        }
+
+        async function saveSourceChanges() {
+            const isCustom = document.getElementById('choice-custom').checked;
+            const newUri = document.getElementById('new-mongo-uri-input').value.trim();
+
+            if (isCustom && !newUri && !currentProfile?.has_custom_db) {
+                alert('Please provide a valid MongoDB Atlas connection string.');
+                return;
+            }
+
+            const token = await getAuthToken();
+            if (!token) return;
+
+            try {
+                const payload = {
+                    db_mode: isCustom ? 'custom' : 'inbuilt'
+                };
+                if (isCustom && newUri) {
+                    payload.custom_mongo_uri = newUri;
+                }
+
+                const res = await fetch('/api/user-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast('Job data source updated!');
+                    toggleSourceEdit(false);
+                    loadProfile();
+                } else {
+                    const err = await res.json();
+                    alert(err.error || 'Failed to update source');
+                }
+            } catch (e) {
+                alert('Error updating source');
+            }
+        }
+
+        async function exportUserData() {
+            let token = await getAuthToken();
+            if (!token) {
+                const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+                if (user && user.email) {
+                    token = "dev_token_" + btoa(user.email);
+                }
+            }
+            if (!token) {
+                alert('Please sign in first to export your user profile data.');
+                return;
+            }
+            window.location.href = '/api/user-profile?export=true&auth=' + encodeURIComponent(token);
+        }
+
+        async function deleteAccountPermanently() {
+            const conf = prompt('To permanently delete your profile and all stored data from the database, type "DELETE" below:');
+            if (conf !== 'DELETE') return;
+
+            let token = await getAuthToken();
+            if (!token) {
+                const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+                if (user && user.email) {
+                    token = "dev_token_" + btoa(user.email);
+                }
+            }
+            if (!token) {
+                alert('Session expired. Please sign in again.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/user-profile', {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    alert('Your profile and database records have been permanently erased. Logging out...');
+                    if (window.JobBuddyAuth) {
+                        window.JobBuddyAuth.logout();
+                    } else if (window.netlifyIdentity) {
+                        try { window.netlifyIdentity.logout(); } catch (e) {}
+                    }
+                    localStorage.removeItem('jobbuddy_user_session');
+                    localStorage.removeItem('rolenaut_user_session');
+                    localStorage.removeItem('jobbuddy_custom_mongo_uri');
+                    localStorage.removeItem('rolenaut_custom_mongo_uri');
+                    localStorage.removeItem('jb_cached_user');
+                    localStorage.removeItem('gotrue.user');
+                    window.location.href = '/';
+                } else {
+                    const data = await res.json().catch(() => ({}));
+                    alert('Failed to delete account: ' + (data.error || 'Server error'));
+                }
+            } catch (e) {
+                alert('Failed to delete account: ' + e.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+            if (user) {
+                loadProfile();
+            } else {
+                window.addEventListener('jb_auth_change', (e) => {
+                    if (e.detail.user) loadProfile();
+                    else window.location.href = '/';
+                });
+                setTimeout(() => {
+                    if (!window.JobBuddyAuth?.getUser()) {
+                        window.location.href = '/';
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-col-brand">
+                <div class="footer-logo-row">
+                    <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                    <span class="footer-brand">Role<span class="accent">naut</span></span>
+                </div>
+                <p class="footer-mission">
+                    Direct-to-ATS tech job discovery and open scraper hub. Continuously indexing verified requisitions from Greenhouse, Lever, Ashby, and Workday with zero recruiter spam.
+                </p>
+                <div class="footer-status-pill">
+                    <span class="status-indicator-dot"></span>
+                    <span>All ATS Feeds Active &middot; Updated Daily</span>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Platform</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/jobs">Live Job Feed</a></li>
+                    <li><a href="/">Home Overview</a></li>
+                    <li><a href="/about">About Rolenaut</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Career Resources</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/interview-prep">Interview Blueprint</a></li>
+                    <li><a href="/resume-guide">ATS Resume Guide</a></li>
+                    <li><a href="/scraper-guide">Scraper Setup Guide</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Open Source &amp; Legal</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">GitHub Repository &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+            <div class="footer-bottom-left">
+                <div class="footer-copy">&copy; 2026 Rolenaut. Autonomous career navigation for early-career tech professionals.</div>
+                <p class="footer-disclaimer">
+                    Rolenaut is an independent aggregator indexing publicly accessible corporate requisitions and official career portals. All company names, logos, and trademarks belong to their respective owners.
+                </p>
+            </div>
+            <div class="footer-privacy-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>GDPR Compliant &bull; Zero Tracking Pixels</span>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
+

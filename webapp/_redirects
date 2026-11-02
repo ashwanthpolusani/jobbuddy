@@ -1,19 +1,52 @@
-/privacy.html          /privacy            301!
-/terms.html            /terms              301!
-/interview-prep.html   /interview-prep     301!
-/resume-guide.html     /resume-guide       301!
-/scraper-guide.html    /scraper-guide      301!
-/privacy               /privacy.html       200
-/terms                 /terms.html         200
-/interview-prep        /interview-prep.html 200
-/resume-guide          /resume-guide.html  200
-/scraper-guide         /scraper-guide.html 200
-/portals               /index.html         200
-/robots.txt            /robots.txt         200
-/sitemap.xml           /sitemap.xml        200
-/ads.txt               /ads.txt            200
-/llms.txt              /llms.txt           200
-/ai-catalog.json       /ai-catalog.json    200
+# ═══════════════════════════════════════════════════════════════════════════════
+# Rolenaut Netlify URL Routing & Rewrites (Architecture A)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Canonical redirects for old marketing & static pages
+/landing                /                   301!
+/landing.html           /                   301!
+/jobs.html              /jobs               301!
+/about.html             /about              301!
+/onboarding.html        /onboarding         301!
+/profile.html           /profile            301!
+/privacy.html           /privacy            301!
+/terms.html             /terms              301!
+/interview-prep.html    /interview-prep     301!
+/resume-guide.html      /resume-guide       301!
+/scraper-guide.html     /scraper-guide      301!
+
+# Live Interactive Jobs Feed & App View
+/jobs                   /jobs.html          200
+
+# Clean static routes
+/about                  /about.html         200
+/onboarding             /onboarding.html    200
+/profile                /profile.html       200
+/privacy                /privacy.html       200
+/terms                  /terms.html         200
+/interview-prep         /interview-prep.html 200
+/resume-guide           /resume-guide.html  200
+/scraper-guide          /scraper-guide.html 200
+
+# API Rewrite proxies to Netlify Serverless Functions
+/api/jobs               /.netlify/functions/getJobs          200
+/api/site-stats         /.netlify/functions/getSiteStats     200
+/api/user-profile       /.netlify/functions/userProfile       200
+/api/schema-discover    /.netlify/functions/schemaDiscover    200
+
+# Legacy shortcuts to Live Jobs App
+/portals                /jobs               301!
+/custom-scraper         /jobs               301!
+/tracker                /jobs               301!
+
+# SEO & AI files
+/robots.txt             /robots.txt         200
+/sitemap.xml            /sitemap.xml        200
+/ads.txt                /ads.txt            200
+/llms.txt               /llms.txt           200
+/ai-catalog.json        /ai-catalog.json    200
 /.well-known/ai-catalog.json /.well-known/ai-catalog.json 200
 /google34b5a0ac26d85028.html /google34b5a0ac26d85028.html 200
-/*                     /index.html         200
+
+# Programmatic SEO & SPA routes for job filters
+/jobs/*                 /jobs.html          200

@@ -1,30 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Interview Preparation Guide — JobBuddy</title>
-    <meta name="description" content="A comprehensive, practical preparation guide for fresher and early-career tech interviews. Master core DSA patterns, entry-level system design, and the STAR behavioral method.">
+    <title>Technical Interview Blueprint: DSA, System Design & SQL — Rolenaut</title>
+    <meta name="description" content="Comprehensive technical interview preparation roadmap covering essential DSA patterns, system design fundamentals, and high-frequency SQL interview problems.">
     <meta name="theme-color" content="#0a66c2">
-    <meta property="og:title" content="Tech Interview Preparation Guide — JobBuddy">
+    <meta property="og:title" content="Technical Interview Blueprint: DSA, System Design & SQL — Rolenaut">
     <meta property="og:description" content="A comprehensive, practical preparation guide for fresher and early-career tech interviews. Master core DSA patterns, entry-level system design, and the STAR behavioral method.">
-    <meta property="og:url" content="https://buddyjob.netlify.app/interview-prep">
+    <meta property="og:url" content="https://rolenaut.netlify.app/interview-prep">
     <meta property="og:type" content="article">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Tech Interview Preparation Guide — JobBuddy">
+    <meta name="twitter:title" content="Technical Interview Blueprint: DSA, System Design & SQL — Rolenaut">
     <meta name="twitter:description" content="Master core DSA patterns, entry-level system design, and the STAR behavioral method for fresher tech interviews.">
     <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3809813018120427" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="canonical" href="https://buddyjob.netlify.app/interview-prep">
+    
+    <link rel="canonical" href="https://rolenaut.netlify.app/interview-prep">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg: #f3f2ef;
+            --bg: #f8fafc;
             --surface: #ffffff;
             --surface2: #f8f9fa;
             --border: #e0e0e0;
@@ -54,55 +56,7 @@
         #nl-badge-frame,
         .netlify-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
 
-        .header {
-            border-bottom: 1px solid var(--border);
-            padding: 0 24px;
-            background: rgba(255, 255, 255, 0.96);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .header-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 58px;
-        }
-
-        .brand-block {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .brand-logo { width: 36px; height: 36px; flex-shrink: 0; }
-
-        .wordmark {
-            font-size: 1rem;
-            font-weight: 800;
-            color: var(--text);
-            letter-spacing: -0.04em;
-        }
-
         .wordmark .accent { color: var(--accent); }
-
-        .header-nav {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .header-link {
-            font-size: 0.82rem;
-            font-weight: 500;
-            color: var(--text2);
-            text-decoration: none;
-            transition: color 0.15s;
-        }
 
         .header-link:hover { color: var(--accent); }
 
@@ -257,53 +211,53 @@
             border-top: 1px solid var(--border);
             margin: 40px 0;
         }
-
-        .footer {
-            border-top: 1px solid var(--border);
-            padding: 24px;
-            background: var(--surface);
-        }
-
-        .footer-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .footer-copy { font-size: 0.75rem; color: var(--muted); }
-        .footer-links { display: flex; gap: 20px; }
         .footer-links a { font-size: 0.75rem; color: var(--muted); text-decoration: none; }
         .footer-links a:hover { color: var(--text2); }
     </style>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
+    <script src="/auth-core.js" defer></script>
+    <link rel="stylesheet" href="/shared.css">
 </head>
 <body>
 
 <header class="header">
-    <div class="header-inner">
-        <a class="brand-block" href="/" aria-label="JobBuddy Home">
-            <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-                <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
-                <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
-                <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
-                <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
-                <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
-                <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
-            </svg>
-            <div class="wordmark">Job<span class="accent">Buddy</span></div>
-        </a>
-        <nav class="header-nav">
-            <a class="header-link" href="/">Job Feed</a>
-            <a class="header-link" href="/scraper-guide">Scraper Setup</a>
-            <a class="header-link" href="/resume-guide">Resume Guide</a>
-            <a class="header-link" href="/privacy">Privacy</a>
-        </nav>
-    </div>
-</header>
+        <div class="header-inner">
+            <a class="brand-block" href="/" aria-label="Rolenaut home">
+                <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                <div class="brand-text-wrap">
+                    <div class="wordmark">Role<span class="accent">naut</span></div>
+                    <div class="header-sub">Navigate your next leap &middot; Your career has no ceiling.</div>
+                </div>
+            </a>
+            <div class="header-actions">
+                <nav class="header-nav-links" aria-label="Main Navigation">
+                    <a href="/jobs" class="header-nav-link " >Live Jobs</a>
+                    <a href="/scraper-guide" class="header-nav-link ">Scraper Setup</a>
+                    <a href="/interview-prep" class="header-nav-link active">Interview Prep</a>
+                    <a href="/resume-guide" class="header-nav-link ">Resume Guide</a>
+                    <a href="/about" class="header-nav-link ">About</a>
+                </nav>
+                <div class="auth-wrapper" id="auth-header-wrapper">
+                    <!-- Managed synchronously by auth-core.js -->
+                </div>
+            </div>
+        </div>
+    </header>
 
 <main class="doc-wrap">
     <span class="badge-tag">Career Intelligence</span>
@@ -311,7 +265,7 @@
     <p class="doc-subtitle">A battle-tested blueprint to ace coding rounds, early-career system design, and behavioral interviews at top tech employers.</p>
     
     <div class="doc-meta">
-        <span>Curated by JobBuddy Career Research</span>
+        <span>Curated by Rolenaut Career Research</span>
         <span>•</span>
         <span>Updated Monthly</span>
         <span>•</span>
@@ -367,7 +321,7 @@
     <ul>
         <li><strong>Stateless vs. Stateful Architecture:</strong> Why web application servers should be stateless, storing sessions in Redis, to allow horizontal scaling behind a Load Balancer.</li>
         <li><strong>Database Indexing (B-Trees):</strong> How single and composite indexes accelerate SELECT queries from O(N) full-table scans to O(log N) lookups, and the write-performance trade-off on INSERT/UPDATE.</li>
-        <li><strong>SQL vs. NoSQL Trade-offs:</strong> When to choose relational ACID compliance (financial ledger, user auth) versus document/key-value elasticity (JobBuddy ATS scrapers, session cache).</li>
+        <li><strong>SQL vs. NoSQL Trade-offs:</strong> When to choose relational ACID compliance (financial ledger, user auth) versus document/key-value elasticity (Rolenaut ATS scrapers, session cache).</li>
         <li><strong>Caching Patterns:</strong> Cache-aside vs. write-through caching, cache invalidation strategies, and Time-To-Live (TTL) expiry.</li>
     </ul>
 
@@ -401,18 +355,82 @@ WHERE rank_order = 2;</div>
     <div class="callout">
         <h4>Explore Verified Tech Openings</h4>
         <p>Ready to put your preparation to the test? Check out today's verified opportunities directly on our main board.</p>
-        <p style="margin-top: 8px;"><a href="/" style="font-weight: 600; color: var(--accent); text-decoration: underline;">View Live Tech Job Feed &rarr;</a></p>
+        <p style="margin-top: 8px;"><a href="/jobs" style="font-weight: 600; color: var(--accent); text-decoration: underline;">View Live Tech Job Feed &rarr;</a></p>
     </div>
 </main>
 
-<footer class="footer">
-    <div class="footer-inner">
-        <span class="footer-copy">JobBuddy — Independent Tech Discovery Platform</span>
-        <div class="footer-links">
-            <a href="/">Home</a>
-            <a href="/resume-guide">Resume Guide</a>
-            <a href="/privacy">Privacy Policy</a>
-            <a href="/terms">Terms of Service</a>
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-col-brand">
+                <div class="footer-logo-row">
+                    <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                    <span class="footer-brand">Role<span class="accent">naut</span></span>
+                </div>
+                <p class="footer-mission">
+                    Direct-to-ATS tech job discovery and open scraper hub. Continuously indexing verified requisitions from Greenhouse, Lever, Ashby, and Workday with zero recruiter spam.
+                </p>
+                <div class="footer-status-pill">
+                    <span class="status-indicator-dot"></span>
+                    <span>All ATS Feeds Active &middot; Updated Daily</span>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Platform</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/jobs">Live Job Feed</a></li>
+                    <li><a href="/">Home Overview</a></li>
+                    <li><a href="/about">About Rolenaut</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Career Resources</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/interview-prep">Interview Blueprint</a></li>
+                    <li><a href="/resume-guide">ATS Resume Guide</a></li>
+                    <li><a href="/scraper-guide">Scraper Setup Guide</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Open Source &amp; Legal</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">GitHub Repository &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+            <div class="footer-bottom-left">
+                <div class="footer-copy">&copy; 2026 Rolenaut. Autonomous career navigation for early-career tech professionals.</div>
+                <p class="footer-disclaimer">
+                    Rolenaut is an independent aggregator indexing publicly accessible corporate requisitions and official career portals. All company names, logos, and trademarks belong to their respective owners.
+                </p>
+            </div>
+            <div class="footer-privacy-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>GDPR Compliant &bull; Zero Tracking Pixels</span>
+            </div>
         </div>
     </div>
 </footer>

@@ -1,15 +1,15 @@
 {
   "$schema": "https://agenticresourcediscovery.org/spec/v1/schema.json",
-  "name": "JobBuddy",
-  "description": "Daily verified entry-level and fresher software engineering, data science, and tech jobs.",
-  "url": "https://buddyjob.netlify.app/",
-  "version": "1.0.0",
+  "name": "Rolenaut",
+  "description": "Direct-to-ATS tech job discovery platform. Autonomous indexing of official enterprise career portals with zero recruiter spam.",
+  "url": "https://rolenaut.netlify.app/",
+  "version": "2.0.0",
   "resources": [
     {
       "type": "api",
-      "name": "JobBuddy Jobs API",
-      "description": "Endpoint for querying paginated, filtered entry-level job listings.",
-      "endpoint": "https://buddyjob.netlify.app/.netlify/functions/getJobs"
+      "name": "Rolenaut Jobs API",
+      "description": "Endpoint for querying verified, direct-to-ATS engineering, data, and cloud requisitions.",
+      "endpoint": "https://rolenaut.netlify.app/.netlify/functions/getJobs"
     }
   ]
 }

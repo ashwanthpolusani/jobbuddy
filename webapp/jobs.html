@@ -1,0 +1,2712 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Tech Job Feed · Direct ATS Roles (All Levels) — Rolenaut</title>
+    <meta name="description" content="Live verified tech openings indexed directly from official enterprise career boards (Workday, Greenhouse, Lever, Ashby). Filter by tech track and location.">
+    <meta property="og:title" content="Live Tech Job Feed · Direct ATS Roles (All Levels) — Rolenaut">
+    <meta property="og:description"
+        content="Personalized job discovery frontend. Connect your scraper's MongoDB URL to visualize, search, and filter tech opportunities.">
+    <meta property="og:url" content="https://rolenaut.netlify.app/jobs">
+    <link rel="canonical" href="https://rolenaut.netlify.app/jobs">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Rolenaut">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Live Tech Job Feed · Direct ATS Roles (All Levels) — Rolenaut">
+    <meta name="twitter:description"
+        content="Personalized job discovery frontend. Connect your scraper's MongoDB URL to visualize, search, and filter tech opportunities.">
+    <meta name="theme-color" content="#0a66c2">
+    <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3809813018120427" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <link rel="ai-catalog" type="application/json" href="/.well-known/ai-catalog.json">
+    <link rel="ai-catalog" type="application/json" href="/ai-catalog.json">
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
+    <script src="/auth-core.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface2: #f8f9fa;
+            --surface3: #f1f3f4;
+            --border: #e0e0e0;
+            --border2: #d1d5db;
+            --accent: #0a66c2;
+            --accent-dim: rgba(10, 102, 194, 0.12);
+            --accent-border: rgba(10, 102, 194, 0.28);
+            --green: #15803d;
+            --green-dim: rgba(21, 128, 61, 0.10);
+            --green-border: rgba(21, 128, 61, 0.28);
+            --amber: #92400e;
+            --amber-dim: rgba(146, 64, 14, 0.10);
+            --amber-border: rgba(146, 64, 14, 0.32);
+            --red: #dc2626;
+            --red-dim: rgba(220, 38, 38, 0.10);
+            --text: #1f2328;
+            --text2: #374151;
+            --muted: #4b5563;
+            --muted2: #4b5563;
+            --radius: 8px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Kill Netlify badge completely across all viewports */
+        a[href*="netlify.com"][style*="fixed"],
+        a[href*="netlify.app"][style*="fixed"],
+        [data-netlify-deploy-id],
+        #nl-badge-frame,
+        .netlify-badge {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* ── LAYOUT ───────────────────────────────────────────────── */
+        .page-wrap {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .content-area {
+            flex: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 24px;
+        }
+
+        .main-col {
+            min-width: 0;
+        }
+
+        .sidebar-col {
+            padding-top: 24px;
+            position: sticky;
+            top: 76px;
+        }
+
+        /* ── UNIFIED WORKSPACE MODAL ──────────────────────────────── */
+        .db-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            animation: fadeIn 0.18s ease-out;
+        }
+
+        .db-modal-card {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .db-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .db-modal-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .db-modal-title-wrap h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .modal-subtext {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .db-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            transition: color 0.15s;
+        }
+
+        .db-modal-close:hover {
+            color: #111827;
+        }
+
+        .db-modal-body {
+            padding: 20px 24px 24px;
+        }
+
+        .workspace-section {
+            margin-bottom: 8px;
+        }
+
+        .ws-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .ws-section-header h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .ws-status-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .ws-status-badge.neutral {
+            background: var(--surface2);
+            color: var(--muted);
+            border-color: var(--border2);
+        }
+
+        .db-modal-desc {
+            font-size: 0.82rem;
+            line-height: 1.5;
+            color: #4b5563;
+            margin-bottom: 14px;
+        }
+
+        .db-input-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .db-input-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        .db-input-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.15);
+        }
+
+        .db-hint {
+            display: block;
+            font-size: 0.74rem;
+            color: #6b7280;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .ws-btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .btn-db-save {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.15s;
+        }
+
+        .btn-db-save:hover {
+            background: #095196;
+            transform: translateY(-1px);
+        }
+
+        .btn-db-reset {
+            background: transparent;
+            color: #4b5563;
+            border: 1px solid var(--border);
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-db-reset:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        .ws-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        .btn-auth-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-auth-action:hover {
+            background: #fff;
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 2px 8px rgba(10, 102, 194, 0.1);
+        }
+
+        .user-info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--surface2);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+
+        .user-left-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .user-email {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-sub {
+            font-size: 0.70rem;
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .btn-auth-logout {
+            background: transparent;
+            color: #dc2626;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .btn-auth-logout:hover {
+            background: rgba(220, 38, 38, 0.08);
+            border-color: #dc2626;
+        }
+
+        /* ── EMPTY WORKSPACE HERO ────────────────────────────────── */
+        .empty-workspace-hero {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 44px 24px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .empty-ws-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+        }
+
+        .empty-workspace-hero h3 {
+            font-size: 1.20rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .empty-workspace-hero p {
+            font-size: 0.86rem;
+            color: var(--muted);
+            max-width: 460px;
+            margin: 0 auto 20px;
+            line-height: 1.6;
+        }
+        
+        /* ── PANEL ────────────────────────────────────────────────── */
+        .panel-main {
+            padding: 20px 0 80px;
+        }
+
+        /* ── CATEGORY TABS ────────────────────────────────────────── */
+        .cat-scroll-container {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .cat-scroll-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 6px;
+            width: 44px;
+            background: linear-gradient(to right, rgba(243, 242, 239, 0), var(--bg) 95%);
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+            z-index: 2;
+        }
+
+        .cat-scroll-container.is-at-end::after {
+            opacity: 0;
+        }
+
+        .cat-scroll-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            padding: 2px 0 10px;
+            border-bottom: 1px solid var(--border);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border2) transparent;
+        }
+
+        .cat-scroll-wrap::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .cat-scroll-wrap::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 3px;
+        }
+
+        .cat-scroll-wrap::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .cat-tabs {
+            display: flex;
+            gap: 2px;
+            white-space: nowrap;
+            min-width: max-content;
+        }
+
+        .cat-btn {
+            padding: 6px 14px;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius);
+            color: var(--text2);
+            font-size: 0.79rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: color 0.15s, background 0.15s;
+            white-space: nowrap;
+        }
+
+        .cat-btn:hover {
+            color: var(--text);
+            background: var(--surface2);
+        }
+
+        .cat-btn.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .cat-btn .count {
+            margin-left: 5px;
+            color: #4b5563;
+            font-size: 0.76rem;
+        }
+
+        .cat-btn.active .count {
+            color: var(--accent);
+            opacity: 0.7;
+        }
+
+        /* ── FILTERS ──────────────────────────────────────────────── */
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .search-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-wrap svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 36px;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.84rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .search-input:focus {
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.07);
+        }
+
+        .search-input::placeholder {
+            color: var(--muted);
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-group-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-pill-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #374151;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .filter-divider {
+            width: 1px;
+            height: 18px;
+            background: var(--border2);
+            flex-shrink: 0;
+            align-self: center;
+        }
+
+        /* Filter buttons — rectangular, not pill-shaped */
+        .filt-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 11px;
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            border: 1px solid var(--border2);
+            background: var(--surface2);
+            color: var(--text2);
+            transition: all 0.13s;
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        .filt-btn:hover {
+            color: var(--text);
+            background: var(--surface3);
+            border-color: var(--muted);
+        }
+
+        .filt-btn.active-green {
+            background: var(--green-dim);
+            border-color: var(--green-border);
+            color: #14532d;
+            font-weight: 700;
+        }
+
+        .filt-btn.active-amber {
+            background: var(--amber-dim);
+            border-color: var(--amber-border);
+            color: #78350f;
+            font-weight: 700;
+        }
+
+        .filt-btn.active-blue {
+            background: var(--accent-dim);
+            border-color: var(--accent-border);
+            color: #074a8a;
+            font-weight: 700;
+        }
+
+        /* ── VIEW SWITCHER BAR ────────────────────────────────────── */
+        .view-switcher-bar {
+            margin-top: 2px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+        }
+
+
+        .view-tabs {
+            display: inline-flex;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 3px;
+            gap: 3px;
+        }
+
+        .view-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 13px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.77rem;
+            font-weight: 600;
+            color: var(--text2);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .view-tab:hover {
+            color: var(--text);
+            background: var(--surface3);
+        }
+
+        .view-tab.active {
+            background: var(--surface);
+            color: var(--accent);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .tab-badge {
+            background: rgba(10, 102, 194, 0.12);
+            color: var(--accent);
+            font-size: 0.78rem;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .view-tab:not(.active) .tab-badge {
+            background: var(--border);
+            color: #374151;
+        }
+
+        /* ── RESULT META & PAGINATION ─────────────────────────────── */
+        .result-meta-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0 6px;
+            font-size: 0.74rem;
+            color: var(--text2);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .result-count strong {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .page-indicator {
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 24px 0 16px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 9px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border2);
+            background: var(--surface);
+            color: var(--text2);
+            font-family: inherit;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.13s ease;
+        }
+
+        .page-btn:hover:not(:disabled):not(.active) {
+            background: var(--surface3);
+            color: var(--text);
+            border-color: var(--muted);
+        }
+
+        .page-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #ffffff;
+            cursor: default;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .page-ellipsis {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 32px;
+            font-size: 0.76rem;
+            color: var(--muted2);
+        }
+
+        /* ── JOB CARD ─────────────────────────────────────────────── */
+        .job-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 14px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: border-color 0.15s;
+        }
+
+        .job-card:hover {
+            border-color: var(--border2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .job-left {
+            min-width: 0;
+        }
+
+        .job-title-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 5px;
+            overflow: hidden;
+        }
+
+        .job-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            flex-shrink: 1;
+        }
+
+        .job-title-link {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+
+        .job-title-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        .job-date {
+            font-size: 0.72rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .tag-new {
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: #074a8a;
+            background: rgba(10, 102, 194, 0.12);
+            border: 1px solid rgba(7, 74, 138, 0.4);
+            border-radius: 4px;
+            padding: 1px 7px;
+            flex-shrink: 0;
+        }
+
+        .job-meta {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .job-company {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .meta-sep {
+            color: #6b7280;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .job-loc {
+            font-size: 0.75rem;
+            color: #374151;
+        }
+
+        .job-cat {
+            font-size: 0.72rem;
+            color: #4b5563;
+        }
+
+        .job-reason {
+            font-size: 0.74rem;
+            color: #374151;
+            line-height: 1.55;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+
+        .job-reason strong {
+            color: #1f2328;
+            font-weight: 700;
+        }
+
+        .job-reason.expanded {
+            display: block;
+            -webkit-line-clamp: unset;
+        }
+
+        .expand-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            margin-top: 3px;
+            font-size: 0.72rem;
+            color: #4b5563;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-family: inherit;
+            transition: color 0.14s;
+        }
+
+        .expand-btn:hover {
+            color: var(--text);
+        }
+
+        .job-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            flex-shrink: 0;
+            padding-top: 1px;
+        }
+
+        .job-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: flex-end;
+        }
+
+        .badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+
+        .badge-confirmed {
+            background: var(--green-dim);
+            color: #14532d;
+            border: 1px solid var(--green-border);
+        }
+
+        .badge-likely {
+            background: var(--amber-dim);
+            color: #78350f;
+            border: 1px solid var(--amber-border);
+        }
+
+        .badge-portal {
+            background: rgba(99, 102, 241, 0.10);
+            color: #3730a3;
+            border: 1px solid rgba(99, 102, 241, 0.28);
+        }
+
+        .apply-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 14px;
+            border-radius: var(--radius);
+            font-size: 0.76rem;
+            font-weight: 600;
+            font-family: inherit;
+            text-decoration: none;
+            transition: all 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .apply-btn.direct-btn {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .apply-btn.direct-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .apply-btn.browse-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .apply-btn.browse-btn:hover {
+            color: var(--text);
+            border-color: var(--muted);
+        }
+
+        /* ── SIDEBAR ──────────────────────────────────────────────── */
+        .sidebar-ad-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .sidebar-ad-label {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: #4b5563;
+            text-align: center;
+            padding: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-ad-slot {
+            display: block;
+            min-height: 250px;
+            width: 100%;
+        }
+
+        /* ── STATES ───────────────────────────────────────────────── */
+        .state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .state p {
+            color: var(--muted);
+            font-size: 0.87rem;
+        }
+
+        #jobs-container {
+            min-height: 800px;
+        }
+
+
+        .skeleton-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .skeleton-left {
+            flex: 1;
+        }
+
+        .skeleton-bar {
+            background: #e2e8f0;
+            animation: skeleton-pulse 1.2s ease-in-out infinite alternate;
+            border-radius: 4px;
+            will-change: opacity;
+        }
+
+        .skeleton-bar.title {
+            width: 55%;
+            height: 18px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-bar.meta {
+            width: 35%;
+            height: 12px;
+        }
+
+        .skeleton-btn {
+            width: 88px;
+            height: 32px;
+            border-radius: var(--radius);
+            background: #e2e8f0;
+            flex-shrink: 0;
+            animation: skeleton-pulse 1.2s ease-in-out infinite alternate;
+            will-change: opacity;
+        }
+
+        @keyframes skeleton-pulse {
+            0% {
+                opacity: 0.45;
+            }
+
+            100% {
+                opacity: 0.95;
+            }
+        }
+
+        /* ── MOBILE ───────────────────────────────────────────────── */
+        @media (max-width: 880px) {
+            .content-area {
+                grid-template-columns: 1fr;
+                padding: 0 16px;
+            }
+
+            .sidebar-col {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .job-card {
+                flex-direction: column;
+            }
+
+            .job-left {
+                width: 100%;
+            }
+
+            .job-right {
+                width: 100%;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                padding-left: 0;
+            }
+
+            .filter-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .filter-divider {
+                display: none;
+            }
+
+            .filter-group-item {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .filter-label {
+                font-size: 0.65rem;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--muted);
+                min-width: 72px;
+                flex-shrink: 0;
+            }
+
+            .filter-pill-wrap {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .job-title {
+                white-space: normal;
+            }
+        }
+
+        .header-nav-link:hover {
+            color: var(--accent);
+            background: var(--surface2);
+        }
+
+        
+
+        .sidebar-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .sidebar-card-badge {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-card h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .sidebar-card p {
+            font-size: 0.8rem;
+            color: var(--text2);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-card-link {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .sidebar-card-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-auth {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text2);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-auth:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .btn-auth.is-logged-in {
+            border-color: var(--green-border);
+            color: var(--green);
+            background: var(--green-dim);
+        }
+    </style>
+    <link rel="stylesheet" href="/shared.css">
+</head>
+
+<body>
+    <div class="page-wrap">
+
+        <!-- HEADER -->
+        <header class="header">
+        <div class="header-inner">
+            <a class="brand-block" href="/" aria-label="Rolenaut home">
+                <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                <div class="brand-text-wrap">
+                    <div class="wordmark">Role<span class="accent">naut</span></div>
+                    <div class="header-sub">Navigate your next leap &middot; Your career has no ceiling.</div>
+                </div>
+            </a>
+            <div class="header-actions">
+                <nav class="header-nav-links" aria-label="Main Navigation">
+                    <a href="/jobs" class="header-nav-link active" id="nav-live-jobs" onclick="currentPage=1;fetchJobs(1);">Live Jobs</a>
+                    <a href="/scraper-guide" class="header-nav-link ">Scraper Setup</a>
+                    <a href="/interview-prep" class="header-nav-link ">Interview Prep</a>
+                    <a href="/resume-guide" class="header-nav-link ">Resume Guide</a>
+                    <a href="/about" class="header-nav-link ">About</a>
+                </nav>
+                <div class="auth-wrapper" id="auth-header-wrapper">
+                    <!-- Managed synchronously by auth-core.js -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+        <!-- MAIN CONTENT -->
+        <div class="content-area">
+
+            <!-- JOB LIST COLUMN -->
+            <main class="main-col" id="panel-jobs">
+
+                
+                
+                    <div class="panel-main">
+
+                        <!-- 1. View Switcher (Job Openings vs Company Career Pages) -->
+                        <div class="view-switcher-bar">
+                            <div class="view-tabs" role="tablist" aria-label="Job listing view">
+                                <button class="view-tab active" id="tab-direct" onclick="setViewType('direct_apply')"
+                                    role="tab" aria-selected="true">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" aria-hidden="true">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                    </svg>
+                                    Direct Job Links <span class="tab-badge" id="badge-direct">...</span>
+                                </button>
+                                <button class="view-tab" id="tab-portals" onclick="setViewType('filtered_list')" role="tab"
+                                    aria-selected="false">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" aria-hidden="true">
+                                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+                                        <line x1="9" y1="22" x2="9" y2="22.01" />
+                                        <line x1="15" y1="22" x2="15" y2="22.01" />
+                                        <line x1="9" y1="6" x2="9" y2="6.01" />
+                                        <line x1="15" y1="6" x2="15" y2="6.01" />
+                                        <line x1="9" y1="10" x2="9" y2="10.01" />
+                                        <line x1="15" y1="10" x2="15" y2="10.01" />
+                                        <line x1="9" y1="14" x2="9" y2="14.01" />
+                                        <line x1="15" y1="14" x2="15" y2="14.01" />
+                                        <line x1="9" y1="18" x2="9" y2="18.01" />
+                                        <line x1="15" y1="18" x2="15" y2="18.01" />
+                                    </svg>
+                                    <span id="label-portals">Company Portals</span> <span class="tab-badge" id="badge-portals">...</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2. Category tabs -->
+                        <div class="cat-scroll-container" id="cat-scroll-container">
+                            <div class="cat-scroll-wrap" id="cat-scroll-wrap">
+                                <div class="cat-tabs" id="cat-tabs" role="tablist" aria-label="Job categories">
+                                    <button class="cat-btn active" data-cat="all" id="cat-all" role="tab" aria-selected="true" onclick="setCat('all',this)">All</button>
+                                    <button class="cat-btn" data-cat="software_engineering" id="cat-software_engineering" role="tab" aria-selected="false" onclick="setCat('software_engineering',this)">Software Eng</button>
+                                    <button class="cat-btn" data-cat="data_ml" id="cat-data_ml" role="tab" aria-selected="false" onclick="setCat('data_ml',this)">Data / AI</button>
+                                    <button class="cat-btn" data-cat="devops_cloud" id="cat-devops_cloud" role="tab" aria-selected="false" onclick="setCat('devops_cloud',this)">DevOps / Cloud</button>
+                                    <button class="cat-btn" data-cat="cybersecurity" id="cat-cybersecurity" role="tab" aria-selected="false" onclick="setCat('cybersecurity',this)">Security</button>
+                                    <button class="cat-btn" data-cat="product_design" id="cat-product_design" role="tab" aria-selected="false" onclick="setCat('product_design',this)">Product</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="filter-section">
+                            <div class="search-wrap">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.35-4.35" />
+                                </svg>
+                                <input class="search-input" id="search-input" type="text"
+                                    placeholder="Search title, company, location, skills, experience level&#8230;" oninput="debounceSearch()"
+                                    autocomplete="off" aria-label="Search jobs">
+                            </div>
+
+                            <div class="filter-row" id="filter-row">
+                                <div class="filter-group-item">
+                                    <span class="filter-label">Location</span>
+                                    <div class="filter-pill-wrap" id="location-pill-wrap">
+                                        <button class="filt-btn active-blue" id="loc-all" data-loc="all" onclick="setLoc('all',this)">All Locations</button>
+                                        <button class="filt-btn" id="loc-remote" data-loc="remote" onclick="setLoc('remote',this)">Remote</button>
+                                        <button class="filt-btn" id="loc-india" data-loc="india" onclick="setLoc('india',this)">India Tech Hubs</button>
+                                        <button class="filt-btn" id="loc-overseas" data-loc="overseas" onclick="setLoc('overseas',this)">Overseas / Visa</button>
+                                    </div>
+                                </div>
+
+                                <div class="filter-divider" aria-hidden="true"></div>
+
+                                <div class="filter-group-item" id="conf-filter-wrap">
+                                    <span class="filter-label">Confidence</span>
+                                    <div class="filter-pill-wrap">
+                                        <button class="filt-btn active-blue" id="conf-all" data-conf="all"
+                                            onclick="setConf('all',this)">All</button>
+                                        <button class="filt-btn" id="conf-safe" data-conf="SAFE"
+                                            onclick="setConf('SAFE',this)">Confirmed</button>
+                                        <button class="filt-btn" id="conf-possible" data-conf="POSSIBLE"
+                                            onclick="setConf('POSSIBLE',this)">Likely</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Result Meta Bar with Visible Counts & Page Info -->
+                        <div class="result-meta-bar" id="result-meta-bar">
+                            <div class="result-count" id="result-count" aria-live="polite">Loading listings...</div>
+                            <div class="page-indicator" id="page-indicator"></div>
+                        </div>
+
+                        <div id="jobs-container">
+                            <div class="skeleton-card" aria-hidden="true">
+                                <div class="skeleton-left">
+                                    <div class="skeleton-bar title"></div>
+                                    <div class="skeleton-bar meta"></div>
+                                </div>
+                                <div class="skeleton-btn"></div>
+                            </div>
+                            <div class="skeleton-card" aria-hidden="true">
+                                <div class="skeleton-left">
+                                    <div class="skeleton-bar title" style="width:68%;"></div>
+                                    <div class="skeleton-bar meta" style="width:40%;"></div>
+                                </div>
+                                <div class="skeleton-btn"></div>
+                            </div>
+                            <div class="skeleton-card" aria-hidden="true">
+                                <div class="skeleton-left">
+                                    <div class="skeleton-bar title" style="width:50%;"></div>
+                                    <div class="skeleton-bar meta" style="width:30%;"></div>
+                                </div>
+                                <div class="skeleton-btn"></div>
+                            </div>
+                            <div class="skeleton-card" aria-hidden="true">
+                                <div class="skeleton-left">
+                                    <div class="skeleton-bar title" style="width:60%;"></div>
+                                    <div class="skeleton-bar meta" style="width:45%;"></div>
+                                </div>
+                                <div class="skeleton-btn"></div>
+                            </div>
+                        </div>
+
+                        <!-- Numbered Pagination Controls -->
+                        <nav class="pagination-bar" id="pagination-bar" aria-label="Job listings pagination"
+                            style="display:none;"></nav>
+
+                    </div>
+            </main>
+
+            <!-- SIDEBAR — Career Guides & Resources -->
+            
+
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-col-brand">
+                <div class="footer-logo-row">
+                    <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                    <span class="footer-brand">Role<span class="accent">naut</span></span>
+                </div>
+                <p class="footer-mission">
+                    Direct-to-ATS tech job discovery and open scraper hub. Continuously indexing verified requisitions from Greenhouse, Lever, Ashby, and Workday with zero recruiter spam.
+                </p>
+                <div class="footer-status-pill">
+                    <span class="status-indicator-dot"></span>
+                    <span>All ATS Feeds Active &middot; Updated Daily</span>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Platform</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/jobs">Live Job Feed</a></li>
+                    <li><a href="/">Home Overview</a></li>
+                    <li><a href="/about">About Rolenaut</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Career Resources</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/interview-prep">Interview Blueprint</a></li>
+                    <li><a href="/resume-guide">ATS Resume Guide</a></li>
+                    <li><a href="/scraper-guide">Scraper Setup Guide</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Open Source &amp; Legal</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">GitHub Repository &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+            <div class="footer-bottom-left">
+                <div class="footer-copy">&copy; 2026 Rolenaut. Autonomous career navigation for early-career tech professionals.</div>
+                <p class="footer-disclaimer">
+                    Rolenaut is an independent aggregator indexing publicly accessible corporate requisitions and official career portals. All company names, logos, and trademarks belong to their respective owners.
+                </p>
+            </div>
+            <div class="footer-privacy-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>GDPR Compliant &bull; Zero Tracking Pixels</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    </div>
+
+    <!-- UNIFIED ACCOUNT & WORKSPACE MODAL -->
+    <div id="db-modal" class="db-modal-overlay" style="display: none;" onclick="if(event.target===this)closeDbModal()">
+        <div class="db-modal-card">
+            <div class="db-modal-header">
+                <div class="db-modal-title-wrap">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <div>
+                        <h3>Account & Workspace</h3>
+                        <p class="modal-subtext">Manage cloud-synced MongoDB data sources via Netlify</p>
+                    </div>
+                </div>
+                <button class="db-modal-close" onclick="closeDbModal()" aria-label="Close modal">&times;</button>
+            </div>
+            
+            <div class="db-modal-body">
+                <!-- User Account Details (Active when signed in) -->
+                <div id="modal-user-section" style="display: none; margin-bottom: 20px;">
+                    <div class="user-info-row">
+                        <div class="user-left-info">
+                            <span class="user-avatar" id="modal-user-avatar">&#128100;</span>
+                            <div class="user-details">
+                                <span class="user-email" id="modal-account-email">user@domain.com</span>
+                                <span class="user-sub">&#10003; Synced to Netlify Cloud Profile</span>
+                            </div>
+                        </div>
+                        <button class="btn-auth-logout" onclick="logoutIdentity()">Sign Out</button>
+                    </div>
+                </div>
+
+                <!-- Guest Login Notice (Active when signed out) -->
+                <div id="modal-guest-section" style="display: block; margin-bottom: 20px;">
+                    <div class="empty-workspace-hero" style="margin: 0 0 16px; padding: 22px 18px;">
+                        <div class="empty-ws-icon" style="font-size: 1.8rem; margin-bottom: 8px;">🔐</div>
+                        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 6px;">Sign In to Connect Your Database</h4>
+                        <p style="font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">
+                            Sign in with your email to connect your private MongoDB scraper feed and sync settings securely to your personal Netlify cloud profile.
+                        </p>
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                            <button class="btn-header-auth" onclick="openIdentityModal()" style="padding: 9px 20px; font-size: 0.84rem;">
+                                Sign In with Netlify
+                            </button>
+                            <a href="/scraper-guide" class="btn-guest-secondary" onclick="closeDbModal();" style="padding: 9px 16px; font-size: 0.84rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                📖 Scraper Setup Guide
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Configuration Section (Only for signed-in users) -->
+                <div class="workspace-section" id="modal-db-section" style="display: none;">
+                    <div class="ws-section-header">
+                        <h4>MongoDB Atlas Data Source</h4>
+                        <span class="ws-status-badge neutral" id="modal-db-badge">No Database Connected</span>
+                    </div>
+                    <p class="db-modal-desc">
+                        Connect your scraper's read-only MongoDB URI (<code>webapp_reader</code>) to load your personally scraped jobs, custom categories, and targeted cities. Stored securely in your Netlify cloud database profile.
+                    </p>
+                    <div class="db-input-group">
+                        <label for="custom-mongo-input">MongoDB Read-Only URI</label>
+                        <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://webapp_reader:password@cluster.mongodb.net/job_aggregator" autocomplete="off" />
+                        <span class="db-hint">&#128274; Saved to your Netlify cloud database profile. Read-only role prevents any data modification.</span>
+                    </div>
+                    <div class="ws-btn-row">
+                        <button class="btn-db-save" onclick="saveCustomDb()">Save to Netlify Profile</button>
+                        <button class="btn-db-reset" onclick="disconnectDatabase()">Disconnect Database</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT BUNDLE -->
+
+
+    <script>
+        // State
+        let allJobs = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        let totalJobs = 0;
+        let directTotal = 0;
+        let portalTotal = 0;
+        const PAGE_SIZE = 25;
+
+        let activeViewType = 'direct_apply'; // 'direct_apply' or 'filtered_list'
+        let activeCat = 'all';
+        let activeLoc = 'all';
+        let activeConf = 'all';
+        let cardIdx = 0;
+        let isLoading = true;
+
+        let currentUser = (window.JobBuddyAuth && window.JobBuddyAuth.getUser()) || null;
+        let userProfile = null;
+
+        let CURRENT_CACHE_KEY = 'jb_v6_cache';
+        const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+        // View Switcher (Job Openings vs Company Career Pages)
+        function setViewType(type) {
+            if (activeViewType === type) return;
+            activeViewType = type;
+            const isDirect = type === 'direct_apply';
+
+            const tabDir = document.getElementById('tab-direct');
+            const tabPort = document.getElementById('tab-portals');
+            if (tabDir) {
+                tabDir.classList.toggle('active', isDirect);
+                tabDir.setAttribute('aria-selected', isDirect);
+            }
+            if (tabPort) {
+                tabPort.classList.toggle('active', !isDirect);
+                tabPort.setAttribute('aria-selected', !isDirect);
+            }
+
+            // Category, Location, and Confidence filters apply to individual Job Openings
+            const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
+            const filterRow = document.getElementById('filter-row');
+            const searchInput = document.getElementById('search-input');
+
+            if (catContainer) catContainer.style.display = isDirect ? 'block' : 'none';
+            if (filterRow) filterRow.style.display = isDirect ? 'flex' : 'none';
+
+            if (searchInput) {
+                searchInput.placeholder = isDirect
+                    ? 'Search title, company, location, skills\u2026'
+                    : 'Search company fresher portals (e.g. Google, Amazon, Meta, Swiggy)\u2026';
+            }
+
+            updateURL();
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        // Centralized Filter UI Synchronizer (Guarantees zero ghost/dual states)
+        function syncFilterUI() {
+            // 1. Category Buttons
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                const cat = b.getAttribute('data-cat') || (b.id === 'cat-all' ? 'all' : b.id.replace('cat-', ''));
+                const isSelected = cat === activeCat;
+                b.classList.toggle('active', isSelected);
+                b.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+            });
+
+            // 2. Location Buttons (queries ALL rendered buttons in container dynamically)
+            const locWrap = document.getElementById('location-pill-wrap');
+            if (locWrap) {
+                locWrap.querySelectorAll('.filt-btn').forEach(b => {
+                    const locVal = b.getAttribute('data-loc') || b.id.replace('loc-', '');
+                    const isSelected = (locVal === activeLoc) || (activeLoc === 'all' && (locVal === 'all' || b.id === 'loc-all'));
+                    b.classList.toggle('active-blue', isSelected);
+                });
+            }
+
+            // 3. Confidence Level Buttons (clean single active state)
+            const confWrap = document.getElementById('conf-filter-wrap');
+            if (confWrap) {
+                confWrap.querySelectorAll('.filt-btn').forEach(b => {
+                    b.classList.remove('active-blue', 'active-green', 'active-amber');
+                });
+                const confAll = document.getElementById('conf-all');
+                const confSafe = document.getElementById('conf-safe');
+                const confPossible = document.getElementById('conf-possible');
+                if (activeConf === 'all' && confAll) confAll.classList.add('active-blue');
+                else if (activeConf === 'SAFE' && confSafe) confSafe.classList.add('active-green');
+                else if (activeConf === 'POSSIBLE' && confPossible) confPossible.classList.add('active-amber');
+            }
+        }
+
+        // Shared Route Parser with Automatic URL Sanitization
+        function parseRouteState(pathname) {
+            let cleanPath = (pathname || '/').replace(/^\/jobs/, '') || '/';
+            let view = 'direct_apply';
+            let loc = 'all';
+            let cat = 'all';
+            let needsSanitize = false;
+
+            if (cleanPath.startsWith('/portals')) {
+                view = 'filtered_list';
+                cleanPath = cleanPath.replace('/portals', '') || '/';
+            }
+
+            const rawParts = cleanPath.split('/').filter(p => p && p !== 'jobs' && p !== 'index.html' && p !== 'jobs.html');
+            const VALID_LOCS = new Set(['remote', 'india', 'overseas', 'global']);
+            const VALID_CATS = new Set(['software_engineering', 'data_ml', 'devops_cloud', 'cybersecurity', 'product_design', 'other']);
+
+            if (rawParts.length === 1) {
+                const p = rawParts[0];
+                if (VALID_LOCS.has(p)) {
+                    loc = p;
+                } else if (VALID_CATS.has(p)) {
+                    cat = p;
+                } else {
+                    needsSanitize = true;
+                }
+            } else if (rawParts.length >= 2) {
+                const p1 = rawParts[0];
+                const p2 = rawParts[1];
+
+                if (VALID_LOCS.has(p1)) {
+                    loc = p1;
+                } else {
+                    needsSanitize = true;
+                }
+
+                if (VALID_CATS.has(p2)) {
+                    cat = p2;
+                } else {
+                    needsSanitize = true;
+                }
+            }
+
+            return { view, loc, cat, needsSanitize };
+        }
+
+        // Category Filter
+        function setCat(cat, btn) {
+            activeCat = cat;
+            syncFilterUI();
+            updateURL();
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        // Location filter (supports dynamic cities)
+        function setLoc(val, btn) {
+            activeLoc = val;
+            syncFilterUI();
+            updateURL();
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        // Confidence filter with color-coded active states
+        function setConf(val, btn) {
+            activeConf = val;
+            syncFilterUI();
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        // Dynamic Document Title
+        function updatePageTitle() {
+            if (activeViewType === 'filtered_list') {
+                document.title = 'Live Tech Job Feed · Direct ATS Roles (All Levels) — Rolenaut';
+            } else if (activeCat !== 'all' || activeLoc !== 'all') {
+                const catStr = activeCat !== 'all' ? activeCat.replace(/_/g, ' ') : 'Tech';
+                const locStr = activeLoc !== 'all' ? activeLoc.replace(/_/g, ' ') : '';
+                const capCat = catStr.charAt(0).toUpperCase() + catStr.slice(1);
+                const capLoc = locStr ? ` in ${locStr.charAt(0).toUpperCase() + locStr.slice(1)}` : '';
+                document.title = `${capCat} Tech Jobs${capLoc} — Rolenaut`;
+            } else {
+                document.title = 'Live Tech Job Feed · Direct ATS Roles (All Levels) — Rolenaut';
+            }
+        }
+
+        // Clean URL Synchronizer (Eliminates redundant 'anywhere' or 'all-roles')
+        function updateURL(replace = false) {
+            let path = '/jobs';
+            const prefix = activeViewType === 'filtered_list' ? '/jobs/portals' : '/jobs';
+
+            if (activeLoc !== 'all' && activeCat !== 'all') {
+                path = `${prefix}/${activeLoc}/${activeCat}`;
+            } else if (activeLoc !== 'all') {
+                path = `${prefix}/${activeLoc}`;
+            } else if (activeCat !== 'all') {
+                path = `${prefix}/${activeCat}`;
+            } else {
+                path = prefix;
+            }
+
+            if (window.location.pathname !== path) {
+                if (replace) {
+                    window.history.replaceState({ loc: activeLoc, cat: activeCat, view: activeViewType, conf: activeConf }, '', path);
+                } else {
+                    window.history.pushState({ loc: activeLoc, cat: activeCat, view: activeViewType, conf: activeConf }, '', path);
+                }
+            }
+            updatePageTitle();
+        }
+
+        // Helpers
+        function isNew(d) { return d && (Date.now() - new Date(d).getTime()) < 48 * 3600 * 1000; }
+        
+        function formatRelativeDate(iso) {
+            if (!iso) return '';
+            try {
+                const diffMs = Date.now() - new Date(iso).getTime();
+                if (isNaN(diffMs)) return '';
+                const hours = Math.floor(diffMs / (3600 * 1000));
+                if (hours < 1) return 'Just now';
+                if (hours < 24) return `${hours}h ago`;
+                const days = Math.floor(hours / 24);
+                if (days === 1) return 'Yesterday';
+                if (days < 7) return `${days}d ago`;
+                const d = new Date(iso);
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function esc(s) {
+            return String(s || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function ltOf(j) { return j.link_type || 'direct_apply'; }
+
+        let latestMeta = null;
+        // Render Jobs
+        function renderJobs() {
+            const countEl = document.getElementById('result-count');
+            const pageInd = document.getElementById('page-indicator');
+            const cnt = document.getElementById('jobs-container');
+
+            // Update badge counts on switcher tabs
+            const badgeDir = document.getElementById('badge-direct');
+            const badgePort = document.getElementById('badge-portals');
+            if (badgeDir) badgeDir.textContent = directTotal;
+            if (badgePort) badgePort.textContent = portalTotal;
+
+            const viewLabel = activeViewType === 'direct_apply' ? 'Direct Job Links' : 'Company Career Portals';
+            const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
+
+            if (!allJobs.length) {
+                if (latestMeta && latestMeta.dbError) {
+                    countEl.innerHTML = `<span style="color:var(--red);">MongoDB Connection Issue</span>`;
+                    pageInd.textContent = '';
+                    cnt.innerHTML = `
+                        <div class="empty-workspace-hero" style="border-color: rgba(239, 68, 68, 0.3);">
+                            <div class="empty-ws-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--red);">⚠️</div>
+                            <h3 style="color: var(--text);">MongoDB Connection Failed</h3>
+                            <p style="color: var(--muted); margin-bottom: 12px;">Could not connect to your configured database cluster:</p>
+                            <div style="background: rgba(239, 68, 68, 0.07); color: var(--red); font-family: monospace; font-size: 0.8rem; padding: 10px 14px; border-radius: 8px; margin-bottom: 18px; word-break: break-all;">
+                                ${esc(latestMeta.errorMessage || 'Invalid connection string or unreachable database host')}
+                            </div>
+                            <div class="connected-empty-actions" style="justify-content: center; gap: 10px;">
+                                <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 9px 18px; font-size: 0.82rem;">⚙️ Update Connection URI</button>
+                                <a href="/scraper-guide" class="btn-guest-secondary" style="padding: 9px 18px; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">📖 View Setup Guide</a>
+                                <button class="btn-guest-secondary" onclick="fetchJobs(1)" style="padding: 9px 18px; font-size: 0.82rem;">🔄 Retry</button>
+                            </div>
+                        </div>
+                    `;
+                    renderPagination();
+                    return;
+                }
+
+                if (latestMeta && latestMeta.noDb) {
+                    countEl.innerHTML = `No Database Connected`;
+                    pageInd.textContent = '';
+                    cnt.innerHTML = `
+                        <div class="empty-workspace-hero">
+                            <div class="empty-ws-icon">⚡</div>
+                            <h3>Connect Your Scraper Database</h3>
+                            <p>Rolenaut is an autonomous navigator for your career and custom viewer for your scraper. Connect your personal read-only MongoDB Atlas URI in Account Settings to browse your private scraper feed, or read the Scraper Setup Guide to configure your cluster.</p>
+                            <div class="connected-empty-actions" style="justify-content: center; margin-top: 18px; gap: 12px;">
+                                <button class="btn-guest-primary" onclick="openDbModal()" style="padding: 10px 22px; font-size: 0.86rem;">
+                                    ⚙️ Connect MongoDB Atlas
+                                </button>
+                                <a href="/scraper-guide" class="btn-guest-secondary" style="padding: 10px 20px; font-size: 0.86rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                    📖 Scraper Setup Guide
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    renderPagination();
+                    return;
+                }
+
+                // If connected, but no jobs match active filters
+                countEl.innerHTML = `No <strong>${esc(viewLabel.toLowerCase())}</strong> matching filters`;
+                pageInd.textContent = '';
+                cnt.innerHTML = `
+                    <div class="connected-empty-state" style="padding: 48px 20px; text-align: center;">
+                        <div class="connected-empty-icon" style="font-size: 2.5rem; margin-bottom: 12px;" aria-hidden="true">&#128269;</div>
+                        <div class="connected-empty-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">No Matching Tech Roles Found</div>
+                        <div class="connected-empty-desc" style="max-width: 480px; margin: 0 auto 20px; color: var(--muted); font-size: 0.88rem; line-height: 1.55;">
+                            We couldn't find any direct ATS openings matching your selected filters or search terms. Try broadening your location, category, or resetting all filters below.
+                        </div>
+                        <div class="connected-empty-actions" style="display: flex; justify-content: center; gap: 10px;">
+                            <button class="btn-guest-primary" onclick="clearFilters()" style="padding: 10px 24px; font-size: 0.86rem; display: inline-flex; align-items: center; gap: 6px;">
+                                &times; Clear All Filters
+                            </button>
+                        </div>
+                    </div>
+                `;
+                renderPagination();
+                return;
+            }
+
+            const startNum = totalJobs === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+            const endNum = Math.min(currentPage * PAGE_SIZE, totalJobs);
+            countEl.innerHTML = `Showing <strong>${startNum}–${endNum}</strong> of <strong>${totalJobs}</strong> ${esc(viewLabel)}`;
+            pageInd.textContent = totalPages > 1 ? `Page ${currentPage} of ${totalPages}` : '';
+
+            cardIdx = 0;
+            cnt.innerHTML = allJobs.map(buildCard).join('');
+            renderPagination();
+        }
+
+        // Build a job card with clickable title and relative posting age
+        function buildCard(job) {
+            const id = 'c' + (cardIdx++);
+            const isDirect = ltOf(job) === 'direct_apply';
+            const verdict = job.experience_verdict || null;
+            const newTag = isNew(job.first_seen || job.scraped_at) ? '<span class="tag-new">New</span>' : '';
+            const rawReason = job.core_requirements || '';
+            const portalFallback = 'Official corporate ATS career portal for verified tech opportunities.';
+            
+            // Filter out scraper artifacts / cookie blocker text if any slipped through
+            let cleanReason = rawReason;
+            if (
+                cleanReason.toLowerCase().includes("javascript to run") ||
+                cleanReason.toLowerCase().includes("corporate website and landing page")
+            ) {
+                cleanReason = '';
+            }
+            const reason = cleanReason || (!isDirect ? portalFallback : '');
+            const cat = (job.category || 'other').replace(/_/g, ' ');
+
+            let vbadge = '';
+            if (isDirect) {
+                // Actual individual openings get verification badges
+                if (verdict === 'SAFE') vbadge = '<span class="badge badge-confirmed">Confirmed Match</span>';
+                else if (verdict === 'POSSIBLE') vbadge = '<span class="badge badge-likely">Likely Match</span>';
+            } else {
+                // Curated company career directory pages get clean portal badge
+                vbadge = '<span class="badge badge-portal">Career Portal</span>';
+            }
+
+            const reasonLabel = isDirect ? 'Core Requirements:' : 'Overview:';
+            const reasonHtml = reason
+                ? '<div class="job-reason" id="r' + id + '"><strong>' + reasonLabel + '</strong> ' + esc(reason) + '</div>'
+                + '<button class="expand-btn" id="b' + id + '" onclick="toggle(\'' + id + '\')">'
+                + '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view details</button>'
+                : '';
+
+            const jobTitleEsc = esc(job.title || 'Role');
+            const compEsc = esc(job.company_name || 'Company');
+            const applyBtn = isDirect
+                ? '<a href="' + esc(job.link || '#') + '" class="apply-btn direct-btn" target="_blank" rel="noopener noreferrer" aria-label="Apply to ' + jobTitleEsc + ' at ' + compEsc + '">Apply &#8594;</a>'
+                : '<a href="' + esc(job.link || '#') + '" class="apply-btn browse-btn" target="_blank" rel="noopener noreferrer" aria-label="Explore early-career opportunities at ' + compEsc + '">Explore Portal &#8594;</a>';
+
+            // Relative date formatting
+            const relDate = formatRelativeDate(job.first_seen || job.scraped_at);
+            const dateHtml = relDate ? '<span class="meta-sep">&middot;</span><span class="job-date" title="Discovered ' + esc(job.first_seen || job.scraped_at) + '">' + esc(relDate) + '</span>' : '';
+
+            // Clickable job title
+            const titleLink = '<a href="' + esc(job.link || '#') + '" class="job-title-link" target="_blank" rel="noopener noreferrer">' + jobTitleEsc + '</a>';
+
+            return '<div class="job-card">'
+                + '<div class="job-left">'
+                + '<div class="job-title-row"><div class="job-title">' + titleLink + '</div>' + newTag + '</div>'
+                + '<div class="job-meta">'
+                + (job.company_name ? '<span class="job-company">' + esc(job.company_name) + '</span>' : '')
+                + (job.company_name && job.location ? '<span class="meta-sep">/</span>' : '')
+                + (job.location ? '<span class="job-loc">' + esc(job.location) + '</span>' : '')
+                + (cat ? '<span class="meta-sep">&middot;</span><span class="job-cat">' + esc(cat) + '</span>' : '')
+                + dateHtml
+                + '</div>'
+                + reasonHtml
+                + '</div>'
+                + '<div class="job-right">'
+                + '<div class="job-badges">' + vbadge + '</div>'
+                + applyBtn
+                + '</div>'
+                + '</div>';
+        }
+
+        function toggle(id) {
+            const r = document.getElementById('r' + id);
+            const b = document.getElementById('b' + id);
+            if (!r) return;
+            const ex = r.classList.toggle('expanded');
+            b.innerHTML = ex
+                ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg> less'
+                : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view details';
+        }
+
+        // Numbered Pagination
+        function renderPagination() {
+            const pag = document.getElementById('pagination-bar');
+            if (!pag) return;
+            if (totalPages <= 1) {
+                pag.style.display = 'none';
+                pag.innerHTML = '';
+                return;
+            }
+
+            pag.style.display = 'flex';
+            let html = '';
+
+            // Previous button
+            const prevDisabled = currentPage <= 1 ? 'disabled' : '';
+            html += `<button class="page-btn page-nav-btn" ${prevDisabled} onclick="goToPage(${currentPage - 1})" aria-label="Previous page">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Prev
+        </button>`;
+
+            // Page number range logic
+            const pages = [];
+            const maxShown = 5;
+            let start = Math.max(1, currentPage - 2);
+            let end = Math.min(totalPages, start + maxShown - 1);
+            if (end - start < maxShown - 1) {
+                start = Math.max(1, end - maxShown + 1);
+            }
+
+            if (start > 1) {
+                pages.push(1);
+                if (start > 2) pages.push('...');
+            }
+
+            for (let p = start; p <= end; p++) {
+                pages.push(p);
+            }
+
+            if (end < totalPages) {
+                if (end < totalPages - 1) pages.push('...');
+                pages.push(totalPages);
+            }
+
+            pages.forEach(p => {
+                if (p === '...') {
+                    html += '<span class="page-ellipsis">&hellip;</span>';
+                } else if (p === currentPage) {
+                    html += `<button class="page-btn active" aria-current="page">${p}</button>`;
+                } else {
+                    html += `<button class="page-btn" onclick="goToPage(${p})">${p}</button>`;
+                }
+            });
+
+            // Next button
+            const nextDisabled = currentPage >= totalPages ? 'disabled' : '';
+            html += `<button class="page-btn page-nav-btn" ${nextDisabled} onclick="goToPage(${currentPage + 1})" aria-label="Next page">
+            Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>`;
+
+            pag.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > totalPages || page === currentPage) return;
+            fetchJobs(page);
+            const panel = document.getElementById('panel-jobs');
+            if (panel) {
+                window.scrollTo({ top: panel.offsetTop - 75, behavior: 'smooth' });
+            }
+        }
+
+        // Bounded Cache Management
+        function saveCache(data) {
+            try {
+                // Prune old jb_v6_ cache entries if exceeding 25 to prevent QuotaExceededError
+                const jbKeys = Object.keys(localStorage).filter(k => k.startsWith('jb_v6_'));
+                if (jbKeys.length >= 25) {
+                    jbKeys.slice(0, 10).forEach(k => localStorage.removeItem(k));
+                }
+                localStorage.setItem(CURRENT_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+            } catch (e) { }
+        }
+
+        function loadCache() {
+            try {
+                const raw = localStorage.getItem(CURRENT_CACHE_KEY);
+                if (!raw) return null;
+                const { ts, data } = JSON.parse(raw);
+                if (Date.now() - ts > CACHE_TTL) return null;
+                return data;
+            } catch (e) { return null; }
+        }
+
+        function clearAllCache() {
+            try {
+                Object.keys(localStorage).forEach(k => {
+                    if (k.startsWith("jb_")) localStorage.removeItem(k);
+                });
+            } catch (e) {}
+        }
+
+        // Background sync indicator
+        function setSyncing(on) {
+            let dot = document.getElementById('sync-dot');
+            if (on && !dot) {
+                dot = document.createElement('span');
+                dot.id = 'sync-dot';
+                dot.title = 'Refreshing\u2026';
+                dot.style.cssText = 'display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin-left:7px;vertical-align:middle;animation:pnew 1.2s ease-in-out infinite;';
+                const sub = document.querySelector('.header-sub');
+                if (sub) sub.appendChild(dot);
+            } else if (!on && dot) {
+                dot.remove();
+            }
+        }
+
+        // Search debounce
+        let searchTimer = null;
+        function debounceSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                currentPage = 1;
+                fetchJobs(1);
+            }, 280);
+        }
+
+        // Fetch jobs from API
+        async function fetchJobs(page) {
+            page = Math.max(1, parseInt(page || 1, 10));
+            currentPage = page;
+            cardIdx = 0;
+
+            const searchVal = document.getElementById("search-input") ? document.getElementById("search-input").value : "";
+            const catParam = activeViewType === 'direct_apply' ? (activeCat === 'all' ? '' : activeCat) : '';
+            const locParam = activeViewType === 'direct_apply' ? activeLoc : 'all';
+            const confParam = activeViewType === 'direct_apply' ? activeConf : 'all';
+            const customDbUri = localStorage.getItem("jobbuddy_custom_mongo_uri");
+            const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}`;
+            CURRENT_CACHE_KEY = "jb_v7_" + (customDbUri ? "c_" : "d_") + encodeURIComponent(url);
+
+            const cached = loadCache();
+            if (cached && cached.jobs) {
+                allJobs = cached.jobs;
+                totalJobs = cached.total || 0;
+                totalPages = cached.totalPages || 1;
+                directTotal = cached.directCount || 0;
+                portalTotal = cached.portalCount || 0;
+                isLoading = false;
+                renderJobs();
+                setSyncing(true);
+            } else {
+                isLoading = true;
+                document.getElementById('jobs-container').innerHTML =
+                    '<div class="state"><div class="spinner" role="status" aria-label="Loading"></div><p>Fetching listings&#8230;</p></div>';
+                const pag = document.getElementById('pagination-bar');
+                if (pag) pag.style.display = 'none';
+            }
+
+            try {
+                const headers = {};
+                if (customDbUri) {
+                    headers['x-mongo-uri'] = customDbUri;
+                }
+                const res = await fetch(url, { headers });
+                const data = await res.json();
+
+                // Seamlessly handle both new metadata response and legacy array response
+                if (Array.isArray(data)) {
+                    allJobs = data;
+                    totalJobs = data.length;
+                    totalPages = 1;
+                    directTotal = data.filter(j => ltOf(j) === 'direct_apply').length;
+                    portalTotal = data.filter(j => ltOf(j) !== 'direct_apply').length;
+                } else if (data && Array.isArray(data.jobs)) {
+                    allJobs = data.jobs;
+                    totalJobs = data.total ?? data.jobs.length;
+                    totalPages = data.totalPages ?? 1;
+                    currentPage = data.page ?? page;
+                    directTotal = data.directCount ?? directTotal;
+                    portalTotal = data.portalCount ?? portalTotal;
+                    latestMeta = data.meta || null;
+                    if (data.meta) {
+                        updateDynamicFilters(data.meta);
+                    }
+                } else {
+                    throw new Error(data.error || 'Bad response from server');
+                }
+
+                isLoading = false;
+                saveCache({ jobs: allJobs, total: totalJobs, totalPages, directCount: directTotal, portalCount: portalTotal });
+                setSyncing(false);
+                renderJobs();
+            } catch (e) {
+                setSyncing(false);
+                isLoading = false;
+                const msg = e.message || 'Unknown network error';
+                latestMeta = { dbError: true, errorMessage: msg };
+                allJobs = [];
+                renderJobs();
+            }
+        }
+
+        // Suppress Netlify badge
+        function hideNBadge() {
+            document.querySelectorAll('a[href*="netlify.com"], [data-netlify-deploy-id], #nl-badge-frame, .netlify-badge').forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+                el.style.setProperty('visibility', 'hidden', 'important');
+            });
+        }
+
+        // Dynamic Filter Adaptation
+        function updateDynamicFilters(meta) {
+            if (!meta) return;
+
+            // 1. Dynamic Categories
+            if (Array.isArray(meta.categories) && meta.categories.length > 0) {
+                const container = document.getElementById('cat-tabs');
+                if (container) {
+                    const currentCats = Array.from(container.querySelectorAll('.cat-btn')).map(b => b.dataset.cat).join(',');
+                    const newCats = ['all', ...meta.categories].join(',');
+                    if (currentCats !== newCats) {
+                        const labelMap = {
+                            'software_engineering': 'Software Eng',
+                            'data_ml': 'Data / ML',
+                            'devops_cloud': 'DevOps',
+                            'cybersecurity': 'Security',
+                            'product_design': 'Product',
+                            'human_resources': 'HR / People',
+                            'marketing_sales': 'Marketing',
+                            'finance_legal': 'Finance',
+                            'operations': 'Operations',
+                            'other': 'Other Roles'
+                        };
+                        let html = `<button class="cat-btn ${activeCat === 'all' ? 'active' : ''}" data-cat="all" id="cat-all" role="tab" aria-selected="${activeCat === 'all'}" onclick="setCat('all',this)">All</button>`;
+                        meta.categories.forEach(cat => {
+                            const label = labelMap[cat] || cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                            const isActive = activeCat === cat;
+                            html += `<button class="cat-btn ${isActive ? 'active' : ''}" data-cat="${cat}" id="cat-${cat}" role="tab" aria-selected="${isActive}" onclick="setCat('${cat}',this)">${label}</button>`;
+                        });
+                        container.innerHTML = html;
+                    }
+                }
+            }
+
+            // 2. Dynamic Locations
+            if (Array.isArray(meta.locations) && meta.locations.length > 0) {
+                const locWrap = document.getElementById('location-pill-wrap');
+                if (locWrap) {
+                    const currentLocs = Array.from(locWrap.querySelectorAll('.filt-btn')).map(b => b.dataset.loc).join(',');
+                    const newLocs = meta.locations.map(l => l.id).join(',');
+                    if (currentLocs !== newLocs) {
+                        let html = '';
+                        meta.locations.forEach(loc => {
+                            const isActive = activeLoc === loc.id;
+                            html += `<button class="filt-btn ${isActive ? 'active-blue' : ''}" id="loc-${loc.id}" data-loc="${loc.id}" onclick="setLoc('${loc.id}',this)">${esc(loc.label)}</button>`;
+                        });
+                        locWrap.innerHTML = html;
+                    }
+                    syncFilterUI();
+                }
+            }
+        }
+
+        // ── UNIFIED ACCOUNT & WORKSPACE (NETLIFY IDENTITY & DATABASE) ─
+        function handleAccountButtonClick() {
+            if (!currentUser) {
+                openIdentityModal();
+            } else {
+                openDbModal();
+            }
+        }
+
+        function openDbModal() {
+            const modal = document.getElementById('db-modal');
+            updateWorkspaceModalUI();
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeDbModal() {
+            const modal = document.getElementById('db-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        async function fetchUserProfile(user) {
+            if (!user || !user.email) return;
+            try {
+                let headers = {
+                    'x-user-id': user.id || '',
+                    'x-user-email': user.email || ''
+                };
+                if (window.JobBuddyAuth && typeof window.JobBuddyAuth.getToken === 'function') {
+                    const token = await window.JobBuddyAuth.getToken();
+                    if (token) {
+                        headers['Authorization'] = 'Bearer ' + token;
+                    }
+                }
+                const res = await fetch(`/.netlify/functions/userProfile?email=${encodeURIComponent(user.email)}`, {
+                    headers: headers
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    userProfile = data.profile || null;
+                    if (userProfile && userProfile.custom_mongo_uri) {
+                        localStorage.setItem("jobbuddy_custom_mongo_uri", userProfile.custom_mongo_uri);
+                        clearAllCache();
+                        updateWorkspaceIndicator();
+                        currentPage = 1;
+                        fetchJobs(1);
+                    }
+                }
+            } catch (e) {
+                // Silently handle offline/guest states
+            }
+        }
+
+        async function saveCustomDb() {
+            if (!currentUser) {
+                alert("Please sign in first to connect and sync your database to your Netlify account profile.");
+                openIdentityModal();
+                return;
+            }
+
+            const input = document.getElementById('custom-mongo-input');
+            const uri = input ? input.value.trim() : "";
+            if (!uri) {
+                disconnectDatabase();
+                return;
+            }
+            if (!uri.startsWith("mongodb://") && !uri.startsWith("mongodb+srv://")) {
+                alert("Please enter a valid MongoDB connection string (starts with mongodb:// or mongodb+srv://)");
+                return;
+            }
+
+            const btn = document.querySelector('.btn-db-save');
+            if (btn) btn.textContent = 'Saving to Netlify DB...';
+
+            try {
+                let token = window.JobBuddyAuth ? await window.JobBuddyAuth.getToken() : null;
+                let headers = {
+                    'Content-Type': 'application/json',
+                    'x-user-id': currentUser.id || '',
+                    'x-user-email': currentUser.email || ''
+                };
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+
+                // Save to Netlify's cloud database via userProfile function
+                const res = await fetch('/api/user-profile', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({
+                        db_mode: 'custom',
+                        custom_mongo_uri: uri
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || 'Failed to save');
+                }
+
+                localStorage.setItem("rolenaut_custom_mongo_uri", uri);
+                localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
+                clearAllCache();
+                updateWorkspaceIndicator();
+                closeDbModal();
+                activeCat = "all";
+                activeLoc = "all";
+                currentPage = 1;
+                fetchJobs(1);
+            } catch (err) {
+                alert("Error saving to Netlify database: " + err.message);
+            } finally {
+                if (btn) btn.textContent = 'Save to Netlify Profile';
+            }
+        }
+
+        async function disconnectDatabase() {
+            if (currentUser) {
+                try {
+                    let token = window.JobBuddyAuth ? await window.JobBuddyAuth.getToken() : null;
+                    let headers = {
+                        'Content-Type': 'application/json',
+                        'x-user-id': currentUser.id || '',
+                        'x-user-email': currentUser.email || ''
+                    };
+                    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+                    await fetch('/api/user-profile', {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify({
+                            db_mode: 'inbuilt',
+                            custom_mongo_uri: ''
+                        })
+                    });
+                } catch (e) {}
+            }
+
+            localStorage.removeItem("rolenaut_custom_mongo_uri");
+            localStorage.removeItem("jobbuddy_custom_mongo_uri");
+            const input = document.getElementById('custom-mongo-input');
+            if (input) input.value = "";
+            clearAllCache();
+            updateWorkspaceIndicator();
+            closeDbModal();
+            activeCat = "all";
+            activeLoc = "all";
+            currentPage = 1;
+            fetchJobs(1);
+        }
+        window.resetDefaultDb = disconnectDatabase;
+
+        function updateWorkspaceIndicator() {
+            const userPill = document.getElementById('user-header-pill');
+            const signInBtn = document.getElementById('btn-header-signin');
+            const headerEmail = document.getElementById('header-user-email');
+            const headerAvatar = document.getElementById('header-avatar');
+            const statusDot = document.getElementById('header-db-status');
+            const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
+
+            if (currentUser) {
+                if (signInBtn) signInBtn.style.display = 'none';
+                if (userPill) userPill.style.display = 'inline-flex';
+                if (headerEmail) headerEmail.textContent = currentUser.email;
+                if (headerAvatar) headerAvatar.textContent = (currentUser.email ? currentUser.email[0].toUpperCase() : '👤');
+                if (statusDot) {
+                    if (isCustom) {
+                        statusDot.className = 'db-status-pill is-custom';
+                        statusDot.title = 'Personal MongoDB Connected';
+                    } else {
+                        statusDot.className = 'db-status-pill';
+                        statusDot.title = 'No MongoDB Connected';
+                    }
+                }
+            } else {
+                if (signInBtn) signInBtn.style.display = 'inline-flex';
+                if (userPill) userPill.style.display = 'none';
+            }
+        }
+
+        function updateWorkspaceModalUI() {
+            const userSection = document.getElementById('modal-user-section');
+            const guestSection = document.getElementById('modal-guest-section');
+            const dbSection = document.getElementById('modal-db-section');
+            const modalEmail = document.getElementById('modal-account-email');
+            const modalDbBadge = document.getElementById('modal-db-badge');
+            const input = document.getElementById('custom-mongo-input');
+            const currentUri = localStorage.getItem("jobbuddy_custom_mongo_uri") || "";
+            const isCustom = Boolean(currentUri);
+
+            if (input) input.value = currentUri;
+
+            if (modalDbBadge) {
+                modalDbBadge.textContent = isCustom ? 'Personal MongoDB Active (Netlify Cloud)' : 'No Database Connected';
+                modalDbBadge.className = isCustom ? 'ws-status-badge' : 'ws-status-badge neutral';
+            }
+
+            if (currentUser) {
+                if (userSection) userSection.style.display = 'block';
+                if (guestSection) guestSection.style.display = 'none';
+                if (dbSection) dbSection.style.display = 'block';
+                if (modalEmail) modalEmail.textContent = currentUser.email;
+            } else {
+                if (userSection) userSection.style.display = 'none';
+                if (guestSection) guestSection.style.display = 'block';
+                if (dbSection) dbSection.style.display = 'none';
+            }
+        }
+
+        // Comprehensive Filter Reset (resets categories, locations, confidence, and search)
+        function clearFilters() {
+            activeCat = 'all';
+            activeLoc = 'all';
+            activeConf = 'all';
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = '';
+            syncFilterUI();
+            updateURL();
+            currentPage = 1;
+            fetchJobs(1);
+        }
+
+        // ── AUTHENTICATION & VIEW GATING ──────────────────────────
+        function updateAuthView() {
+            // Unrestricted: feed is always visible to everyone
+            // Guest sees default freshers feed; authenticated user with custom mongo sees their custom feed
+            updateWorkspaceIndicator();
+        }
+
+        // Netlify Identity Authentication
+        function openIdentityModal() {
+            if (window.netlifyIdentity && typeof window.netlifyIdentity.open === 'function') {
+                window.netlifyIdentity.open('login');
+            } else if (window.JobBuddyAuth && typeof window.JobBuddyAuth.openModal === 'function') {
+                window.JobBuddyAuth.openModal('login');
+            } else {
+                // Professional inline notice without raw prompt
+                const guestSection = document.getElementById('modal-guest-section');
+                if (guestSection) {
+                    guestSection.innerHTML = `
+                        <div class="empty-workspace-hero" style="margin: 0 0 16px; padding: 22px 18px; border-color: rgba(99, 102, 241, 0.3);">
+                            <div class="empty-ws-icon" style="font-size: 1.8rem; margin-bottom: 8px;">🔐</div>
+                            <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 6px;">Authentication Notice</h4>
+                            <p style="font-size: 0.84rem; color: var(--muted); line-height: 1.5; margin-bottom: 12px;">
+                                Cloud synchronization uses Netlify Identity on live deployments. On this local instance, all 500+ verified direct ATS requisitions are completely accessible in open preview mode.
+                            </p>
+                            <button class="btn-guest-primary" onclick="closeDbModal();" style="padding: 8px 18px; font-size: 0.82rem;">
+                                Continue Browsing Jobs
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function logoutIdentity() {
+            if (window.netlifyIdentity) {
+                try { window.netlifyIdentity.logout(); } catch (e) {}
+            }
+            closeDbModal();
+            updateAuthState(null);
+        }
+
+        function updateAuthState(user) {
+            currentUser = user;
+            if (user) {
+                try {
+                    localStorage.setItem("jobbuddy_user_session", JSON.stringify({ email: user.email, id: user.id }));
+                } catch (e) {}
+            } else {
+                try {
+                    localStorage.removeItem("jobbuddy_user_session");
+                    localStorage.removeItem("jobbuddy_custom_mongo_uri");
+                } catch (e) {}
+                userProfile = null;
+                clearAllCache();
+            }
+            updateWorkspaceIndicator();
+            if (currentUser) {
+                fetchUserProfile(currentUser);
+            }
+            // Always fetch jobs on initial load for all visitors
+            currentPage = 1;
+            fetchJobs(1);
+
+        }
+
+        // Browser Back / Forward Popstate Navigation
+        window.addEventListener('popstate', (e) => {
+            const parsed = parseRouteState(window.location.pathname);
+            activeViewType = parsed.view;
+            activeLoc = parsed.loc;
+            activeCat = parsed.cat;
+            if (parsed.needsSanitize) updateURL(true);
+
+            const isDirect = activeViewType === 'direct_apply';
+            const tabDir = document.getElementById('tab-direct');
+            const tabPort = document.getElementById('tab-portals');
+            if (tabDir) { tabDir.classList.toggle('active', isDirect); tabDir.setAttribute('aria-selected', isDirect); }
+            if (tabPort) { tabPort.classList.toggle('active', !isDirect); tabPort.setAttribute('aria-selected', !isDirect); }
+
+            const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
+            const filterRow = document.getElementById('filter-row');
+            if (catContainer) catContainer.style.display = isDirect ? 'block' : 'none';
+            if (filterRow) filterRow.style.display = isDirect ? 'flex' : 'none';
+
+            syncFilterUI();
+            updatePageTitle();
+            currentPage = 1;
+            fetchJobs(1);
+        });
+
+        // Initialize Everything on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Synchronously restore user from JobBuddyAuth
+            currentUser = (window.JobBuddyAuth && window.JobBuddyAuth.getUser()) || null;
+            window.addEventListener("jb_auth_change", (e) => {
+                currentUser = e.detail ? e.detail.user : null;
+                if (currentUser) {
+                    fetchUserProfile(currentUser);
+                } else {
+                    localStorage.removeItem("jobbuddy_custom_mongo_uri");
+                    clearAllCache();
+                }
+                currentPage = 1;
+                fetchJobs(1);
+            });
+
+            // Clean up legacy localStorage cache keys
+            clearAllCache();
+
+            // Parse URL for clean initial state
+            const parsed = parseRouteState(window.location.pathname);
+            activeViewType = parsed.view;
+            activeLoc = parsed.loc;
+            activeCat = parsed.cat;
+            if (parsed.needsSanitize) updateURL(true);
+
+            const isDirect = activeViewType === 'direct_apply';
+            const tabDir = document.getElementById('tab-direct');
+            const tabPort = document.getElementById('tab-portals');
+            if (tabDir) { tabDir.classList.toggle('active', isDirect); tabDir.setAttribute('aria-selected', isDirect); }
+            if (tabPort) { tabPort.classList.toggle('active', !isDirect); tabPort.setAttribute('aria-selected', !isDirect); }
+
+            const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
+            const filterRow = document.getElementById('filter-row');
+            if (catContainer) catContainer.style.display = isDirect ? 'block' : 'none';
+            if (filterRow) filterRow.style.display = isDirect ? 'flex' : 'none';
+
+            syncFilterUI();
+            updatePageTitle();
+
+            // Category horizontal scroll fade indicator (RAF-batched)
+            const cWrap = document.getElementById('cat-scroll-wrap');
+            const cCont = document.getElementById('cat-scroll-container');
+            if (cWrap && cCont) {
+                let rafId = null;
+                const checkScrollEnd = () => {
+                    rafId = null;
+                    const atEnd = (cWrap.scrollLeft + cWrap.clientWidth) >= (cWrap.scrollWidth - 12);
+                    cCont.classList.toggle('scrolled-end', atEnd);
+                };
+                cWrap.addEventListener('scroll', () => {
+                    if (!rafId) rafId = requestAnimationFrame(checkScrollEnd);
+                }, { passive: true });
+                checkScrollEnd();
+            }
+
+            // Initialize Netlify Identity
+            updateWorkspaceIndicator();
+            updateAuthView();
+            if (currentUser) {
+                fetchUserProfile(currentUser);
+            }
+            currentPage = 1;
+            fetchJobs(1);
+
+            if (window.netlifyIdentity) {
+                window.netlifyIdentity.on('init', user => {
+                    if (user) updateAuthState(user);
+                });
+                window.netlifyIdentity.on('login', user => {
+                    updateAuthState(user);
+                    if (window.netlifyIdentity.close) window.netlifyIdentity.close();
+                });
+                window.netlifyIdentity.on('logout', () => updateAuthState(null));
+            }
+
+            setTimeout(hideNBadge, 500);
+            setTimeout(hideNBadge, 2000);
+            setTimeout(hideNBadge, 5000);
+
+            // Continuous Netlify Badge Annihilator
+            const killBadgeObserver = new MutationObserver(() => {
+                document.querySelectorAll('a[href*="netlify.com"], [data-netlify-deploy-id], #nl-badge-frame, .netlify-badge').forEach(el => {
+                    el.style.setProperty('display', 'none', 'important');
+                    el.style.setProperty('visibility', 'hidden', 'important');
+                });
+            });
+            killBadgeObserver.observe(document.body, { childList: true, subtree: true });
+        });
+    </script>
+</body>
+</html>

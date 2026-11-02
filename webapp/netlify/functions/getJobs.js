@@ -1,4 +1,29 @@
 const { MongoClient } = require("mongodb");
+const fs = require("fs");
+const path = require("path");
+const { getDatabase } = require("@netlify/database");
+const { verifyToken } = require("./verifyToken");
+
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
+
+let netlifyDbInstance = null;
+async function resolveUserCustomUri(event, context) {
+    try {
+        const authUser = await verifyToken(event, context);
+        if (!authUser || !authUser.userId) return null;
+        if (!netlifyDbInstance) {
+            try { netlifyDbInstance = getDatabase(); } catch (e) { return null; }
+        }
+        const rows = await netlifyDbInstance.sql`
+            SELECT custom_mongo_uri, db_mode FROM user_profiles
+            WHERE user_id = ${authUser.userId} AND deleted_at IS NULL LIMIT 1
+        `;
+        if (rows && rows.length > 0 && rows[0].db_mode === "custom") {
+            return rows[0].custom_mongo_uri || null;
+        }
+    } catch (e) {}
+    return null;
+}
 
 function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -109,6 +134,98 @@ function buildQueryFilter({ category, link_type, verdict, location, search }) {
     return { $and: clauses };
 }
 
+function getLocalJobsFallback({ category, link_type, verdict, location, search, page, limit }) {
+    let localJobs = [];
+    const possiblePaths = [
+        path.join(__dirname, '..', '..', 'data', 'jobs.json'),
+        path.join(__dirname, '..', 'data', 'jobs.json')
+    ];
+    for (const p of possiblePaths) {
+        if (fs.existsSync(p)) {
+            try {
+                localJobs = JSON.parse(fs.readFileSync(p, 'utf8'));
+                break;
+            } catch (e) {}
+        }
+    }
+
+    let filtered = localJobs;
+    if (link_type === 'direct_apply') {
+        filtered = filtered.filter(j => (j.link_type || 'direct_apply') === 'direct_apply');
+        if (verdict && verdict !== 'all') {
+            filtered = filtered.filter(j => j.experience_verdict === verdict);
+        } else {
+            filtered = filtered.filter(j => !['REJECTED', 'BLOCKED'].includes(j.experience_verdict));
+        }
+        if (category && category !== 'all') {
+            filtered = filtered.filter(j => j.category === category);
+        }
+        if (location && location !== 'all') {
+            const locKey = location.toLowerCase().trim();
+            filtered = filtered.filter(j => (j.location || '').toLowerCase().includes(locKey));
+        }
+    } else if (link_type === 'filtered_list') {
+        filtered = filtered.filter(j => ['filtered_list', 'career_homepage'].includes(j.link_type));
+    }
+
+    if (search && search.trim()) {
+        const q = search.trim().toLowerCase();
+        filtered = filtered.filter(j =>
+            (j.title && j.title.toLowerCase().includes(q)) ||
+            (j.company_name && j.company_name.toLowerCase().includes(q)) ||
+            (j.location && j.location.toLowerCase().includes(q)) ||
+            (j.core_requirements && j.core_requirements.toLowerCase().includes(q))
+        );
+    }
+
+    const total = filtered.length;
+    const skip = (page - 1) * limit;
+    const paginated = filtered.slice(skip, skip + limit);
+    const directCount = localJobs.filter(j => (j.link_type || 'direct_apply') === 'direct_apply').length;
+    const portalCount = localJobs.filter(j => j.link_type === 'filtered_list').length;
+    const distinctCats = [...new Set(localJobs.map(j => j.category).filter(Boolean))];
+
+    return {
+        jobs: paginated.map(j => ({
+            _id: j._id?.$oid || j._id || j.job_id,
+            title: j.title || 'Untitled',
+            company_name: j.company_name || '',
+            location: j.location || '',
+            category: j.category || 'other',
+            link: j.link || '#',
+            link_type: j.link_type || 'direct_apply',
+            experience_verdict: j.experience_verdict || 'SAFE',
+            core_requirements: j.core_requirements || '',
+            content: j.content || '',
+            ats_name: j.ats_name || 'Direct',
+            scraped_at: j.scraped_at || new Date().toISOString(),
+            first_seen: j.first_seen || j.scraped_at || new Date().toISOString()
+        })),
+        total,
+        page,
+        limit,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+        directCount,
+        portalCount,
+        meta: {
+            profile: {
+                role_title: "Fresher & Early Career",
+                target_level: "fresher",
+                allowed_cities: ["All India"]
+            },
+            categories: distinctCats,
+            locations: [
+                { id: "all", label: "All Locations" },
+                { id: "remote", label: "Remote" },
+                { id: "india", label: "India Tech Hubs" },
+                { id: "overseas", label: "Overseas / Visa" }
+            ],
+            isOfflineFallback: true,
+            isCustomDb: false
+        }
+    };
+}
+
 exports.handler = async (event, context) => {
     // Allows Netlify to freeze process and reuse DB connection
     context.callbackWaitsForEmptyEventLoop = false;
@@ -118,7 +235,7 @@ exports.handler = async (event, context) => {
         return {
             statusCode: 204,
             headers: {
-                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
                 "Access-Control-Allow-Headers": "Content-Type, Authorization, x-mongo-uri, X-Mongo-Uri",
                 "Access-Control-Allow-Methods": "GET, OPTIONS"
             },
@@ -128,8 +245,33 @@ exports.handler = async (event, context) => {
 
     const params = event.queryStringParameters || {};
     const headers = event.headers || {};
-    // Only accept connection string via secure encrypted header, not query parameters
-    const customUri = headers['x-mongo-uri'] || headers['X-Mongo-Uri'] || "";
+    
+    // Resolve custom MongoDB URI:
+    // 1. First check header 'x-mongo-uri'
+    // 2. Otherwise if user is logged in with JWT, check user's profile in Netlify DB
+    let customUri = (headers['x-mongo-uri'] || headers['X-Mongo-Uri'] || "").trim();
+    if (!customUri) {
+        const userDbUri = await resolveUserCustomUri(event, context);
+        if (userDbUri) customUri = userDbUri.trim();
+    }
+
+    // SSRF / Host validation: validate customUri if provided
+    if (customUri) {
+        if (!customUri.startsWith("mongodb://") && !customUri.startsWith("mongodb+srv://")) {
+            return {
+                statusCode: 400,
+                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": ALLOWED_ORIGIN },
+                body: JSON.stringify({ error: "Invalid MongoDB connection string format." })
+            };
+        }
+        if (customUri.startsWith("mongodb+srv://") && !/mongodb\+srv:\/\/[^@]+@[^/]+\.mongodb\.net/i.test(customUri)) {
+            return {
+                statusCode: 400,
+                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": ALLOWED_ORIGIN },
+                body: JSON.stringify({ error: "Only MongoDB Atlas (*.mongodb.net) clusters are allowed for security." })
+            };
+        }
+    }
 
     const category   = params.category   || null;
     const link_type  = params.link_type  || "direct_apply"; // Default to direct apply
@@ -139,29 +281,20 @@ exports.handler = async (event, context) => {
     const location   = params.location   || "all";
     const search     = params.search     || "";
 
-    // Every user connects their own custom MongoDB cluster
-    const activeUri = (customUri && customUri.trim()) || "";
+    // Connect to either custom user cluster or inbuilt curated MongoDB Atlas cluster
+    const activeUri = (customUri && customUri.trim()) || process.env.MONGODB_URI || "";
 
     if (!activeUri) {
+        // Seamless fallback to local curated jobs
+        const fallback = getLocalJobsFallback({ category, link_type, verdict, location, search, page, limit });
         return {
             statusCode: 200,
             headers: {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-                "Cache-Control": "no-store"
+                "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+                "Cache-Control": "public, max-age=60"
             },
-            body: JSON.stringify({
-                jobs: [],
-                total: 0,
-                directCount: 0,
-                portalCount: 0,
-                meta: {
-                    noDb: true,
-                    isCustomDb: false,
-                    categories: [],
-                    locations: []
-                }
-            })
+            body: JSON.stringify(fallback)
         };
     }
 
@@ -170,8 +303,12 @@ exports.handler = async (event, context) => {
         // Automatically inherit database from custom connection string if specified, or fallback to job_aggregator
         let db;
         try {
-            db = client.db();
-            if (!db || !db.databaseName) db = client.db("job_aggregator");
+            const rawDb = client.db();
+            if (!rawDb || !rawDb.databaseName || rawDb.databaseName === 'test') {
+                db = client.db("job_aggregator");
+            } else {
+                db = rawDb;
+            }
         } catch (e) {
             db = client.db("job_aggregator");
         }
@@ -194,6 +331,9 @@ exports.handler = async (event, context) => {
             link_type: 1,
             experience_verdict: 1,
             core_requirements: 1,
+            ats_name: 1,
+            content: 1,
+            verdict_reason: 1,
             scraped_at: 1,
             first_seen: 1
         };
@@ -281,6 +421,9 @@ exports.handler = async (event, context) => {
                     link_type: j.link_type || 'direct_apply',
                     experience_verdict: j.experience_verdict || null,
                     core_requirements: cleanReqs,
+                    ats_name: j.ats_name || 'Direct',
+                    content: j.content || '',
+                    verdict_reason: j.verdict_reason || '',
                     scraped_at: j.scraped_at || null,
                     first_seen: j.first_seen || j.scraped_at || null
                 });
@@ -291,8 +434,8 @@ exports.handler = async (event, context) => {
             statusCode: 200,
             headers: {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-                "Vary": "Accept-Encoding, x-mongo-uri",
+                "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+                "Vary": "Accept-Encoding, x-mongo-uri, Authorization",
                 "Cache-Control": customUri ? "no-store" : "public, max-age=180, s-maxage=180, stale-while-revalidate=360",
             },
             body: JSON.stringify({
@@ -316,24 +459,16 @@ exports.handler = async (event, context) => {
             }),
         };
     } catch (error) {
-        console.error("getJobs error:", error);
+        console.error("getJobs error, switching to fallback:", error.message);
+        // Fall back gracefully to local offline dataset so the UI remains 100% operational
+        const fallback = getLocalJobsFallback({ category, link_type, verdict, location, search, page, limit });
         return {
             statusCode: 200,
             headers: {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
+                "Access-Control-Allow-Origin": ALLOWED_ORIGIN
             },
-            body: JSON.stringify({
-                jobs: [],
-                total: 0,
-                directCount: 0,
-                portalCount: 0,
-                error: "Database connection failed: " + (error.message || "Invalid connection string or unreachable host"),
-                meta: {
-                    dbError: true,
-                    errorMessage: error.message
-                }
-            }),
+            body: JSON.stringify(fallback)
         };
     }
 };

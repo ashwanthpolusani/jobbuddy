@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /.netlify/
+Disallow: /api/
+Disallow: /onboarding
+Disallow: /profile
 
-Sitemap: https://buddyjob.netlify.app/sitemap.xml
+Sitemap: https://rolenaut.netlify.app/sitemap.xml

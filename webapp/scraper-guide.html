@@ -1,30 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Backend Scraper Setup Guide — JobBuddy</title>
-    <meta name="description" content="Step-by-step guide to setting up your companion job scraper, configuring MongoDB Atlas, and connecting your read-only URI to the JobBuddy frontend.">
+    <title>Custom Scraper Setup & MongoDB Atlas Guide — Rolenaut</title>
+    <meta name="description" content="Step-by-step developer tutorial for connecting your self-hosted GitHub Actions scraper engine to Rolenaut using a read-only MongoDB Atlas cluster.">
     <meta name="theme-color" content="#0a66c2">
-    <meta property="og:title" content="Backend Scraper Setup Guide — JobBuddy">
-    <meta property="og:description" content="Step-by-step guide to setting up your companion job scraper, configuring MongoDB Atlas, and connecting your read-only URI to the JobBuddy frontend.">
-    <meta property="og:url" content="https://buddyjob.netlify.app/scraper-guide">
+    <meta property="og:title" content="Custom Scraper Setup & MongoDB Atlas Guide — Rolenaut">
+    <meta property="og:description" content="Step-by-step guide to setting up your companion job scraper, configuring MongoDB Atlas, and connecting your read-only URI to the Rolenaut frontend.">
+    <meta property="og:url" content="https://rolenaut.netlify.app/scraper-guide">
     <meta property="og:type" content="article">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Backend Scraper Setup Guide — JobBuddy">
-    <meta name="twitter:description" content="Step-by-step guide to running jobbuddy-scraper and connecting your private MongoDB database to the JobBuddy frontend.">
+    <meta name="twitter:title" content="Custom Scraper Setup & MongoDB Atlas Guide — Rolenaut">
+    <meta name="twitter:description" content="Step-by-step guide to running rolenaut-engine (jobbuddy-scraper) and connecting your private MongoDB database to the Rolenaut frontend.">
     <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3809813018120427" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="canonical" href="https://buddyjob.netlify.app/scraper-guide">
+    
+    <link rel="canonical" href="https://rolenaut.netlify.app/scraper-guide">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg: #f3f2ef;
+            --bg: #f8fafc;
             --surface: #ffffff;
             --surface2: #f8f9fa;
             --border: #e0e0e0;
@@ -54,55 +56,7 @@
         #nl-badge-frame,
         .netlify-badge { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
 
-        .header {
-            border-bottom: 1px solid var(--border);
-            padding: 0 24px;
-            background: rgba(255, 255, 255, 0.96);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .header-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 58px;
-        }
-
-        .brand-block {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .brand-logo { width: 36px; height: 36px; flex-shrink: 0; }
-
-        .wordmark {
-            font-size: 1rem;
-            font-weight: 800;
-            color: var(--text);
-            letter-spacing: -0.04em;
-        }
-
         .wordmark .accent { color: var(--accent); }
-
-        .header-nav {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .header-link {
-            font-size: 0.82rem;
-            font-weight: 500;
-            color: var(--text2);
-            text-decoration: none;
-            transition: color 0.15s;
-        }
 
         .header-link:hover, .header-link.active { color: var(--accent); font-weight: 600; }
 
@@ -316,33 +270,6 @@
 
         .btn-secondary:hover { background: var(--surface2); }
 
-        .footer {
-            border-top: 1px solid var(--border);
-            padding: 32px 24px;
-            background: var(--surface);
-            margin-top: 60px;
-        }
-
-        .footer-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .footer-copy {
-            font-size: 0.82rem;
-            color: var(--muted);
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 16px;
-        }
-
         .footer-links a {
             font-size: 0.82rem;
             color: var(--muted);
@@ -351,32 +278,55 @@
 
         .footer-links a:hover { color: var(--accent); }
     </style>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
+    <script src="/auth-core.js" defer></script>
+    <link rel="stylesheet" href="/shared.css">
 </head>
 <body>
 
 <header class="header">
-    <div class="header-inner">
-        <a class="brand-block" href="/">
-            <svg class="brand-logo" viewBox="0 0 40 40" fill="none" aria-label="JobBuddy Logo">
-                <rect width="40" height="40" rx="10" fill="var(--surface2)" />
-                <path d="M12 28L20 12L28 28" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
-                <circle cx="20" cy="22" r="3" fill="var(--accent)" />
-            </svg>
-            <span class="wordmark">Job<span class="accent">Buddy</span></span>
-        </a>
-        <nav class="header-nav">
-            <a class="header-link" href="/">Live Jobs</a>
-            <a class="header-link" href="/interview-prep">Interview Prep</a>
-            <a class="header-link" href="/resume-guide">Resume Guide</a>
-            <a class="header-link active" href="/scraper-guide">Scraper Setup</a>
-        </nav>
-    </div>
-</header>
+        <div class="header-inner">
+            <a class="brand-block" href="/" aria-label="Rolenaut home">
+                <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                <div class="brand-text-wrap">
+                    <div class="wordmark">Role<span class="accent">naut</span></div>
+                    <div class="header-sub">Navigate your next leap &middot; Your career has no ceiling.</div>
+                </div>
+            </a>
+            <div class="header-actions">
+                <nav class="header-nav-links" aria-label="Main Navigation">
+                    <a href="/jobs" class="header-nav-link " >Live Jobs</a>
+                    <a href="/scraper-guide" class="header-nav-link active">Scraper Setup</a>
+                    <a href="/interview-prep" class="header-nav-link ">Interview Prep</a>
+                    <a href="/resume-guide" class="header-nav-link ">Resume Guide</a>
+                    <a href="/about" class="header-nav-link ">About</a>
+                </nav>
+                <div class="auth-wrapper" id="auth-header-wrapper">
+                    <!-- Managed synchronously by auth-core.js -->
+                </div>
+            </div>
+        </div>
+    </header>
 
 <main class="doc-wrap">
     <span class="badge-tag">Documentation &amp; Setup Guide</span>
-    <h1>How to Connect Your Scraper to JobBuddy</h1>
-    <p class="doc-subtitle">A comprehensive guide on running the backend job scraper, configuring a free MongoDB Atlas cluster, and connecting your read-only database URL to the JobBuddy frontend.</p>
+    <h1>How to Connect Your Scraper to Rolenaut</h1>
+    <p class="doc-subtitle">A comprehensive guide on running the backend job scraper, configuring a free MongoDB Atlas cluster, and connecting your read-only database URL to the Rolenaut frontend.</p>
 
     <div class="doc-meta">
         <span>📖 Setup &amp; Architecture Guide</span>
@@ -384,14 +334,14 @@
         <span>🔒 Zero Admin Exposure</span>
     </div>
 
-    <h2>1. Understanding the JobBuddy Architecture</h2>
-    <p>JobBuddy is an <strong>open, candidate-owned tech career discovery platform</strong>. It decouples the web frontend from the scraping engine so that every user has full ownership over what jobs they track, which companies they scrape, and how often they refresh their feed.</p>
+    <h2>1. Understanding the Rolenaut Architecture</h2>
+    <p>Rolenaut is an <strong>autonomous, candidate-owned tech career discovery platform</strong>. It decouples the web frontend from the scraping engine so that every user has full ownership over what jobs they track, which companies they scrape, and how often they refresh their feed.</p>
     
     <div class="callout">
         <h4>The Decoupled Architecture</h4>
-        <p><strong>1. Backend Scraper (<code>jobbuddy-scraper</code>):</strong> Runs locally on your machine or on a scheduled cloud runner (e.g., GitHub Actions, Railway). It collects active requisitions directly from Workday, Lever, and Greenhouse systems and saves them to your MongoDB database.</p>
+        <p><strong>1. Backend Scraper (<code>rolenaut-engine</code> / <code>jobbuddy-scraper</code>):</strong> Runs locally on your machine or on a scheduled cloud runner (e.g., GitHub Actions, Railway). It collects active requisitions directly from Workday, Lever, and Greenhouse systems and saves them to your MongoDB database.</p>
         <p><strong>2. MongoDB Atlas Database:</strong> Stores your scraped jobs collection (<code>job_aggregator.jobs</code>). You control who has access with a read-only user.</p>
-        <p><strong>3. JobBuddy WebApp:</strong> Reads your jobs via your secure, read-only MongoDB URL. Netlify Database stores your user profile so your preferences sync anywhere you sign in.</p>
+        <p><strong>3. Rolenaut WebApp:</strong> Reads your jobs via your secure, read-only MongoDB URL. Netlify Database stores your user profile so your preferences sync anywhere you sign in.</p>
     </div>
 
     <h2>2. Three-Step Setup Process</h2>
@@ -440,11 +390,11 @@ python main.py</code></pre>
         <div class="step-card">
             <div class="step-header">
                 <span class="step-number">3</span>
-                <span class="step-title">Login and Add MongoDB URL on JobBuddy Frontend</span>
+                <span class="step-title">Login and Add MongoDB URL on Rolenaut Frontend</span>
             </div>
-            <p>Once you have your <code>webapp_reader</code> connection string, plug it into the JobBuddy frontend:</p>
+            <p>Once you have your <code>webapp_reader</code> connection string, plug it into the Rolenaut frontend:</p>
             <ol>
-                <li>Click <strong>Sign In / Workspace</strong> in the top-right header of JobBuddy (authenticate via Netlify email magic link).</li>
+                <li>Click <strong>Sign In / Workspace</strong> in the top-right header of Rolenaut (authenticate via Netlify email magic link).</li>
                 <li>Click your account pill in the header to open the <strong>Account &amp; Workspace</strong> modal.</li>
                 <li>Paste your read-only connection string into the <strong>MongoDB Read-Only URI</strong> field.</li>
                 <li>Click <strong>Save to Netlify Profile</strong>.</li>
@@ -463,28 +413,91 @@ python main.py</code></pre>
     <h2>3. Frequently Asked Questions</h2>
     
     <h3>What if my scraper uses custom job categories?</h3>
-    <p>JobBuddy's frontend dynamically inspects the distinct categories present in your MongoDB collection. If your scraper discovers <code>devops_cloud</code> or <code>product_design</code>, matching category pills will automatically generate on your dashboard.</p>
+    <p>Rolenaut's frontend dynamically inspects the distinct categories present in your MongoDB collection. If your scraper discovers <code>devops_cloud</code> or <code>product_design</code>, matching category pills will automatically generate on your dashboard.</p>
 
-    <h3>Can I use JobBuddy with my existing scraper instead of jobbuddy-scraper?</h3>
-    <p>Yes! JobBuddy requires only standard job document fields in your MongoDB <code>jobs</code> collection: <code>title</code>, <code>company_name</code>, <code>location</code>, <code>link</code>, <code>link_type</code> (direct_apply or filtered_list), and optional <code>category</code>.</p>
+    <h3>Can I use Rolenaut with my existing scraper instead of rolenaut-engine?</h3>
+    <p>Yes! Rolenaut requires only standard job document fields in your MongoDB <code>jobs</code> collection: <code>title</code>, <code>company_name</code>, <code>location</code>, <code>link</code>, <code>link_type</code> (direct_apply or filtered_list), and optional <code>category</code>.</p>
 
     <div class="callout" style="text-align: center; padding: 28px 20px;">
         <h4 style="font-size: 1.15rem; margin-bottom: 8px;">Ready to explore the workspace?</h4>
         <p style="margin-bottom: 16px;">Sign in to your private workspace to connect your live MongoDB database and browse scraped jobs.</p>
-        <a href="/" class="btn-action">Go to Live Workspace &rarr;</a>
-        <a href="/#connect" class="btn-secondary" onclick="localStorage.setItem('jobbuddy_open_modal', '1');">Open Connection Settings</a>
+        <a href="/jobs" class="btn-action">Go to Live Job Feed &rarr;</a>
+        <a href="/profile" class="btn-secondary">Manage Data Source in Profile</a>
     </div>
 </main>
 
-<footer class="footer">
-    <div class="footer-inner">
-        <span class="footer-copy">JobBuddy — Independent Tech Discovery Platform &middot; Universal Scraper Hub</span>
-        <div class="footer-links">
-            <a href="/">Home</a>
-            <a href="/interview-prep">Interview Prep</a>
-            <a href="/resume-guide">Resume Guide</a>
-            <a href="/privacy">Privacy Policy</a>
-            <a href="/terms">Terms of Service</a>
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-col-brand">
+                <div class="footer-logo-row">
+                    <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                    <span class="footer-brand">Role<span class="accent">naut</span></span>
+                </div>
+                <p class="footer-mission">
+                    Direct-to-ATS tech job discovery and open scraper hub. Continuously indexing verified requisitions from Greenhouse, Lever, Ashby, and Workday with zero recruiter spam.
+                </p>
+                <div class="footer-status-pill">
+                    <span class="status-indicator-dot"></span>
+                    <span>All ATS Feeds Active &middot; Updated Daily</span>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Platform</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/jobs">Live Job Feed</a></li>
+                    <li><a href="/">Home Overview</a></li>
+                    <li><a href="/about">About Rolenaut</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Career Resources</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/interview-prep">Interview Blueprint</a></li>
+                    <li><a href="/resume-guide">ATS Resume Guide</a></li>
+                    <li><a href="/scraper-guide">Scraper Setup Guide</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Open Source &amp; Legal</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">GitHub Repository &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+            <div class="footer-bottom-left">
+                <div class="footer-copy">&copy; 2026 Rolenaut. Autonomous career navigation for early-career tech professionals.</div>
+                <p class="footer-disclaimer">
+                    Rolenaut is an independent aggregator indexing publicly accessible corporate requisitions and official career portals. All company names, logos, and trademarks belong to their respective owners.
+                </p>
+            </div>
+            <div class="footer-privacy-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>GDPR Compliant &bull; Zero Tracking Pixels</span>
+            </div>
         </div>
     </div>
 </footer>

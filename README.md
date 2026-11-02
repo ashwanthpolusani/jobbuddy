@@ -1,6 +1,6 @@
-# JobBuddy WebApp
+# Rolenaut WebApp
 
-The responsive, high-performance web frontend for **JobBuddy** — an entry-level and early-career tech job discovery platform.
+The responsive, high-performance web frontend for **Rolenaut** — an entry-level and early-career tech job discovery platform.
 
 Designed to work out-of-the-box with **[jobbuddy-scraper](https://github.com/ashwanthpolusani/jobbuddy-scraper)** via MongoDB Atlas.
 
@@ -11,11 +11,11 @@ Designed to work out-of-the-box with **[jobbuddy-scraper](https://github.com/ash
 ### Choice 1: Instant Plug & Play on Our Hosted Site (Zero Setup)
 You do **not** need to clone or deploy this frontend to view your scraped jobs! You can use our live production site:
 
-1. Open **[https://buddyjob.netlify.app/](https://buddyjob.netlify.app/)**
+1. Open **[https://rolenaut.netlify.app/](https://rolenaut.netlify.app/)**
 2. Click **"Sign In / Workspace"** in the header navigation (powered by Netlify Identity).
 3. Once logged in, open **Workspace Settings** and paste your **Read-Only MongoDB Connection String**:
    ```
-   mongodb+srv://webapp_reader:<PASSWORD>@jobbuddy-cluster.xxxxx.mongodb.net/job_aggregator?retryWrites=true&w=majority
+   mongodb+srv://webapp_reader:<PASSWORD>@cluster0.xxxxx.mongodb.net/job_aggregator?retryWrites=true&w=majority
    ```
 4. Click **Save to Cloud Profile**.
 5. **What happens instantly:**
@@ -36,8 +36,8 @@ If you want your own branded site, custom domain, or custom styling:
 
 #### 1. Fork & Clone
 ```bash
-git clone https://github.com/<your-username>/scrapperbuddy.git
-cd scrapperbuddy/webapp
+git clone https://github.com/<your-username>/jobbuddy-scraper.git
+cd jobbuddy-scraper/webapp
 ```
 
 #### 2. Install Dependencies
@@ -48,7 +48,7 @@ npm install
 #### 3. Configure Local Environment
 Create a `.env` file in `webapp/`:
 ```env
-MONGODB_URI="mongodb+srv://webapp_reader:<PASSWORD>@jobbuddy-cluster.xxxxx.mongodb.net/job_aggregator?retryWrites=true&w=majority"
+MONGODB_URI="mongodb+srv://webapp_reader:<PASSWORD>@cluster0.xxxxx.mongodb.net/job_aggregator?retryWrites=true&w=majority"
 PORT=3000
 ```
 
@@ -81,7 +81,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📚 Platform Guides & Resources
 
-JobBuddy includes dedicated career companion tools accessible in the main navigation:
+Rolenaut includes dedicated career companion tools accessible in the main navigation:
 1. **Interview Preparation Hub (`/interview-prep`):** Role-specific DSA patterns, fresher System Design concepts, and common SQL/analytical interview questions.
 2. **Resume Optimizer & ATS Explainer (`/resume-guide`):** Practical guide explaining how ATS platforms (Workday, Lever, Greenhouse) screen resumes, with action-verb formulas and ATS-friendly templates.
 3. **Application Tracker (`/tracker`):** Future candidate Kanban board for managing applied positions directly from the live feed.

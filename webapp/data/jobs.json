@@ -1,0 +1,945 @@
+[
+  {
+    "_id": {
+      "$oid": "6acf197d07ae3c4a93a1a61c"
+    },
+    "job_id": "2d12cd3554ca3231b995ff0d3a52a6a10156cab923499bfb4dd823a8dbd400c2",
+    "ats_name": "Ashby",
+    "category": "data_ml",
+    "company_name": "Shift",
+    "core_requirements": "Bachelor’s or Master’s degree in Commerce, Finance, or Business with working knowledge of MS Excel.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T05:56:13.113086+00:00",
+    "link": "https://jobs.ashbyhq.com/shift/87c46823-0571-4eeb-8942-f3c7e35def2e",
+    "link_type": "direct_apply",
+    "location": "India",
+    "scraped_at": "2026-10-19T08:22:00.609264+00:00",
+    "source_url": "https://api.ashbyhq.com/posting-api/job-board/shift",
+    "title": "Trainee Analyst",
+    "stage2_processed_at": "2026-10-14T08:54:18.416279+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1a7b07ae3c4a93a1a68c"
+    },
+    "job_id": "9a22cc208e8b7fe57347bc8b2371dd02ca854cb480c6bc00a8ec23b0bd388006",
+    "ats_name": "Greenhouse",
+    "category": "data_ml",
+    "company_name": "Fastly",
+    "core_requirements": "The provided text is a general corporate website and landing page, not a specific job description with stated experience requirements. Because no explicit experience level is mentioned in the text provided, this role is considered possible for a fresh graduate.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T06:00:26.917654+00:00",
+    "link": "https://www.fastly.com/about/jobs/apply?gh_jid=7978628",
+    "link_type": "direct_apply",
+    "location": "Pune, India",
+    "scraped_at": "2026-10-14T06:00:26.917561+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/fastly/jobs",
+    "title": "Sales Strategy & Ops Analyst (Tier 1)-EMEA & APJ",
+    "stage2_processed_at": "2026-10-14T08:54:23.743708+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1ac907ae3c4a93a1a6a3"
+    },
+    "job_id": "3a2bc6aaad98f0130bddb6a7e782c91b4a8000d7f815a49f38c47399636d7ef2",
+    "ats_name": "Greenhouse",
+    "category": "product_design",
+    "company_name": "Glance",
+    "core_requirements": "Strong portfolio in UX and visual design, curiosity about interaction behavior, and systems thinking.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T06:01:45.047358+00:00",
+    "link": "https://job-boards.greenhouse.io/glance/jobs/7916115",
+    "link_type": "direct_apply",
+    "location": "Bengaluru",
+    "scraped_at": "2026-10-19T08:23:47.224783+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/glance/jobs",
+    "title": "UX Design - Intern",
+    "stage2_processed_at": "2026-10-14T08:51:17.401200+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1b0107ae3c4a93a1a6b6"
+    },
+    "job_id": "21c9fda163800162d4df0ebd7a5d0b45eb6d93c3c0e3b82f05b7b51dffe873bc",
+    "ats_name": "Greenhouse",
+    "category": "data_ml",
+    "company_name": "Agoda",
+    "core_requirements": "Bachelor's degree in computer science, mathematics, engineering, statistics, or science, proficiency in Excel, and fluent English communication.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T06:02:41.158549+00:00",
+    "link": "https://job-boards.greenhouse.io/agoda/jobs/8194690",
+    "link_type": "direct_apply",
+    "location": "Bangkok",
+    "scraped_at": "2026-10-19T08:21:55.971673+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/agoda/jobs",
+    "title": "Associate Analyst, Marketing (Bangkok Based, relocation provided)",
+    "stage2_processed_at": "2026-10-14T08:51:47.445402+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1ce607ae3c4a93a1a739"
+    },
+    "job_id": "5d8927c286864ff170e3b718ecda8469c64c51795f5697cf9d10c0a0b5d07a20",
+    "ats_name": "Workday",
+    "category": "cybersecurity",
+    "company_name": "Visa",
+    "core_requirements": "Fundamental knowledge of cybersecurity principles and risk management.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T06:10:46.821682+00:00",
+    "link": "https://visa.wd5.myworkdayjobs.com/en-US/Visa/job/IN---Bengaluru-India/Associate-Cybersecurity-Analyst_REF088190W",
+    "link_type": "direct_apply",
+    "location": "IN - Bengaluru, India",
+    "scraped_at": "2026-10-18T07:44:03.308671+00:00",
+    "source_url": "https://visa.wd5.myworkdayjobs.com/Visa",
+    "title": "Associate Cybersecurity Analyst",
+    "stage2_processed_at": "2026-10-14T06:37:46.232621+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1d2e07ae3c4a93a1a755"
+    },
+    "job_id": "1924d9be54347a1a9af2f07c0938d7a06b6fd7b20c8b216755de2f9139607699",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "New Relic",
+    "core_requirements": "Basic knowledge of front-end web development, JavaScript, or backend languages (Java, .NET, PHP, Python).",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T06:11:58.007089+00:00",
+    "link": "https://job-boards.greenhouse.io/newrelic/jobs/5440700008",
+    "link_type": "direct_apply",
+    "location": "Bangalore, India",
+    "scraped_at": "2026-10-14T08:30:12.115911+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/newrelic/jobs",
+    "title": "Technical Support Engineer - 0881",
+    "stage2_processed_at": "2026-10-14T06:34:19.279066+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1d3307ae3c4a93a1a756"
+    },
+    "job_id": "5df054d2097520eeec992e87a573998ecafe52dec3ab1540d03d9031f300358b",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "HackerRank",
+    "core_requirements": "Full-time student availability for a 6-month internship in Bangalore.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T06:12:02.976663+00:00",
+    "link": "https://job-boards.greenhouse.io/hackerrank/jobs/8229735",
+    "link_type": "direct_apply",
+    "location": "Onsite in Bangalore",
+    "scraped_at": "2026-10-19T08:23:07.588674+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/hackerrank/jobs",
+    "title": "Software Development Engineer Intern",
+    "stage2_processed_at": "2026-10-14T06:34:14.249541+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1d3307ae3c4a93a1a757"
+    },
+    "job_id": "d844b57c2201acdfcc3811ddd4e52b5cb622b79cfbf0de2ed501f9748613d661",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "HackerRank",
+    "core_requirements": "Python, JavaScript, Java, SQL, REST APIs, and HTTP.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T06:12:03.213942+00:00",
+    "link": "https://job-boards.greenhouse.io/hackerrank/jobs/8127535",
+    "link_type": "direct_apply",
+    "location": "Hybrid in Bangalore, India",
+    "scraped_at": "2026-10-19T08:23:07.588686+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/hackerrank/jobs",
+    "title": "Customer Experience Engineer, L1",
+    "stage2_processed_at": "2026-10-14T06:34:05.721962+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1d3a07ae3c4a93a1a758"
+    },
+    "job_id": "ace8f21cbe1259ec58bb7751f5bd6ba91ec64b2726185af7da30f10895669131",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "FourKites",
+    "core_requirements": "Excellent verbal and written communication, analytical skills, and no backlogs.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T06:12:10.586956+00:00",
+    "link": "https://job-boards.greenhouse.io/fourkites/jobs/8073940",
+    "link_type": "direct_apply",
+    "location": "Chennai",
+    "scraped_at": "2026-10-19T08:24:13.880210+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/fourkites/jobs",
+    "title": "Product Support - Intern",
+    "stage2_processed_at": "2026-10-14T06:34:00.230263+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1d4807ae3c4a93a1a75a"
+    },
+    "job_id": "3963b42a6cba8b99f1c46fb30be90354fc360814d1464ea19d74c00f25b5ad59",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "Rubrik",
+    "core_requirements": "Bachelor’s or Master’s degree in computer science and proficiency in programming languages like Go, Java, C/C++, Scala, or Python.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T06:12:24.157833+00:00",
+    "link": "https://www.rubrik.com/company/careers/departments/job.8258200?gh_jid=8258200",
+    "link_type": "direct_apply",
+    "location": "Bangalore",
+    "scraped_at": "2026-10-19T08:23:38.159700+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/rubrik/jobs",
+    "title": "Software Engineer - Cloud: Azure",
+    "stage2_processed_at": "2026-10-14T06:33:39.834904+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf1d4807ae3c4a93a1a75c"
+    },
+    "job_id": "7e9586281f3eed1c610c810f38c4635a4aba900379d59d2805921b9301c5339d",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "Rubrik",
+    "core_requirements": "Bachelor’s or Master’s degree in computer science and proficiency in programming languages like Go, Java, C/C++, Scala, or Python.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T06:12:24.632642+00:00",
+    "link": "https://www.rubrik.com/company/careers/departments/job.8256407?gh_jid=8256407",
+    "link_type": "direct_apply",
+    "location": "Bangalore",
+    "scraped_at": "2026-10-19T08:23:38.159716+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/rubrik/jobs",
+    "title": "Software Engineer- SaaS O365",
+    "stage2_processed_at": "2026-10-14T06:33:23.792388+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf3b9007ae3c4a93a1a8ab"
+    },
+    "job_id": "d30e9d23927de5bc550c4d3744f4bcf5c917e0c22fabc23a73797eb8b3546351",
+    "ats_name": "Greenhouse",
+    "category": "data_ml",
+    "company_name": "Agoda",
+    "core_requirements": "The JD is silent regarding a specific number of years of prior work experience, making this a POSSIBLE match for a fresh graduate. The role requires a Bachelor's Degree or higher in a quantitative subject, strong problem-solving and numerical reasoning skills, and proficiency in Excel and SQL. Additionally, having exposure to data analysis packages and experience in digital marketing or the travel sector is considered a plus.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T08:21:36.334715+00:00",
+    "link": "https://job-boards.greenhouse.io/agoda/jobs/8190510",
+    "link_type": "direct_apply",
+    "location": "Bangkok",
+    "scraped_at": "2026-10-14T08:21:35.840131+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/agoda/jobs",
+    "title": "Analyst, Flights Marketing (Bangkok Based, relocation provided)",
+    "stage2_processed_at": "2026-10-14T08:53:31.108725+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf3b9007ae3c4a93a1a8ac"
+    },
+    "job_id": "6fc61f8cc9f439073f55b497bf6d9c6149ee915422a5adaf99cb5f8eeb07a5cf",
+    "ats_name": "Greenhouse",
+    "category": "data_ml",
+    "company_name": "Agoda",
+    "core_requirements": "The job description does not explicitly mention any minimum years of experience, making it possible for a fresh graduate to apply. The role requires a Bachelor’s degree in a quantitative subject, strong numerical reasoning, and proficiency in Excel.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T08:21:36.582463+00:00",
+    "link": "https://job-boards.greenhouse.io/agoda/jobs/8190514",
+    "link_type": "direct_apply",
+    "location": "Bangkok",
+    "scraped_at": "2026-10-14T08:21:35.840134+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/agoda/jobs",
+    "title": "Analyst, Marketing Analytics and Strategy (Bangkok Based, relocation provided)",
+    "stage2_processed_at": "2026-10-14T08:52:13.147230+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf3b9007ae3c4a93a1a8ad"
+    },
+    "job_id": "cae958836b526b968874838b0fa71ac197ce4ce0fb2df55dc487cc73be00e911",
+    "ats_name": "Greenhouse",
+    "category": "data_ml",
+    "company_name": "Agoda",
+    "core_requirements": "The JD is completely silent regarding any mandatory prior years of professional work experience, making it entirely open to fresh graduates. The qualifications section only requires a Bachelor’s Degree or higher in a quantitative subject, good numerical reasoning skills, and English proficiency, with optional preferences for data analysis tools.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T08:21:36.829440+00:00",
+    "link": "https://job-boards.greenhouse.io/agoda/jobs/8273432",
+    "link_type": "direct_apply",
+    "location": "Bangkok",
+    "scraped_at": "2026-10-14T08:21:35.840136+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/agoda/jobs",
+    "title": "Analyst, Performance Marketing (Bangkok Based, relocation provided)",
+    "stage2_processed_at": "2026-10-14T08:52:07.808809+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf3b9107ae3c4a93a1a8ae"
+    },
+    "job_id": "d18da43753922c95457d01d31be79c534c0285c6ae6793ff1e5183ef2fffa05b",
+    "ats_name": "Greenhouse",
+    "category": "data_ml",
+    "company_name": "Agoda",
+    "core_requirements": "The job description is silent regarding a specific minimum number of years of experience, making it possible for a fresh graduate to apply. However, the role explicitly requires candidates to demonstrate experience applying quantitative analysis to commercial decisions and designing or interpreting controlled experiments in a professional context.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T08:21:37.076866+00:00",
+    "link": "https://job-boards.greenhouse.io/agoda/jobs/8190515",
+    "link_type": "direct_apply",
+    "location": "Bangkok",
+    "scraped_at": "2026-10-14T08:21:35.840138+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/agoda/jobs",
+    "title": "Analyst, Pricing (Bangkok Based, relocation provided)",
+    "stage2_processed_at": "2026-10-14T08:51:53.935008+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf3b9207ae3c4a93a1a8b0"
+    },
+    "job_id": "d6ee52f6c2d45ae162c923be847cdd4a3d5d4358d8e01c23875bdc13fae8a8e2",
+    "ats_name": "Greenhouse",
+    "category": "data_ml",
+    "company_name": "Agoda",
+    "core_requirements": "The job description is silent regarding a specific number of years of professional experience, making it possible for a fresh graduate to apply. The core prerequisites focus on academic credentials, specifically a Bachelor’s degree in a quantitative subject, along with proficiency in Excel and good numerical reasoning skills. Additional skills like SQL or Python are listed as 'Great to have' but are not stated as mandatory requirements.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T08:21:38.066173+00:00",
+    "link": "https://job-boards.greenhouse.io/agoda/jobs/5393603",
+    "link_type": "direct_apply",
+    "location": "Bangkok",
+    "scraped_at": "2026-10-14T08:21:35.840146+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/agoda/jobs",
+    "title": "Marketing Analyst (Bangkok Based, relocation provided)",
+    "stage2_processed_at": "2026-10-14T08:51:35.130980+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf3b9207ae3c4a93a1a8b2"
+    },
+    "job_id": "3a46efaf1bff6668ea92c2809054715b350d4623eff1406951b27cd7485f1dcd",
+    "ats_name": "Greenhouse",
+    "category": "data_ml",
+    "company_name": "Agoda",
+    "core_requirements": "The candidate's profile is considered SAFE for this position because the job description explicitly includes the tag 'entrylevel' and does not mandate any prior full-time work experience, focusing instead on a Bachelor's Degree or higher. The role requires a basic understanding of statistics, advanced Excel skills, and a high degree of ownership, with SQL and Tableau knowledge being advantageous rather than strictly mandatory.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T08:21:38.313481+00:00",
+    "link": "https://job-boards.greenhouse.io/agoda/jobs/5865562",
+    "link_type": "direct_apply",
+    "location": "Bangkok",
+    "scraped_at": "2026-10-14T08:21:35.840148+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/agoda/jobs",
+    "title": "Marketing Analyst, New Verticals (Bangkok Based, relocation provided)",
+    "stage2_processed_at": "2026-10-14T08:51:29.113338+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf3db407ae3c4a93a1a945"
+    },
+    "job_id": "851cceac0f5d06e57525d5df19f83733cd8fd751f4a3806d30025dc2e39bda4f",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "Scopely",
+    "core_requirements": "Basic understanding of game design documentation, Unity, Excel, PowerPoint, and modern AI productivity tools.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T08:30:44.688604+00:00",
+    "link": "https://job-boards.greenhouse.io/scopely/jobs/5256167008?gh_jid=5256167008",
+    "link_type": "direct_apply",
+    "location": "IN - Bangalore, India",
+    "scraped_at": "2026-10-15T07:55:53.605201+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/scopely/jobs",
+    "title": "Intern - Game Design (Slot) - Royal Lounge Casino",
+    "stage2_processed_at": "2026-10-14T08:51:07.937804+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf3db507ae3c4a93a1a946"
+    },
+    "job_id": "97bf492c5fa02ccb4b21a8ccccbc31df410ab9d91dc6a151d2c7fb7da63dcf4b",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "Scopely",
+    "core_requirements": "Basic understanding of software testing concepts, Microsoft Office, Google Docs, and strong problem-solving skills.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T08:30:44.936379+00:00",
+    "link": "https://job-boards.greenhouse.io/scopely/jobs/5448999008?gh_jid=5448999008",
+    "link_type": "direct_apply",
+    "location": "IN - Bangalore, India",
+    "scraped_at": "2026-10-19T08:25:55.421496+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/scopely/jobs",
+    "title": "Intern - QA Engineer - Royal Lounge Casino",
+    "stage2_processed_at": "2026-10-14T08:50:55.005387+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf407d07ae3c4a93a1a9d9"
+    },
+    "job_id": "06a44079ad6bf5f743d7d7d18d0775e3a182e6c7579fac0302d9b527d148bd80",
+    "ats_name": "Workday",
+    "category": "software_engineering",
+    "company_name": "Accenture",
+    "core_requirements": "Basic knowledge of AI, software engineering principles, and analytical problem-solving skills.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T08:42:37.104253+00:00",
+    "link": "https://accenture.wd103.myworkdayjobs.com/en-US/AccentureCareers/job/Hyderabad-HDC5A/S-C-Global-Network---AI---Software---Platform---Gen-AI---Analyst_R00205698-1",
+    "link_type": "direct_apply",
+    "location": "Hyderabad, India",
+    "scraped_at": "2026-10-16T08:02:05.915779+00:00",
+    "source_url": "https://accenture.wd103.myworkdayjobs.com/en-US/AccentureCareers",
+    "title": "S&C Global Network - AI - Software & Platform - Gen AI - Analyst",
+    "stage2_processed_at": "2026-10-14T08:50:30.755826+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf40b007ae3c4a93a1a9da"
+    },
+    "job_id": "ffd5beaf43a728f229fdd92f48266b1db69bed3e620a21976e1c5cc6bdb1be8f",
+    "ats_name": "Playwright",
+    "category": "other",
+    "company_name": "Atlassian",
+    "core_requirements": "Open to students and graduates looking to start their career.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T08:43:28.858076+00:00",
+    "link": "https://www.atlassian.com/company/careers/earlycareers",
+    "link_type": "filtered_list",
+    "location": "Global",
+    "scraped_at": "2026-10-14T08:43:28.858002+00:00",
+    "source_url": "https://www.atlassian.com/company/careers",
+    "title": "Early Careers at Atlassian"
+  },
+  {
+    "_id": {
+      "$oid": "6acf40bd07ae3c4a93a1a9db"
+    },
+    "job_id": "ef106b6913d30c6d0a38355e62a5cb2ab1b102cc3f92bcad9defc5dcb70674da",
+    "ats_name": "Playwright",
+    "category": "other",
+    "company_name": "CrowdStrike",
+    "core_requirements": "The provided job description is from the CrowdStrike careers portal navigation and general product page, containing no specific role or experience requirements. Since there is no mention of required years of experience, the candidate should proceed with caution and verify the specific job posting.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-14T08:43:41.540917+00:00",
+    "link": "https://www.crowdstrike.com/en-us/careers/university-interns/",
+    "link_type": "filtered_list",
+    "location": "Global",
+    "scraped_at": "2026-10-14T08:43:41.540788+00:00",
+    "source_url": "https://www.crowdstrike.com/careers/",
+    "title": "Emerging Talent Program",
+    "stage2_processed_at": "2026-10-14T08:50:24.091203+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6acf40ca07ae3c4a93a1a9dd"
+    },
+    "job_id": "a794e3bb0e7be61c31aeb9519f6639fb0ab2e2cf1111067f80e4b382541cb3bb",
+    "ats_name": "Playwright",
+    "category": "other",
+    "company_name": "Fortinet",
+    "core_requirements": "Programs designed for students and recent graduates looking to launch their career in cybersecurity.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T08:43:53.994466+00:00",
+    "link": "https://www.fortinet.com/corporate/careers/early-talent-program",
+    "link_type": "filtered_list",
+    "location": "Global",
+    "scraped_at": "2026-10-14T08:43:53.994392+00:00",
+    "source_url": "https://www.fortinet.com/corporate/careers",
+    "title": "Early Talent Programs"
+  },
+  {
+    "_id": {
+      "$oid": "6acf40d507ae3c4a93a1a9de"
+    },
+    "job_id": "a2bb724fe440707efc59e7c73e96fb7fb3ba645151ce8cbb5de3869462f009a7",
+    "ats_name": "Playwright",
+    "category": "other",
+    "company_name": "Infor",
+    "core_requirements": "Individual beginning their professional career.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T08:44:05.719528+00:00",
+    "link": "https://infor.pinpointhq.com/",
+    "link_type": "filtered_list",
+    "location": "Global",
+    "scraped_at": "2026-10-14T08:44:05.719458+00:00",
+    "source_url": "https://www.infor.com/about/careers",
+    "title": "Early Career Opportunities"
+  },
+  {
+    "_id": {
+      "$oid": "6acf40f507ae3c4a93a1a9e1"
+    },
+    "job_id": "b5919493dfe96f2df7103cdebd154fd357a5051e3febd9b4f12f869c7461aac4",
+    "ats_name": "Playwright",
+    "category": "other",
+    "company_name": "Cisco (Splunk)",
+    "core_requirements": "Refers to various entry-level opportunities; check specific job descriptions for tech stack requirements.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T08:44:37.435353+00:00",
+    "link": "https://careers.cisco.com/global/en/entry-level-careers",
+    "link_type": "filtered_list",
+    "location": "Global",
+    "scraped_at": "2026-10-14T08:44:37.435272+00:00",
+    "source_url": "https://www.splunk.com/en_us/careers.html",
+    "title": "Entry-Level Careers"
+  },
+  {
+    "_id": {
+      "$oid": "6acf411407ae3c4a93a1a9e4"
+    },
+    "job_id": "3c3fcf62bbf976a6f88c26a5a5c9c1f48df8d84ab60614b8dca83f614977b998",
+    "ats_name": "Playwright",
+    "category": "other",
+    "company_name": "Wix",
+    "core_requirements": "Programs for students and recent graduates looking for internships or early-career roles.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-14T08:45:08.792663+00:00",
+    "link": "https://careers.wix.com/early-talent",
+    "link_type": "filtered_list",
+    "location": "Global",
+    "scraped_at": "2026-10-14T08:45:08.792584+00:00",
+    "source_url": "https://www.wix.com/jobs/home",
+    "title": "Early Talent"
+  },
+  {
+    "_id": {
+      "$oid": "6ad0874807ae3c4a93a1ba21"
+    },
+    "job_id": "1d39d1fe255edcfc1539f959423564fd677c4c12975a21a96d67a7f0801e60d7",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "Stripe",
+    "core_requirements": "Bachelor's or Master's degree in computer science, math, or a related discipline, with programming familiarity in languages like Ruby, Java, Javascript, Go, or Scala.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-15T07:56:55.959322+00:00",
+    "link": "https://stripe.com/jobs/search?gh_jid=8031833",
+    "link_type": "direct_apply",
+    "location": "Bengaluru",
+    "scraped_at": "2026-10-19T08:24:01.117186+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/stripe/jobs",
+    "title": "Software Engineer, Intern",
+    "stage2_processed_at": "2026-10-15T08:02:40.905124+00:00",
+    "verdict_reason": "The job description is explicitly for an intern role targeting emerging talent currently pursuing a Bachelor's or Master's degree, making it suitable for a fresh graduate."
+  },
+  {
+    "_id": {
+      "$oid": "6ad087b207ae3c4a93a1ba24"
+    },
+    "job_id": "8949ac74c98f059629f1c05edada40a996dd008001ab630aae3065b82f1606cc",
+    "ats_name": "Greenhouse",
+    "category": "software_engineering",
+    "company_name": "Rubrik",
+    "core_requirements": "Bachelor's or Master's degree in Computer Science with proficiency in Java, C/C++, Scala, or Python.",
+    "experience_verdict": "SAFE",
+    "first_seen": "2026-10-15T07:58:42.297416+00:00",
+    "link": "https://www.rubrik.com/company/careers/departments/job.8166537?gh_jid=8166537",
+    "link_type": "direct_apply",
+    "location": "Bangalore",
+    "scraped_at": "2026-10-18T07:41:37.808463+00:00",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/rubrik/jobs",
+    "title": "Software Engineer (CPD) - Winter Intern",
+    "stage2_processed_at": "2026-10-15T08:02:31.235030+00:00",
+    "verdict_reason": "The job description is inaccessible due to an access error, so there is no specific experience requirement to disqualify the candidate."
+  },
+  {
+    "_id": {
+      "$oid": "6ad3239c07ae3c4a93a2347c"
+    },
+    "job_id": "9de3a295aa43669d7cb6e3a22c5e81c0c44cbd79c04577b65222065678ef06ed",
+    "ats_name": "Workday",
+    "category": "data_ml",
+    "company_name": "Accenture",
+    "core_requirements": "Bachelor's degree or equivalent with strong interest in Data and AI.",
+    "experience_verdict": "POSSIBLE",
+    "first_seen": "2026-10-17T07:28:27.263870+00:00",
+    "link": "https://accenture.wd103.myworkdayjobs.com/en-US/AccentureCareers/job/Bengaluru/S-C-GN---Data-AI---Resources----Analyst_R00275995",
+    "link_type": "direct_apply",
+    "location": "Bengaluru",
+    "scraped_at": "2026-10-19T08:25:48.952979+00:00",
+    "source_url": "https://accenture.wd103.myworkdayjobs.com/en-US/AccentureCareers",
+    "title": "S&C GN - Data&AI - Resources - Analyst",
+    "stage2_processed_at": "2026-10-17T07:30:10.442626+00:00",
+    "verdict_reason": "The job description is completely silent about experience requirements, making it a viable option for a fresh graduate to apply."
+  },
+  {
+    "_id": {
+      "$oid": "6ad477fa924db5a2fe27abe6"
+    },
+    "title": "Video Editor Intern",
+    "company_name": "Groww",
+    "location": "Bengaluru-VTP, India",
+    "core_requirements": "Adobe Premiere Pro, Final Cut Pro, and basic video production knowledge.",
+    "link": "https://job-boards.eu.greenhouse.io/groww/jobs/4956817101",
+    "link_type": "direct_apply",
+    "category": "product_design",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/groww/jobs",
+    "scraped_at": "2026-10-19T08:23:51.984434+00:00",
+    "job_id": "4881d2acebf80bb21674e1d28df9ab75d1fca38f3e331516c79bd043eb4b4f94",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-18T07:40:42.855937+00:00",
+    "stage2_processed_at": "2026-10-18T07:50:37.860106+00:00",
+    "verdict_reason": "The job description is for an internship position and does not explicitly state any minimum years of professional experience required, making it accessible for a fresh graduate."
+  },
+  {
+    "_id": {
+      "$oid": "6ad4780c2a6b5c687771d509"
+    },
+    "title": "Intern - Creative & Communications, People Team",
+    "company_name": "InMobi",
+    "location": "Bangalore",
+    "core_requirements": "Strong portfolio in graphic design, video editing, and experience with Canva, Photoshop, or similar creative tools.",
+    "link": "https://job-boards.greenhouse.io/inmobi/jobs/8207429",
+    "link_type": "direct_apply",
+    "category": "product_design",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/inmobi/jobs",
+    "scraped_at": "2026-10-19T08:25:31.340615+00:00",
+    "job_id": "071ba51197acea719d89d9a973b568412605e27aaac895291d56897b2d055bd1",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-18T07:41:00.984850+00:00",
+    "stage2_processed_at": "2026-10-18T07:50:32.255831+00:00",
+    "verdict_reason": "The job description is for an internship role and does not specify any minimum years of professional experience, focusing instead on portfolios and creative skills."
+  },
+  {
+    "_id": {
+      "$oid": "6ad47823ed26b6e0c84feb65"
+    },
+    "title": "Support Trainee",
+    "company_name": "Redwood Software",
+    "location": "Hyderabad, Telangana, India",
+    "core_requirements": "Studies in Computer Science or IT and familiarity with computer systems and basic troubleshooting concepts.",
+    "link": "https://job-boards.greenhouse.io/redwoodsoftware/jobs/4403355009",
+    "link_type": "direct_apply",
+    "category": "software_engineering",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/redwoodsoftware/jobs",
+    "scraped_at": "2026-10-19T08:23:39.249261+00:00",
+    "job_id": "cecafb6e7bbb55fa8db5afd4446a01908458b0ab0a1a0bc5d95d9c90af5ec4ab",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-18T07:41:23.002236+00:00",
+    "stage2_processed_at": "2026-10-18T07:50:12.806673+00:00",
+    "verdict_reason": "The role is explicitly defined as an \"entry-level position\" and a \"Support Trainee\" role, which is suitable for a fresh graduate."
+  },
+  {
+    "_id": {
+      "$oid": "6ad478232a6b5c687771d514"
+    },
+    "title": "Intern-Technical Artist - Royal Lounge Casino",
+    "company_name": "Scopely",
+    "location": "IN - Bangalore, India",
+    "core_requirements": "Strong knowledge of Unity, C#, animation principles, particle systems, shaders, and Git.",
+    "link": "https://job-boards.greenhouse.io/scopely/jobs/5440761008?gh_jid=5440761008",
+    "link_type": "direct_apply",
+    "category": "software_engineering",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/scopely/jobs",
+    "scraped_at": "2026-10-19T08:25:55.421527+00:00",
+    "job_id": "95826dafcdd46a4281a976c573cd1c616da3ab0567c88faa0535dbcff1dc0c18",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-18T07:41:23.089816+00:00",
+    "stage2_processed_at": "2026-10-18T07:50:18.126480+00:00",
+    "verdict_reason": "The job explicitly targets an 'Intern-Technical Artist', making it a trainee-level position suitable for a fresh graduate."
+  },
+  {
+    "_id": {
+      "$oid": "6ad4782eed26b6e0c84feb69"
+    },
+    "title": "Operations Associate, Apprenticeship",
+    "company_name": "Stripe",
+    "location": "Bengaluru",
+    "core_requirements": "Current student or recent graduate in 2026, excellent English communication skills, and analytical problem-solving abilities.",
+    "link": "https://stripe.com/jobs/search?gh_jid=8131339",
+    "link_type": "direct_apply",
+    "category": "other",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/stripe/jobs",
+    "scraped_at": "2026-10-19T08:24:01.117109+00:00",
+    "job_id": "4e1b54618e0ca8a16cae386f5249feff82d546666d6943d66492868a02b8d498",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-18T07:41:34.371252+00:00",
+    "stage2_processed_at": "2026-10-18T07:49:57.277312+00:00",
+    "verdict_reason": "The job description is explicitly designed for emerging talent and apprentices, targeting current students or recent graduates with no prior experience required."
+  },
+  {
+    "_id": {
+      "$oid": "6ad4783251a94dbb1c173e5d"
+    },
+    "title": "ENG Project/ Program - Intern",
+    "company_name": "Rubrik",
+    "location": "Bangalore",
+    "core_requirements": "Pursuing a Bachelor’s or Master’s degree in Computer Science, Engineering, Information Systems or a related field with strong organizational and analytical skills.",
+    "link": "https://www.rubrik.com/company/careers/departments/job.8166514?gh_jid=8166514",
+    "link_type": "filtered_list",
+    "category": "software_engineering",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/rubrik/jobs",
+    "scraped_at": "2026-10-19T08:23:38.159674+00:00",
+    "job_id": "69d4786113a138f6c2c915718a8adba1c0ddb33a0d96c84470d6c63318ba127f",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-18T07:41:38.302672+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6ad4789ded26b6e0c84feb74"
+    },
+    "title": "Incident Response Internship - Professional Services - Summer 2027 (Remote, UK)",
+    "company_name": "CrowdStrike",
+    "location": "3 Locations",
+    "core_requirements": "",
+    "link": "https://crowdstrike.wd5.myworkdayjobs.com/en-US/crowdstrikecareers/job/United-Kingdom---London/Incident-Response-Internship---Professional-Services---Summer-2027--Remote--UK-_R30403",
+    "link_type": "direct_apply",
+    "category": "cybersecurity",
+    "experience_verdict": "SAFE",
+    "source_url": "https://crowdstrike.wd5.myworkdayjobs.com/crowdstrikecareers",
+    "scraped_at": "2026-10-19T08:25:57.840368+00:00",
+    "job_id": "52db0bcca41cba16a68ce12691a82686affce99bdc69ff1fa9f4bebc4133105d",
+    "ats_name": "Workday",
+    "first_seen": "2026-10-18T07:43:25.728514+00:00",
+    "stage2_processed_at": "2026-10-18T07:49:51.465585+00:00",
+    "verdict_reason": "The job description is specifically for a university internship program targeting students rather than professionals, and does not list a specific prior experience requirement."
+  },
+  {
+    "_id": {
+      "$oid": "6ad478d12a6b5c687771d527"
+    },
+    "title": "Growth Marketing Intern",
+    "company_name": "Sarvam",
+    "location": "Bengaluru",
+    "core_requirements": "Final-year student or recent grad (0-1 yr), AI-fluent with LLMs, experience with growth tools and basic coding.",
+    "link": "https://jobs.ashbyhq.com/sarvam/1eb3008a-2014-4a6c-8a35-cfa7caf8a60f",
+    "link_type": "direct_apply",
+    "category": "data_ml",
+    "experience_verdict": "SAFE",
+    "source_url": "https://api.ashbyhq.com/posting-api/job-board/sarvam",
+    "scraped_at": "2026-10-19T08:28:48.760513+00:00",
+    "job_id": "05035efadf70aebd9c2677d13025e0ff2d0f26f7e2979781d28c3dcc2091feb2",
+    "ats_name": "Ashby",
+    "first_seen": "2026-10-18T07:44:17.638725+00:00",
+    "stage2_processed_at": "2026-10-18T07:48:52.183467+00:00",
+    "verdict_reason": "The role is explicitly designated as an internship, making it fully suitable for a fresh graduate with zero experience."
+  },
+  {
+    "_id": {
+      "$oid": "6ad478d62a6b5c687771d529"
+    },
+    "title": "Software Engineer I (Bangalore, India)",
+    "company_name": "AiPrise",
+    "location": "Bengaluru",
+    "core_requirements": "0-2 years of experience with Python, Go, Java, or Node.js, and experience with RESTful APIs, microservices, and relational databases.",
+    "link": "https://jobs.ashbyhq.com/aiprise/3763c791-a387-4078-9ca4-00cbfbf9b1a6",
+    "link_type": "direct_apply",
+    "category": "software_engineering",
+    "experience_verdict": "SAFE",
+    "source_url": "https://api.ashbyhq.com/posting-api/job-board/aiprise",
+    "scraped_at": "2026-10-19T08:28:53.815627+00:00",
+    "job_id": "87d500f4d5bc61c2536d9bbb0f8fa13f9ef106964a39d2f972904dbc7b55e25b",
+    "ats_name": "Ashby",
+    "first_seen": "2026-10-18T07:44:22.700064+00:00",
+    "stage2_processed_at": "2026-10-18T07:48:47.121759+00:00",
+    "verdict_reason": "The job description does not specify a minimum experience requirement, making it potentially suitable for a fresh graduate."
+  },
+  {
+    "_id": {
+      "$oid": "6ad478eeed26b6e0c84feb8c"
+    },
+    "title": "Intern - AI/ML",
+    "company_name": "Tower Research Capital",
+    "location": "Gurgaon",
+    "core_requirements": "Python, Linux, SQL, Git, Bash scripting, and experience with PyTorch/TensorFlow.",
+    "link": "https://www.tower-research.com/open-positions/?gh_jid=8143756",
+    "link_type": "direct_apply",
+    "category": "data_ml",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/towerresearchcapital/jobs",
+    "scraped_at": "2026-10-19T08:27:11.160028+00:00",
+    "job_id": "ebcf5a88e7175d75b6b7cb0d7634a748637effaecdbd599dc17b9936927aad24",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-18T07:44:46.717537+00:00",
+    "stage2_processed_at": "2026-10-18T07:48:41.946220+00:00",
+    "verdict_reason": "The job description is entirely silent regarding specific years of experience or internship requirements, so the candidate should apply anyway."
+  },
+  {
+    "_id": {
+      "$oid": "6ad478faed26b6e0c84feb8f"
+    },
+    "title": "Quantitative Researcher (2027 Graduate)",
+    "company_name": "Graviton Research Capital",
+    "location": "Gurugram, Haryana, India",
+    "core_requirements": "Strong programming skills in Python and/or C++, with a degree in Math, CS, or Electrical Engineering.",
+    "link": "https://job-boards.greenhouse.io/gravitonresearchcapital/jobs/8768396002",
+    "link_type": "direct_apply",
+    "category": "data_ml",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/gravitonresearchcapital/jobs",
+    "scraped_at": "2026-10-19T08:27:20.992310+00:00",
+    "job_id": "2df4f2f5640f19c51105a4ae7cbdfc5ce54fc607df6f840f6dc6a2bb0057d81a",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-18T07:44:58.193983+00:00",
+    "stage2_processed_at": "2026-10-18T07:48:33.891985+00:00",
+    "verdict_reason": "The job description explicitly targets a '2027 Graduate', which is suitable for a candidate with no prior experience."
+  },
+  {
+    "_id": {
+      "$oid": "6ad478faed26b6e0c84feb90"
+    },
+    "title": "Software Engineer (2027 Graduate)",
+    "company_name": "Graviton Research Capital",
+    "location": "Gurugram, Haryana, India",
+    "core_requirements": "Strong programming skills in C++, with a degree in CS, Math, or Electrical Engineering.",
+    "link": "https://job-boards.greenhouse.io/gravitonresearchcapital/jobs/8764240002",
+    "link_type": "direct_apply",
+    "category": "software_engineering",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/gravitonresearchcapital/jobs",
+    "scraped_at": "2026-10-19T08:27:20.992336+00:00",
+    "job_id": "ca819af555fcb78e5303b0c0d8909f3ce60a7e793da88170f6cb8579ea9bea2e",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-18T07:44:58.900169+00:00",
+    "stage2_processed_at": "2026-10-18T07:48:28.640041+00:00",
+    "verdict_reason": "The job description explicitly targets new graduates in its title for the 'Software Engineer (2027 Graduate)' role, making it completely suitable for fresh graduates with 0 years of experience."
+  },
+  {
+    "_id": {
+      "$oid": "6ad478fe924db5a2fe27ac03"
+    },
+    "title": "Trainee - Recruitment Coordinator",
+    "company_name": "Meesho",
+    "location": "Bangalore, Karnataka",
+    "core_requirements": "Requires a Graduate or Post-Graduation degree and proficiency in office tools for reporting and dashboard preparation.",
+    "link": "https://jobs.lever.co/meesho/1de2fc88-e203-4f1a-8046-55df700de4be",
+    "link_type": "direct_apply",
+    "category": "data_ml",
+    "experience_verdict": "SAFE",
+    "source_url": "https://api.lever.co/v0/postings/meesho?mode=json",
+    "scraped_at": "2026-10-18T07:45:02.041862+00:00",
+    "job_id": "eaf9e5162ee0d4c9de377616ad13c2c6f566744d1c03ce992f732b40924e6d24",
+    "ats_name": "Lever",
+    "first_seen": "2026-10-18T07:45:02.541331+00:00",
+    "stage2_processed_at": "2026-10-18T07:48:23.275550+00:00",
+    "verdict_reason": "The job description explicitly states '0-1 years of similar experience(s) are preferred; Freshers can apply.'"
+  },
+  {
+    "_id": {
+      "$oid": "6ad4796251a94dbb1c173e75"
+    },
+    "title": "Quantitative Researcher - Early Career (INDIA)",
+    "company_name": "Unknown",
+    "location": "Gurugram, India",
+    "core_requirements": "",
+    "link": "https://apply.workable.com/j/E5752CE983",
+    "link_type": "direct_apply",
+    "category": "other",
+    "experience_verdict": "SAFE",
+    "source_url": "https://apply.workable.com/trexquant",
+    "scraped_at": "2026-10-19T08:27:44.475008+00:00",
+    "job_id": "cd4203f3be5a8c50b4156ef5a9879d3c65dbe110ab3084977499391df632fb82",
+    "ats_name": "Workable",
+    "first_seen": "2026-10-18T07:46:42.385827+00:00",
+    "stage2_processed_at": "2026-10-18T07:48:17.437924+00:00",
+    "verdict_reason": "The job description is explicitly targeted at early career professionals and fresh graduates, stating 'Quantitative Researcher - Early Career'."
+  },
+  {
+    "_id": {
+      "$oid": "6ad4798551a94dbb1c173e78"
+    },
+    "title": "Full-Stack Engineer (Backend Leaning) - Platform Engineering",
+    "company_name": "ElevenLabs",
+    "location": "Remote",
+    "core_requirements": "Python, backend development, APIs, cloud infrastructure, and data structures.",
+    "link": "https://jobs.ashbyhq.com/elevenlabs/ce3d5a59-fb8c-482b-bc3f-60e44576c5e0",
+    "link_type": "direct_apply",
+    "category": "software_engineering",
+    "experience_verdict": "SAFE",
+    "source_url": "https://api.ashbyhq.com/posting-api/job-board/elevenlabs",
+    "scraped_at": "2026-10-19T08:27:58.843673+00:00",
+    "job_id": "93a589bbdd36692dcee251dd083be66e2d50583c73fd0b801881fec815c97d4a",
+    "ats_name": "Ashby",
+    "first_seen": "2026-10-18T07:47:17.376439+00:00",
+    "stage2_processed_at": "2026-10-18T07:48:12.136997+00:00",
+    "verdict_reason": "The job description does not specify a minimum number of years of experience or internship requirements."
+  },
+  {
+    "_id": {
+      "$oid": "6ad4798651a94dbb1c173e79"
+    },
+    "title": "Full-Stack Engineer (Backend Leaning) - Payments Engineering",
+    "company_name": "ElevenLabs",
+    "location": "Remote",
+    "core_requirements": "Python, backend development, APIs, cloud infrastructure, and security fundamentals.",
+    "link": "https://jobs.ashbyhq.com/elevenlabs/e4e0450f-d139-4f8e-b210-2f326a680d90",
+    "link_type": "direct_apply",
+    "category": "software_engineering",
+    "experience_verdict": "SAFE",
+    "source_url": "https://api.ashbyhq.com/posting-api/job-board/elevenlabs",
+    "scraped_at": "2026-10-19T08:27:58.843703+00:00",
+    "job_id": "991ca11ef9978c05c765d6acaa2dabb0cb78ca1e8ca29e9b0bb9297dd0b142c8",
+    "ats_name": "Ashby",
+    "first_seen": "2026-10-18T07:47:18.119780+00:00",
+    "stage2_processed_at": "2026-10-18T07:48:06.916990+00:00",
+    "verdict_reason": "The job description is silent about experience requirements, meaning fresh graduates should apply anyway."
+  },
+  {
+    "_id": {
+      "$oid": "6ad5d36c2405f1d8f6697983"
+    },
+    "title": "Campus Crew Ambassador (Student Program)",
+    "company_name": "HackerRank",
+    "location": "Remote Globally",
+    "core_requirements": "College student with a passion for tech and knowledge of basic coding.",
+    "link": "https://job-boards.greenhouse.io/hackerrank/jobs/7405039",
+    "link_type": "filtered_list",
+    "category": "software_engineering",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/hackerrank/jobs",
+    "scraped_at": "2026-10-19T08:23:07.588646+00:00",
+    "job_id": "d680e8b72733163e1b8e29424e61f975e72b960b17984111f749ced9a9561b5d",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-19T08:23:08.005929+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6ad5d3912405f1d8f6697994"
+    },
+    "title": "Software Engineering Internship Program (2027)",
+    "company_name": "Wikimedia Foundation",
+    "location": "Remote",
+    "core_requirements": "PHP, JavaScript, Python, Kotlin, Swift, SQL, and Linux command-line knowledge.",
+    "link": "https://job-boards.greenhouse.io/wikimedia/jobs/8268853",
+    "link_type": "filtered_list",
+    "category": "software_engineering",
+    "experience_verdict": "SAFE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/wikimedia/jobs",
+    "scraped_at": "2026-10-19T08:23:45.367811+00:00",
+    "job_id": "ce38b649888ee08f59343d8ef4835cb0647b7552bcdbcc8ddb2d11c789ad32aa",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-19T08:23:45.768441+00:00"
+  },
+  {
+    "_id": {
+      "$oid": "6ad5d4164064eab7204a6fda"
+    },
+    "title": "Professional Services Red Team Intern - Summer 2027 (Remote, GBR)",
+    "company_name": "CrowdStrike",
+    "location": "3 Locations",
+    "core_requirements": "Candidates must be working towards an undergraduate or Master's degree in Cybersecurity, Computer Science, or a related field and be in their penultimate year of study.",
+    "link": "https://crowdstrike.wd5.myworkdayjobs.com/en-US/crowdstrikecareers/job/United-Kingdom---London/Professional-Services-Red-Team-Intern---Summer-2027--Remote--GBR-_R30404",
+    "link_type": "direct_apply",
+    "category": "cybersecurity",
+    "experience_verdict": "SAFE",
+    "source_url": "https://crowdstrike.wd5.myworkdayjobs.com/crowdstrikecareers",
+    "scraped_at": "2026-10-19T08:25:57.840331+00:00",
+    "job_id": "39f25f422f89b1609aca635d7f78f819f26a4fab1b6ac424c8c6381c202936be",
+    "ats_name": "Workday",
+    "first_seen": "2026-10-19T08:25:58.867078+00:00",
+    "stage2_processed_at": "2026-10-19T08:31:03.995142+00:00",
+    "verdict_reason": "The job description is explicitly for a university recruiting program targeting students and recent graduates with no required professional experience."
+  },
+  {
+    "_id": {
+      "$oid": "6ad5d48a2405f1d8f66979ad"
+    },
+    "title": "Technical Services Engineer Representative",
+    "company_name": "Everpure",
+    "location": "Bangalore, India",
+    "core_requirements": "Understanding of enterprise storage concepts, major OS platforms like Linux, VMware, and Windows, familiarity with CLI/SSH, and a Bachelor's degree in Computer Science or a related technical field.",
+    "link": "https://job-boards.greenhouse.io/purestorage/jobs/8129753",
+    "link_type": "direct_apply",
+    "category": "software_engineering",
+    "experience_verdict": "POSSIBLE",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/purestorage/jobs",
+    "scraped_at": "2026-10-19T08:27:53.594767+00:00",
+    "job_id": "f449b0d540b4b8a1a6b9c0b122db871819c543daef6c2caaeb0375136678b824",
+    "ats_name": "Greenhouse",
+    "first_seen": "2026-10-19T08:27:54.000692+00:00",
+    "stage2_processed_at": "2026-10-19T08:30:48.176425+00:00",
+    "verdict_reason": "The job description is silent regarding specific years of professional experience required, mentioning only hands-on experience in customer-facing roles and/or technical support environments."
+  }
+]

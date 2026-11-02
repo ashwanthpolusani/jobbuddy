@@ -1,25 +1,56 @@
-export default async (request, context) => {
-    // Simple in-memory map for IP tracking (Not perfect due to Edge isolation, but helps mitigate basic abuse)
-    const ip = context.ip || "unknown";
+// Sliding window rate limiter per edge isolate
+const ipWindows = new Map();
+const WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS = 75; // 75 requests per minute per IP
+
+function isRateLimited(ip) {
+    const now = Date.now();
+    const entry = ipWindows.get(ip) || [];
     
-    // We only want to limit the getJobs function
-    if (!request.url.includes("getJobs")) {
-        return context.next();
+    // Filter timestamps within the current window
+    const recent = entry.filter(ts => now - ts < WINDOW_MS);
+    
+    if (recent.length >= MAX_REQUESTS) {
+        ipWindows.set(ip, recent);
+        return true;
     }
     
-    // Netlify edge functions don't share memory globally well, but we can use simple time-based limiting per isolate
-    // We can't rely on global state easily without an external store like Redis, 
-    // but returning context.next() is the primary function for now to prepare the infrastructure.
+    recent.push(now);
+    ipWindows.set(ip, recent);
     
-    // If rate limiting is requested in the future, we can add Upstash Redis here.
+    // Prune stale IPs periodically to prevent memory leaks in isolates
+    if (ipWindows.size > 1000) {
+        for (const [key, timestamps] of ipWindows.entries()) {
+            if (timestamps.length === 0 || now - timestamps[timestamps.length - 1] > WINDOW_MS) {
+                ipWindows.delete(key);
+            }
+        }
+    }
     
-    // For now, let's just add an anti-bot user-agent check
+    return false;
+}
+
+export default async (request, context) => {
+    // Check user-agent
     const ua = request.headers.get("user-agent") || "";
-    if (ua.includes("curl") || ua.includes("python-requests") || ua.includes("Go-http-client")) {
-        // Block obvious non-browser scripts from hitting the DB
-        return new Response(JSON.stringify({ error: "Access denied" }), {
+    if (ua.includes("curl") || ua.includes("python-requests") || ua.includes("Go-http-client") || ua.includes("Wget")) {
+        return new Response(JSON.stringify({ error: "Automated direct script access denied. Use web application." }), {
             status: 403,
             headers: { "Content-Type": "application/json" }
+        });
+    }
+
+    const ip = context.ip || "unknown";
+
+    if (ip !== "unknown" && isRateLimited(ip)) {
+        return new Response(JSON.stringify({ 
+            error: "Too Many Requests. Rate limit exceeded. Please wait a minute before retrying." 
+        }), {
+            status: 429,
+            headers: { 
+                "Content-Type": "application/json",
+                "Retry-After": "60"
+            }
         });
     }
 

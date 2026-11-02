@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Job Stream — Rolenaut</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
+    <script src="/auth-core.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface2: #f1f5f9;
+            --surface3: #e2e8f0;
+            --border: #e2e8f0;
+            --border2: #cbd5e1;
+            --accent: #0a66c2;
+            --accent-hover: #08519c;
+            --accent-dim: rgba(10, 102, 194, 0.08);
+            --accent-border: rgba(10, 102, 194, 0.28);
+            --green: #15803d;
+            --green-dim: rgba(21, 128, 61, 0.1);
+            --amber: #92400e;
+            --red: #dc2626;
+            --text: #0f172a;
+            --text2: #334155;
+            --muted: #64748b;
+            --radius: 12px;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .onboarding-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 580px;
+            padding: 36px 32px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .wordmark .accent { color: var(--accent); }
+
+        .panel-title {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        .panel-desc {
+            font-size: 0.90rem;
+            color: var(--muted);
+            text-align: center;
+            margin-bottom: 26px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: var(--text2);
+            margin-bottom: 8px;
+        }
+        .input-text {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border2);
+            border-radius: var(--radius);
+            font-size: 0.90rem;
+            color: var(--text);
+            background: var(--surface2);
+            outline: none;
+            transition: all 0.15s ease;
+        }
+        .input-text:focus {
+            border-color: var(--accent);
+            background: var(--surface);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        /* Radio Stream Options */
+        .source-option-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: var(--surface);
+        }
+        .source-option-card:hover {
+            border-color: var(--accent-border);
+            background: var(--surface2);
+        }
+        .source-option-card.selected {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+        .radio-circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--border2);
+            margin-top: 2px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .source-option-card.selected .radio-circle {
+            border-color: var(--accent);
+            background: var(--accent);
+        }
+        .radio-circle::after {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: white;
+            display: none;
+        }
+        .source-option-card.selected .radio-circle::after {
+            display: block;
+        }
+        .opt-title {
+            font-size: 0.94rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .opt-badge-rec {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: var(--green-dim);
+            color: var(--green);
+            letter-spacing: 0.04em;
+        }
+        .opt-desc {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .helper-callout {
+            font-size: 0.78rem;
+            color: var(--muted);
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            line-height: 1.5;
+        }
+        .error-hint {
+            color: var(--red);
+            font-size: 0.80rem;
+            margin-top: 6px;
+            display: none;
+        }
+
+        /* Action Row */
+        .action-row {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-launch {
+            background: var(--accent);
+            color: white;
+            padding: 13px 24px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            width: 100%;
+            box-shadow: 0 4px 14px rgba(10, 102, 194, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-launch:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(10, 102, 194, 0.35);
+        }
+        .btn-launch:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .skip-note {
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+    </style>
+        <link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+<header class="header">
+        <div class="header-inner">
+            <a class="brand-block" href="/" aria-label="Rolenaut home">
+                <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                <div class="brand-text-wrap">
+                    <div class="wordmark">Role<span class="accent">naut</span></div>
+                    <div class="header-sub">Navigate your next leap &middot; Your career has no ceiling.</div>
+                </div>
+            </a>
+            <div class="header-actions">
+                <nav class="header-nav-links" aria-label="Main Navigation">
+                    <a href="/jobs" class="header-nav-link " >Live Jobs</a>
+                    <a href="/scraper-guide" class="header-nav-link ">Scraper Setup</a>
+                    <a href="/interview-prep" class="header-nav-link ">Interview Prep</a>
+                    <a href="/resume-guide" class="header-nav-link ">Resume Guide</a>
+                    <a href="/about" class="header-nav-link ">About</a>
+                </nav>
+                <div class="auth-wrapper" id="auth-header-wrapper">
+                    <!-- Managed synchronously by auth-core.js -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="onboarding-card">
+        <div class="brand-header">
+            <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+            <span class="wordmark">Role<span class="accent">naut</span></span>
+        </div>
+
+        <h1 class="panel-title">Choose Your Job Stream</h1>
+        <p class="panel-desc">Select how you want to discover jobs. You can change this anytime from your profile settings.</p>
+
+        <!-- Display Name -->
+        <div class="form-group">
+            <label class="form-label" for="display-name-input">Your Display Name</label>
+            <input type="text" id="display-name-input" class="input-text" placeholder="e.g. Ashwanth" maxlength="60">
+        </div>
+
+        <!-- Stream Selection -->
+        <div class="form-group">
+            <label class="form-label">Job Data Source</label>
+
+            <!-- Option 1: Curated Inbuilt Stream -->
+            <div class="source-option-card selected" id="opt-inbuilt" onclick="selectSource('inbuilt')">
+                <div class="radio-circle"></div>
+                <div>
+                    <div class="opt-title">
+                        ⭐ Curated Fresher Stream
+                        <span class="opt-badge-rec">Recommended</span>
+                    </div>
+                    <div class="opt-desc">
+                        Explore verified fresher and entry-level engineering roles extracted directly from official ATS portals (Ashby, Greenhouse, Lever, Workday). Zero setup required.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option 2: Custom Scraper MongoDB -->
+            <div class="source-option-card" id="opt-custom" onclick="selectSource('custom')">
+                <div class="radio-circle"></div>
+                <div>
+                    <div class="opt-title">🔗 Connect Custom Scraper Database</div>
+                    <div class="opt-desc">
+                        Running the open-source scraper on GitHub Actions? Connect your MongoDB Atlas cluster for your private, customized job feed.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom URI input (shown only when custom is chosen) -->
+            <div id="custom-uri-wrapper" style="display: none; margin-top: 14px;">
+                <label class="form-label" for="custom-mongo-input">MongoDB Atlas Connection String (Read-Only)</label>
+                <input type="password" id="custom-mongo-input" class="input-text" placeholder="mongodb+srv://<username>:<password>@cluster0.mongodb.net/job_aggregator">
+                <div class="error-hint" id="uri-error-hint">Please enter a valid mongodb+srv:// Atlas connection string.</div>
+                <div class="helper-callout">
+                    🔒 <strong>Secure Storage:</strong> Your URI is stored safely in Netlify Database and queried only server-side. It is never exposed in browser code or returned to other users.
+                </div>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <button class="btn-launch" id="btn-submit" onclick="submitOnboarding()">
+                🚀 Launch Job Feed
+            </button>
+            <div class="skip-note">
+                You can edit your preferences or switch data sources anytime in your profile.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedSource = 'inbuilt';
+
+        function selectSource(source) {
+            selectedSource = source;
+            const inCard = document.getElementById('opt-inbuilt');
+            const cuCard = document.getElementById('opt-custom');
+            const wrap = document.getElementById('custom-uri-wrapper');
+            const err = document.getElementById('uri-error-hint');
+            err.style.display = 'none';
+
+            if (source === 'inbuilt') {
+                inCard.classList.add('selected');
+                cuCard.classList.remove('selected');
+                wrap.style.display = 'none';
+            } else {
+                inCard.classList.remove('selected');
+                cuCard.classList.add('selected');
+                wrap.style.display = 'block';
+            }
+        }
+
+        async function submitOnboarding() {
+            const btn = document.getElementById('btn-submit');
+            const err = document.getElementById('uri-error-hint');
+            err.style.display = 'none';
+
+            let customUri = '';
+            if (selectedSource === 'custom') {
+                customUri = document.getElementById('custom-mongo-input').value.trim();
+                if (!customUri || !customUri.startsWith('mongodb+srv://') || !customUri.includes('.mongodb.net')) {
+                    err.style.display = 'block';
+                    return;
+                }
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Setting up workspace...';
+
+            const token = window.JobBuddyAuth ? await window.JobBuddyAuth.getToken() : null;
+            if (!token) {
+                // If not signed in for any reason, redirect to landing
+                window.location.href = '/';
+                return;
+            }
+
+            try {
+                const displayName = document.getElementById('display-name-input').value.trim();
+
+                const res = await fetch('/api/user-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        display_name: displayName,
+                        db_mode: selectedSource,
+                        custom_mongo_uri: customUri,
+                        onboarding_done: true
+                    })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Save failed');
+                }
+
+                window.location.href = '/jobs';
+            } catch (e) {
+                console.error('Onboarding save error:', e);
+                window.location.href = '/jobs';
+            }
+        }
+
+        function hydrateOnboardingUser(user) {
+            if (!user) {
+                // Wait briefly before deciding user is not signed in
+                setTimeout(() => {
+                    const retryUser = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+                    if (!retryUser) window.location.href = '/';
+                }, 800);
+                return;
+            }
+            const nameField = document.getElementById('display-name-input');
+            if (nameField && !nameField.value) {
+                const name = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : '');
+                nameField.value = name;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+            hydrateOnboardingUser(user);
+
+            window.addEventListener('jb_auth_change', (e) => {
+                hydrateOnboardingUser(e.detail.user);
+            });
+        });
+    </script>
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-col-brand">
+                <div class="footer-logo-row">
+                    <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+                    <span class="footer-brand">Role<span class="accent">naut</span></span>
+                </div>
+                <p class="footer-mission">
+                    Direct-to-ATS tech job discovery and open scraper hub. Continuously indexing verified requisitions from Greenhouse, Lever, Ashby, and Workday with zero recruiter spam.
+                </p>
+                <div class="footer-status-pill">
+                    <span class="status-indicator-dot"></span>
+                    <span>All ATS Feeds Active &middot; Updated Daily</span>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Platform</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/jobs">Live Job Feed</a></li>
+                    <li><a href="/">Home Overview</a></li>
+                    <li><a href="/about">About Rolenaut</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Career Resources</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="/interview-prep">Interview Blueprint</a></li>
+                    <li><a href="/resume-guide">ATS Resume Guide</a></li>
+                    <li><a href="/scraper-guide">Scraper Setup Guide</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Open Source &amp; Legal</h4>
+                <ul class="footer-nav-list">
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">GitHub Repository &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+            <div class="footer-bottom-left">
+                <div class="footer-copy">&copy; 2026 Rolenaut. Autonomous career navigation for early-career tech professionals.</div>
+                <p class="footer-disclaimer">
+                    Rolenaut is an independent aggregator indexing publicly accessible corporate requisitions and official career portals. All company names, logos, and trademarks belong to their respective owners.
+                </p>
+            </div>
+            <div class="footer-privacy-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>GDPR Compliant &bull; Zero Tracking Pixels</span>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
