@@ -332,6 +332,47 @@
         setupIdentityListeners();
     }
 
+    // 12. Universal Netlify Badge Elimination (removes injected badges & iframes)
+    function killNetlifyBadges() {
+        try {
+            const selectors = [
+                'a[href*="netlify.com"][style*="fixed"]',
+                'a[href*="netlify.app"][style*="fixed"]',
+                'a[href*="netlify.com"][target="_blank"]',
+                '[data-netlify-deploy-id]',
+                '#nl-badge-frame',
+                '.netlify-badge',
+                'iframe[src*="netlify"]',
+                'img[alt*="Deploys by Netlify"]',
+                'img[alt*="Powered by Netlify"]'
+            ];
+            document.querySelectorAll(selectors.join(',')).forEach(el => {
+                if (el && el.parentNode) {
+                    el.remove();
+                }
+            });
+        } catch (e) {}
+    }
+
+    if (typeof window !== 'undefined') {
+        killNetlifyBadges();
+        document.addEventListener('DOMContentLoaded', killNetlifyBadges);
+        window.addEventListener('load', () => {
+            killNetlifyBadges();
+            setTimeout(killNetlifyBadges, 500);
+            setTimeout(killNetlifyBadges, 1500);
+            setTimeout(killNetlifyBadges, 3000);
+        });
+
+        if (typeof MutationObserver !== 'undefined') {
+            const observer = new MutationObserver(() => killNetlifyBadges());
+            if (document.documentElement) {
+                observer.observe(document.documentElement, { childList: true, subtree: true });
+                setTimeout(() => observer.disconnect(), 15000);
+            }
+        }
+    }
+
     // Export globally
     window.JobBuddyAuth = {
         getUser: getStoredUser,

@@ -4,8 +4,8 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rolenaut — Direct-to-ATS Tech Jobs & Career Discovery</title>
-    <meta name="description" content="Direct-to-ATS tech job discovery and open scraper hub. Search verified engineering, data, and cloud roles straight from official company portals with zero recruiter spam.">
+    <title>Rolenaut — Tech Jobs for Freshers, Graduates &amp; Early Career | Direct ATS</title>
+    <meta name="description" content="Direct-to-ATS technical requisitions curated specifically for freshers, college graduates, interns, and 0-2 YOE engineers across top companies. Zero noise, zero recruiter spam.">
     <meta property="og:title" content="Rolenaut — Direct-to-ATS Tech Jobs & Career Discovery">
     <meta property="og:description" content="Direct ATS job listings for 0-2 YOE tech professionals. Connect your own scraper or browse curated roles.">
     <meta property="og:url" content="https://rolenaut.netlify.app/">
@@ -194,25 +194,20 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         }
 
-        /* Ads placeholder slot (Google Adsense Ready) */
-        .ad-container {
-            max-width: 970px;
-            min-height: 90px;
-            margin: 30px auto;
-            padding: 10px;
-            background: var(--surface);
-            border: 1px dashed var(--border);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .ad-hint {
-            font-size: 0.72rem;
-            color: #94a3b8;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
+        /* Kill Netlify badge */
+        a[href*="netlify.com"][style*="fixed"],
+        a[href*="netlify.app"][style*="fixed"],
+        a[href*="netlify.com"][target="_blank"],
+        [data-netlify-deploy-id],
+        #nl-badge-frame,
+        .netlify-badge,
+        iframe[src*="netlify"],
+        img[alt*="Deploys by Netlify"],
+        img[alt*="Powered by Netlify"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
 
         /* Features Section */
@@ -348,19 +343,19 @@
 
     <!-- Hero -->
     <section class="hero-section">
-        <div class="hero-pill">
-            🚀 100% Free · Direct ATS Applications · India &amp; Worldwide
+        <div class="hero-pill" id="hero-status-pill">
+            🎓 Curated for Tech Freshers &amp; 0–2 YOE &middot; Direct ATS Openings
         </div>
-        <h1 class="hero-title">
-            Find Your Next Tech Role.<br><span>Zero Noise. Zero Spam.</span>
+        <h1 class="hero-title" id="hero-main-title">
+            Find Your First Tech Role.<br><span>Zero Noise. Zero Spam.</span>
         </h1>
-        <p class="hero-subtext">
-            Skip ghost recruiters, stale reposts, and commercial paywalls. Browse verified engineering, data, and cloud roles extracted directly from official enterprise career portals.
+        <p class="hero-subtext" id="hero-subtext">
+            Direct-to-ATS technical requisitions curated specifically for freshers, college graduates, interns, and 0–2 YOE engineers across top companies. Real openings straight from official enterprise portals with zero recruiter spam.
         </p>
 
         <div class="hero-cta-row">
-            <a href="/jobs" class="btn-cta-main">
-                Browse Verified Tech Jobs &#8594;
+            <a href="/jobs" class="btn-cta-main" id="hero-cta-primary">
+                Browse Freshers Tech Jobs &#8594;
             </a>
             <button class="btn-cta-sec" id="hero-auth-cta" onclick="triggerAuth()">
                 ⚡ Connect Scraper Database
@@ -380,10 +375,7 @@
         </div>
     </section>
 
-    <!-- Google AdSense Container Placeholder (728x90 Banner) -->
-    <div class="ad-container" id="landing-ad-slot">
-        <span class="ad-hint">Advertisement Space · Google AdSense Responsive Banner Slot</span>
-    </div>
+
 
     <!-- Features -->
     <section class="features-section">
@@ -394,9 +386,9 @@
 
         <div class="grid-3">
             <div class="feat-card">
-                <span class="feat-icon">🎯</span>
-                <h3 class="feat-title">Verified Experience Filter</h3>
-                <p class="feat-desc">Every listing is verified for actual years of experience. Filter by early-career, mid-level, or senior without misleading recruiter reposts.</p>
+                <span class="feat-icon">🎓</span>
+                <h3 class="feat-title">Curated for Freshers &amp; 0–2 YOE</h3>
+                <p class="feat-desc">The open default feed is strictly curated for entry-level suitability. Filter for junior engineers, fresh graduates, and interns without misleading 5+ year experience requirements.</p>
             </div>
 
             <div class="feat-card">
@@ -407,8 +399,8 @@
 
             <div class="feat-card">
                 <span class="feat-icon">🔗</span>
-                <h3 class="feat-title">Custom Scraper Sync</h3>
-                <p class="feat-desc">Run your own scraper on GitHub Actions? Securely connect your MongoDB Atlas cluster to power a personalized private frontend.</p>
+                <h3 class="feat-title">Custom Scraper for All Levels</h3>
+                <p class="feat-desc">Need mid-level or senior roles? Connect your companion scraper and private MongoDB Atlas cluster to index requisitions at any seniority level.</p>
             </div>
 
             <div class="feat-card">
@@ -529,14 +521,36 @@
         function updateLandingAuthUI(user) {
             const zone = document.getElementById('landing-auth-zone');
             const heroCta = document.getElementById('hero-auth-cta');
+            const heroPill = document.getElementById('hero-status-pill');
+            const heroTitle = document.getElementById('hero-main-title');
+            const heroSub = document.getElementById('hero-subtext');
+            const heroPrimary = document.getElementById('hero-cta-primary');
+            const isCustom = Boolean(localStorage.getItem('rolenaut_custom_mongo_uri') || localStorage.getItem('jobbuddy_custom_mongo_uri'));
+
             if (user) {
                 const name = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'Candidate');
                 if (zone) {
-                    zone.innerHTML = `<a href="/jobs" class="btn-nav btn-nav-primary">Jobs Feed (${name}) &#8594;</a>`;
+                    zone.innerHTML = `<a href="/jobs" class="btn-nav btn-nav-primary">Jobs Feed (${escapeHtml(name)}) &#8594;</a>`;
                 }
                 if (heroCta) {
-                    heroCta.textContent = '🚀 Open My Job Feed';
-                    heroCta.onclick = () => { window.location.href = '/jobs'; };
+                    heroCta.textContent = '⚙️ Manage Scraper Settings';
+                    heroCta.onclick = () => { window.location.href = '/profile#data-source'; };
+                }
+                if (heroPill) {
+                    heroPill.innerHTML = isCustom 
+                        ? '🟣 Private Scraper Workspace Active &middot; All Experience Levels'
+                        : '👤 Personalized Candidate Workspace &middot; Cloud Synced';
+                }
+                if (heroTitle) {
+                    heroTitle.innerHTML = `Welcome back, ${escapeHtml(name)}.<br><span>Your Direct-to-ATS Feed.</span>`;
+                }
+                if (heroSub) {
+                    heroSub.textContent = isCustom
+                        ? 'Browsing your custom MongoDB scraper cluster across all configured tracks, seniority levels, and target regions.'
+                        : 'Explore verified technical requisitions across all experience levels tailored to your saved tracks, bookmarks, and preferences.';
+                }
+                if (heroPrimary) {
+                    heroPrimary.innerHTML = 'Go to My Job Feed &#8594;';
                 }
             } else {
                 if (zone) {
@@ -546,7 +560,29 @@
                     heroCta.textContent = '⚡ Connect Scraper Database';
                     heroCta.onclick = () => { triggerAuth(); };
                 }
+                if (heroPill) {
+                    heroPill.innerHTML = '🎓 Curated for Tech Freshers &amp; 0–2 YOE &middot; Direct ATS Openings';
+                }
+                if (heroTitle) {
+                    heroTitle.innerHTML = 'Find Your First Tech Role.<br><span>Zero Noise. Zero Spam.</span>';
+                }
+                if (heroSub) {
+                    heroSub.textContent = 'Direct-to-ATS technical requisitions curated specifically for freshers, college graduates, interns, and 0–2 YOE engineers across top companies. Real openings straight from official enterprise portals with zero recruiter spam.';
+                }
+                if (heroPrimary) {
+                    heroPrimary.innerHTML = 'Browse Freshers Tech Jobs &#8594;';
+                }
             }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         // Instant synchronous state hydration

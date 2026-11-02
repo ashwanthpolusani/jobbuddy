@@ -255,6 +255,23 @@
             transform: translateY(0);
             opacity: 1;
         }
+    
+        /* Kill Netlify badge */
+        a[href*="netlify.com"][style*="fixed"],
+        a[href*="netlify.app"][style*="fixed"],
+        a[href*="netlify.com"][target="_blank"],
+        [data-netlify-deploy-id],
+        #nl-badge-frame,
+        .netlify-badge,
+        iframe[src*="netlify"],
+        img[alt*="Deploys by Netlify"],
+        img[alt*="Powered by Netlify"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
     </style>
         <link rel="stylesheet" href="/shared.css">
 </head>

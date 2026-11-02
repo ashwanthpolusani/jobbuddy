@@ -5,8 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Tech Job Feed · Direct ATS Roles (All Levels) — Rolenaut</title>
-    <meta name="description" content="Live verified tech openings indexed directly from official enterprise career boards (Workday, Greenhouse, Lever, Ashby). Filter by tech track and location.">
+    <title>Rolenaut — Tech Jobs for Freshers &amp; Early Career | Direct ATS Feed</title>
+    <meta name="description" content="Direct-to-ATS technical requisitions curated specifically for freshers, college graduates, interns, and 0-2 YOE engineers across top companies. Zero noise, zero recruiter spam.">
     <meta property="og:title" content="Live Tech Job Feed · Direct ATS Roles (All Levels) — Rolenaut">
     <meta property="og:description"
         content="Personalized job discovery frontend. Connect your scraper's MongoDB URL to visualize, search, and filter tech opportunities.">
@@ -1291,6 +1291,74 @@
             color: var(--green);
             background: var(--green-dim);
         }
+    
+        /* Dynamic Stream Context Banner */
+        .stream-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 11px 16px;
+            margin-bottom: 16px;
+            border-radius: var(--radius);
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px solid rgba(37, 99, 235, 0.16);
+            font-size: 0.84rem;
+            transition: all 0.2s ease;
+        }
+        .stream-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .stream-banner-badge {
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+        }
+        .stream-banner-badge.fresher {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .stream-banner-badge.custom {
+            background: #f5f3ff;
+            color: #7c3aed;
+            border: 1px solid #ddd6fe;
+        }
+        .stream-banner-badge.user {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+        .stream-banner-text {
+            color: var(--text2);
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+        .stream-banner-link {
+            font-size: 0.78rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .stream-banner-link:hover { text-decoration: underline; }
+        .stream-banner-btn {
+            font-size: 0.78rem;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .stream-banner-btn:hover { text-decoration: underline; }
+
     </style>
     <link rel="stylesheet" href="/shared.css">
 </head>
@@ -1346,8 +1414,21 @@
 
                 
                 
+                    
                     <div class="panel-main">
 
+                        <!-- Stream Context Banner: Dynamic between Freshers (Guest) and Connected Workspace -->
+                        <div class="stream-banner" id="stream-context-banner">
+                            <div class="stream-banner-content">
+                                <span class="stream-banner-badge fresher" id="stream-banner-badge">🎓 Curated Tech Freshers &amp; 0–2 YOE Stream</span>
+                                <span class="stream-banner-text" id="stream-banner-text">
+                                    Showing verified 0–2 YOE, graduate trainee, and entry-level engineering openings indexed direct from official ATS career portals.
+                                </span>
+                            </div>
+                            <div class="stream-banner-actions" id="stream-banner-actions">
+                                <a href="/about" class="stream-banner-link">Why Freshers First? &rarr;</a>
+                            </div>
+                        </div>
                         <!-- 1. View Switcher (Job Openings vs Company Career Pages) -->
                         <div class="view-switcher-bar">
                             <div class="view-tabs" role="tablist" aria-label="Job listing view">
@@ -2464,7 +2545,48 @@
             const headerEmail = document.getElementById('header-user-email');
             const headerAvatar = document.getElementById('header-avatar');
             const statusDot = document.getElementById('header-db-status');
-            const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
+            const bannerBadge = document.getElementById('stream-banner-badge');
+            const bannerText = document.getElementById('stream-banner-text');
+            const bannerActions = document.getElementById('stream-banner-actions');
+            const isCustom = Boolean(localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri"));
+
+            if (isCustom) {
+                // Connected custom database: remove the freshers text completely!
+                if (bannerBadge) {
+                    bannerBadge.className = 'stream-banner-badge custom';
+                    bannerBadge.innerHTML = '🟣 Connected Private Scraper Workspace';
+                }
+                if (bannerText) {
+                    bannerText.textContent = 'Streaming custom scraped requisitions from your connected MongoDB Atlas cluster across all configured tracks and experience levels.';
+                }
+                if (bannerActions) {
+                    bannerActions.innerHTML = '<button class="stream-banner-btn" onclick="openDbModal()">⚙️ Workspace Settings</button>';
+                }
+            } else if (currentUser) {
+                // Logged in with personal cloud profile
+                if (bannerBadge) {
+                    bannerBadge.className = 'stream-banner-badge user';
+                    bannerBadge.innerHTML = '👤 Personal Candidate Workspace';
+                }
+                if (bannerText) {
+                    bannerText.textContent = 'Synced to your Rolenaut cloud profile. Verified requisitions with direct ATS application tracking.';
+                }
+                if (bannerActions) {
+                    bannerActions.innerHTML = '<a href="/profile" class="stream-banner-link">Profile &amp; Bookmarks &rarr;</a>';
+                }
+            } else {
+                // Guest / Not logged in: Loudly declare Freshers & Early-Career Stream!
+                if (bannerBadge) {
+                    bannerBadge.className = 'stream-banner-badge fresher';
+                    bannerBadge.innerHTML = '🎓 Curated Tech Freshers &amp; 0–2 YOE Stream';
+                }
+                if (bannerText) {
+                    bannerText.textContent = 'Showing verified 0–2 YOE, graduate trainee, and entry-level engineering openings indexed direct from official ATS career portals.';
+                }
+                if (bannerActions) {
+                    bannerActions.innerHTML = '<a href="/about" class="stream-banner-link">Why Freshers First? &rarr;</a>';
+                }
+            }
 
             if (currentUser) {
                 if (signInBtn) signInBtn.style.display = 'none';
