@@ -31,7 +31,7 @@ async function resolveUserCustomUri(event, context) {
             setTimeout(() => reject(new Error("Netlify DB timeout")), 1500)
         );
         const rows = await Promise.race([dbPromise, timeoutPromise]);
-        if (rows && rows.length > 0 && rows[0].custom_mongo_uri) {
+        if (rows && rows.length > 0 && rows[0].custom_mongo_uri && rows[0].db_mode === "custom") {
             return rows[0].custom_mongo_uri;
         }
     } catch (e) {}
@@ -67,9 +67,8 @@ function normalizeMongoAtlasUri(rawUri) {
 const MAX_CACHED_CLIENTS = 6;
 const cachedClients = new Map();
 
-// In-memory cache for dynamic categories to eliminate full-collection scan on every request
-let cachedCategories = null;
-let lastCategoriesFetchTime = 0;
+// In-memory cache for dynamic categories keyed by active database URI to eliminate cross-cluster cache poisoning
+const cachedCategoriesMap = new Map();
 const CATEGORIES_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 async function connectToDatabase(customUri) {
@@ -359,10 +358,11 @@ exports.handler = async (event, context) => {
         const metaPromise = db.collection("meta").findOne({ _id: "active_profile" }, { maxTimeMS: 2000 }).catch(() => null);
 
         const now = Date.now();
-        const shouldFetchCats = !cachedCategories || (now - lastCategoriesFetchTime > CATEGORIES_CACHE_TTL);
+        const cachedCatEntry = cachedCategoriesMap.get(activeUri);
+        const shouldFetchCats = !cachedCatEntry || (now - cachedCatEntry.timestamp > CATEGORIES_CACHE_TTL);
         const distinctCatsPromise = shouldFetchCats
             ? collection.distinct("category", {}, { maxTimeMS: 2000 }).catch(() => [])
-            : Promise.resolve(cachedCategories);
+            : Promise.resolve(cachedCatEntry.categories);
 
         // Run queries in parallel for lowest latency
         const [total, rawJobs, otherCount, metaDoc, distinctCats] = await Promise.all([
@@ -379,8 +379,14 @@ exports.handler = async (event, context) => {
         ]);
 
         if (distinctCats && distinctCats.length > 0) {
-            cachedCategories = distinctCats;
-            lastCategoriesFetchTime = now;
+            if (cachedCategoriesMap.size >= 10) {
+                const oldestKey = cachedCategoriesMap.keys().next().value;
+                if (oldestKey) cachedCategoriesMap.delete(oldestKey);
+            }
+            cachedCategoriesMap.set(activeUri, {
+                categories: distinctCats,
+                timestamp: now
+            });
         }
 
         const directCount = link_type === 'direct_apply' ? total : otherCount;

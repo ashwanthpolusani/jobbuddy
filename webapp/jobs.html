@@ -1843,6 +1843,10 @@
             }
             activeStream = mode;
             localStorage.setItem('rolenaut_active_stream', mode);
+            if (userProfile) {
+                userProfile.active_stream = mode;
+                userProfile.db_mode = mode === 'custom' ? 'custom' : 'inbuilt';
+            }
             window.dispatchEvent(new CustomEvent('rolenaut_stream_change', { detail: { stream: mode } }));
             clearAllCache();
             currentPage = 1;
@@ -1850,6 +1854,29 @@
             activeLoc = 'all';
             updateWorkspaceIndicator();
             fetchJobs(1);
+
+            // Cloud sync stream preference to Netlify user profile if authenticated
+            if (currentUser) {
+                (async () => {
+                    try {
+                        const auth = window.RolenautAuth || window.JobBuddyAuth;
+                        const token = auth ? await auth.getToken() : null;
+                        if (token) {
+                            await fetch('/api/user-profile', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer ' + token
+                                },
+                                body: JSON.stringify({
+                                    active_stream: mode,
+                                    db_mode: mode === 'custom' ? 'custom' : 'inbuilt'
+                                })
+                            });
+                        }
+                    } catch (e) {}
+                })();
+            }
         }
 
         let CURRENT_CACHE_KEY = 'rolenaut_cache_v2';
@@ -2552,9 +2579,9 @@
                         });
                         locWrap.innerHTML = html;
                     }
-                    syncFilterUI();
                 }
             }
+            syncFilterUI();
         }
 
         // ── UNIFIED ACCOUNT & WORKSPACE (NETLIFY IDENTITY & DATABASE) ─

@@ -45,12 +45,12 @@ export default async (request, context) => {
         }
 
         // 2. Strict User-Agent filtering for automated scripts/bots
-        const ua = request.headers.get("user-agent") || "";
+        const ua = (request.headers.get("user-agent") || "").toLowerCase();
         if (
             ua.includes("curl") ||
             ua.includes("python-requests") ||
-            ua.includes("Go-http-client") ||
-            ua.includes("Wget")
+            ua.includes("go-http-client") ||
+            ua.includes("wget")
         ) {
             return new Response(
                 JSON.stringify({

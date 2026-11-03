@@ -63,17 +63,33 @@
         return null;
     }
 
-    // 2. Retrieve JWT access token with fallback to stored token
+    // 2. Retrieve JWT access token with fallback to stored token and proactive refresh
     async function getAuthToken() {
         if (isExplicitlyLoggedOut) return null;
+
+        // If netlifyIdentity widget is still loading during early boot, wait briefly
+        if (!window.netlifyIdentity && typeof window !== 'undefined') {
+            for (let i = 0; i < 8; i++) {
+                await new Promise(r => setTimeout(r, 50));
+                if (window.netlifyIdentity) break;
+            }
+        }
 
         if (window.netlifyIdentity && typeof window.netlifyIdentity.currentUser === 'function') {
             const current = window.netlifyIdentity.currentUser();
             if (current && typeof current.jwt === 'function') {
                 try {
                     const t = await current.jwt();
-                    if (t) return t;
-                } catch (e) {}
+                    if (t) {
+                        if (current.token) persistUserCache(current);
+                        return t;
+                    }
+                } catch (e) {
+                    try {
+                        const fallback = current.token && current.token.access_token;
+                        if (fallback) return fallback;
+                    } catch (err) {}
+                }
             }
         }
         try {
@@ -81,6 +97,36 @@
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (parsed && parsed.token && parsed.token.access_token) {
+                    const exp = parsed.token.expires_at;
+                    const expMs = exp ? (exp > 1e11 ? exp : exp * 1000) : 0;
+                    const isExpired = expMs > 0 && (Date.now() > expMs);
+
+                    // If token is expired and refresh_token exists, attempt direct GoTrue refresh
+                    if (isExpired && parsed.token.refresh_token) {
+                        try {
+                            const res = await fetch('/.netlify/identity/token', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: new URLSearchParams({
+                                    grant_type: 'refresh_token',
+                                    refresh_token: parsed.token.refresh_token
+                                })
+                            });
+                            if (res.ok) {
+                                const newTok = await res.json();
+                                if (newTok && newTok.access_token) {
+                                    parsed.token.access_token = newTok.access_token;
+                                    parsed.token.refresh_token = newTok.refresh_token || parsed.token.refresh_token;
+                                    parsed.token.expires_at = Date.now() + (newTok.expires_in || 3600) * 1000;
+                                    localStorage.setItem('gotrue.user', JSON.stringify(parsed));
+                                    persistUserCache(parsed);
+                                    return newTok.access_token;
+                                }
+                            }
+                        } catch (refreshErr) {
+                            console.warn('[RolenautAuth] Direct GoTrue token refresh notice:', refreshErr && refreshErr.message);
+                        }
+                    }
                     return parsed.token.access_token;
                 }
             }
@@ -501,7 +547,7 @@
                 isExplicitlyLoggedOut = true;
                 renderAuthHeader();
                 dispatchAuthEvent(null);
-                if (window.location.pathname.startsWith('/profile')) {
+                if (window.location.pathname.startsWith('/profile') || window.location.pathname.startsWith('/onboarding')) {
                     window.location.replace('/');
                 }
             } else {
