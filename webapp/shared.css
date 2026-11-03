@@ -22,15 +22,15 @@
     --accent-light: #eff6ff;
     --accent-border: #bfdbfe;
     --accent-dim: rgba(37, 99, 235, 0.08);
-    --green: #16a34a;
-    --green-dim: rgba(22, 163, 74, 0.08);
+    --green: #15803d;
+    --green-dim: rgba(21, 128, 61, 0.08);
     --green-border: #bbf7d0;
-    --success: #16a34a;
+    --success: #15803d;
     --success-light: #f0fdf4;
     --success-border: #bbf7d0;
     --danger: #dc2626;
     --danger-light: #fef2f2;
-    --warning: #d97706;
+    --warning: #b45309;
     --radius-sm: 6px;
     --radius: 8px;
     --radius-md: 10px;
@@ -73,6 +73,13 @@ img[alt*="Netlify"] {
 
 html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 body {
@@ -211,6 +218,8 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 6px 10px;
+    min-width: 44px;
+    min-height: 44px;
     cursor: pointer;
     color: var(--text2);
     align-items: center;
@@ -897,4 +906,111 @@ pre code {
 .recruiter-item {
     content-visibility: auto;
     contain-intrinsic-size: auto 140px;
+}
+
+/* ── UNIVERSAL TOAST NOTIFICATION SYSTEM ── */
+.rolenaut-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+    max-width: 420px;
+}
+
+.rolenaut-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.rolenaut-toast.success {
+    border-color: var(--success);
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.rolenaut-toast.error {
+    border-color: var(--danger);
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.rolenaut-toast.info {
+    border-color: var(--accent);
+    background: #eff6ff;
+    color: #1e40af;
+}
+
+/* ── INLINE MODAL & FORM FEEDBACK ── */
+.inline-feedback {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin-top: 10px;
+    display: none;
+}
+
+.inline-feedback.error {
+    display: block;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.inline-feedback.success {
+    display: block;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+.inline-feedback.info {
+    display: block;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+}
+
+/* ── ASYNC BUTTON SPINNER UTILITY ── */
+.btn-spinner {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: rolenaut-spin 0.65s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+@keyframes rolenaut-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── PRINT STYLESHEET ── */
+@media print {
+    .header, .site-footer, .btn-mobile-nav-toggle, #db-modal, .rolenaut-toast, #auth-header-wrapper {
+        display: none !important;
+    }
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
 }

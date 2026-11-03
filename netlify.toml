@@ -14,6 +14,85 @@
   path = "/.netlify/functions/*"
   function = "rate-limiter"
 
+# Explicit API Rewrite proxies to Netlify Serverless Functions
+[[redirects]]
+  from = "/api/jobs"
+  to = "/.netlify/functions/getJobs"
+  status = 200
+
+[[redirects]]
+  from = "/api/site-stats"
+  to = "/.netlify/functions/getSiteStats"
+  status = 200
+
+[[redirects]]
+  from = "/api/user-profile"
+  to = "/.netlify/functions/userProfile"
+  status = 200
+
+[[redirects]]
+  from = "/api/schema-discover"
+  to = "/.netlify/functions/schemaDiscover"
+  status = 200
+
+# Canonical 301 redirects for .html extensions
+[[redirects]]
+  from = "/*.html"
+  to = "/:splat"
+  status = 301
+  force = true
+
+# Static clean routes mapping to html files
+[[redirects]]
+  from = "/jobs/*"
+  to = "/jobs.html"
+  status = 200
+
+[[redirects]]
+  from = "/jobs"
+  to = "/jobs.html"
+  status = 200
+
+[[redirects]]
+  from = "/profile"
+  to = "/profile.html"
+  status = 200
+
+[[redirects]]
+  from = "/onboarding"
+  to = "/onboarding.html"
+  status = 200
+
+[[redirects]]
+  from = "/scraper-guide"
+  to = "/scraper-guide.html"
+  status = 200
+
+[[redirects]]
+  from = "/interview-prep"
+  to = "/interview-prep.html"
+  status = 200
+
+[[redirects]]
+  from = "/resume-guide"
+  to = "/resume-guide.html"
+  status = 200
+
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms"
+  to = "/terms.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -23,7 +102,7 @@
     Cross-Origin-Opener-Policy = "same-origin-allow-popups"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://identity.netlify.com https://pagead2.googlesyndication.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://identity.netlify.com https://*.mongodb.net; img-src 'self' data: https:; frame-src 'self' https://identity.netlify.com;"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://identity.netlify.com https://pagead2.googlesyndication.com https://adservice.google.com https://tpc.googlesyndication.com https://partner.googleadservices.com https://www.google.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://identity.netlify.com https://*.mongodb.net https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://adservice.google.com https://*.google.com https://*.doubleclick.net; img-src 'self' data: https:; frame-src 'self' https://identity.netlify.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://ep1.adtrafficquality.google https://www.google.com https://*.google.com https://*.doubleclick.net;"
 
 [[headers]]
   for = "/*.html"

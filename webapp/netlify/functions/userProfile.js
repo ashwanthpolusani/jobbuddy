@@ -52,6 +52,7 @@ function sanitizeProfile(row) {
         user_id: row.user_id,
         display_name: row.display_name || "",
         db_mode: row.db_mode || (hasCustom ? "custom" : "inbuilt"),
+        active_stream: (row.db_mode === "custom" || (!row.db_mode && hasCustom)) ? "custom" : "curated",
         has_custom_db: hasCustom,
         custom_mongo_uri: hasCustom ? "[CONFIGURED]" : "",
         saved_jobs: typeof row.saved_jobs === "string" ? JSON.parse(row.saved_jobs) : (row.saved_jobs || []),
@@ -244,8 +245,9 @@ exports.handler = async (event, context) => {
             }
 
             let finalDbMode;
-            if (body.db_mode !== undefined) {
-                finalDbMode = body.db_mode === "custom" ? "custom" : "inbuilt";
+            const reqMode = body.db_mode || body.active_stream || body.stream;
+            if (reqMode !== undefined) {
+                finalDbMode = (reqMode === "custom" || reqMode === "scraper") ? "custom" : "inbuilt";
             } else if (existing && existing.db_mode) {
                 finalDbMode = existing.db_mode;
             } else {
@@ -270,13 +272,11 @@ exports.handler = async (event, context) => {
                 finalSavedJobs = [];
             }
 
-            let finalCustomMongoUri;
-            if (finalDbMode === "inbuilt" && body.db_mode === "inbuilt") {
-                // Explicit revert to inbuilt stream cleans stored URI
-                finalCustomMongoUri = "";
-            } else if (body.custom_mongo_uri !== undefined) {
+            // Preserve existing custom URI when user switches stream mode without re-entering credentials
+            let finalCustomMongoUri = (existing && existing.custom_mongo_uri) || "";
+            if (body.custom_mongo_uri !== undefined) {
                 let rawUri = String(body.custom_mongo_uri || "").trim();
-                if (rawUri) {
+                if (rawUri && rawUri !== "[CONFIGURED]") {
                     const atlasPattern = /^mongodb\+srv:\/\/[a-zA-Z0-9_\-\.%]+:[^@]+@[a-zA-Z0-9_\-\.]+\.mongodb\.net(?:\/.*)?$/;
                     if (!atlasPattern.test(rawUri)) {
                         return {
@@ -286,9 +286,12 @@ exports.handler = async (event, context) => {
                         };
                     }
                     finalCustomMongoUri = normalizeMongoAtlasUri(rawUri);
-                } else {
+                } else if (rawUri === "") {
+                    // Explicit disconnect / purge requested
                     finalCustomMongoUri = "";
                 }
+            } else if (body.disconnect_database === true) {
+                finalCustomMongoUri = "";
             } else if (existing && existing.custom_mongo_uri) {
                 finalCustomMongoUri = existing.custom_mongo_uri;
             } else {

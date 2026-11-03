@@ -13,7 +13,42 @@
     <meta property="og:type" content="article">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Custom Scraper Setup & MongoDB Atlas Guide — Rolenaut">
-    <meta name="twitter:description" content="Step-by-step guide to running rolenaut-engine (jobbuddy-scraper) and connecting your private MongoDB database to the Rolenaut frontend.">
+    <meta name="twitter:description" content="Step-by-step guide to running rolenaut-engine and connecting your private MongoDB database to the Rolenaut frontend.">
+    <meta property="og:site_name" content="Rolenaut">
+    <meta property="og:image" content="https://rolenaut.netlify.app/favicon.svg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": "Custom Scraper Setup & MongoDB Atlas Guide",
+      "description": "Step-by-step developer tutorial for connecting your self-hosted GitHub Actions scraper engine to Rolenaut using a read-only MongoDB Atlas cluster.",
+      "url": "https://rolenaut.netlify.app/scraper-guide",
+      "author": {
+        "@type": "Organization",
+        "name": "Rolenaut"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://rolenaut.netlify.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Scraper Setup",
+          "item": "https://rolenaut.netlify.app/scraper-guide"
+        }
+      ]
+    }
+    </script>
     <meta name="google-site-verification" content="WPDCtYFzRGzYB_qCs5W0iKBuwYxyIMZ4WOfrKAdZrLE">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3809813018120427" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -340,7 +375,7 @@
     
     <div class="callout">
         <h4>The Decoupled Architecture</h4>
-        <p><strong>1. Backend Scraper (<code>rolenaut-engine</code> / <code>jobbuddy-scraper</code>):</strong> Runs locally on your machine or on a scheduled cloud runner (e.g., GitHub Actions, Railway). It collects active requisitions directly from Workday, Lever, and Greenhouse systems and saves them to your MongoDB database.</p>
+        <p><strong>1. Backend Scraper (<code>scrapperbuddy</code>):</strong> Runs locally on your machine or on a scheduled cloud runner (e.g., GitHub Actions, Railway). It collects active requisitions directly from Workday, Lever, and Greenhouse systems and saves them to your MongoDB database.</p>
         <p><strong>2. MongoDB Atlas Database:</strong> Stores your scraped jobs collection (<code>job_aggregator.jobs</code>). You control who has access with a read-only user.</p>
         <p><strong>3. Rolenaut WebApp:</strong> Reads your jobs via your secure, read-only MongoDB URL. Netlify Database stores your user profile so your preferences sync anywhere you sign in.</p>
     </div>
@@ -356,8 +391,8 @@
             </div>
             <p>Clone the open-source scraper repository and install its dependencies in Python 3.10+:</p>
             <pre><code># 1. Clone the companion scraper repository
-git clone https://github.com/ashwanthpolusani/jobbuddy-scraper.git
-cd jobbuddy-scraper
+git clone https://github.com/ashwanth-1729/scrapperbuddy.git
+cd scrapperbuddy
 
 # 2. Set up virtual environment and dependencies
 python -m venv venv
@@ -516,8 +551,8 @@ python main.py</code></pre>
             <div class="footer-col">
                 <h4 class="footer-heading">Open Source &amp; Legal</h4>
                 <ul class="footer-nav-list">
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanth-1729/scrapperbuddy" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanth-1729/scrapperbuddy/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
                     <li><a href="/privacy">Privacy Policy</a></li>
                     <li><a href="/terms">Terms of Service</a></li>
                 </ul>

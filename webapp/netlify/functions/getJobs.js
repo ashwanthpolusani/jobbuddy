@@ -22,12 +22,17 @@ async function resolveUserCustomUri(event, context) {
         if (!authUser || !authUser.userId) return null;
         const db = getNetlifyDb();
         if (!db) return null;
-        const rows = await db.sql`
+
+        const dbPromise = db.sql`
             SELECT custom_mongo_uri, db_mode FROM user_profiles
             WHERE (user_id = ${authUser.userId} OR user_id = ${authUser.email}) AND deleted_at IS NULL LIMIT 1
         `;
-        if (rows && rows.length > 0 && rows[0].db_mode === "custom") {
-            return rows[0].custom_mongo_uri || null;
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Netlify DB timeout")), 1500)
+        );
+        const rows = await Promise.race([dbPromise, timeoutPromise]);
+        if (rows && rows.length > 0 && rows[0].custom_mongo_uri) {
+            return rows[0].custom_mongo_uri;
         }
     } catch (e) {}
     return null;
@@ -62,6 +67,11 @@ function normalizeMongoAtlasUri(rawUri) {
 const MAX_CACHED_CLIENTS = 6;
 const cachedClients = new Map();
 
+// In-memory cache for dynamic categories to eliminate full-collection scan on every request
+let cachedCategories = null;
+let lastCategoriesFetchTime = 0;
+const CATEGORIES_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 async function connectToDatabase(customUri) {
     let uri = (customUri && customUri.trim()) || process.env.MONGODB_URI;
     if (!uri) throw new Error("No MongoDB connection URI provided");
@@ -70,8 +80,8 @@ async function connectToDatabase(customUri) {
     if (cachedClients.has(uri)) {
         const existingClient = cachedClients.get(uri);
         try {
-            // Quick ping to ensure socket did not drop during warm lambda pause
-            await existingClient.db().command({ ping: 1 });
+            // Fast ping with 1.5s timeout to ensure socket did not drop during warm lambda pause
+            await existingClient.db("admin").command({ ping: 1 }, { maxTimeMS: 1500 });
             return existingClient;
         } catch (pingErr) {
             console.warn("Cached client socket stale; reconnecting:", pingErr.message);
@@ -93,34 +103,47 @@ async function connectToDatabase(customUri) {
     }
 
     const client = new MongoClient(uri, {
-        maxPoolSize: 4,
+        maxPoolSize: 10,
         minPoolSize: 0,
-        serverSelectionTimeoutMS: 5000,
-        connectTimeoutMS: 5000,
-        socketTimeoutMS: 10000,
-        maxIdleTimeMS: 30000
+        serverSelectionTimeoutMS: 3000,
+        connectTimeoutMS: 3000,
+        socketTimeoutMS: 5000,
+        maxIdleTimeMS: 15000
     });
     await client.connect();
     cachedClients.set(uri, client);
     return client;
 }
 
-function buildQueryFilter({ category, link_type, verdict, location, search }) {
+function buildQueryFilter({ category, link_type, verdict, location, search }, isCustom = false) {
     const clauses = [];
 
     // 1. Link Type partition: direct apply vs portals (classified by scraper)
     if (link_type === 'direct_apply') {
-        clauses.push({ link_type: 'direct_apply' });
+        if (isCustom) {
+            // Custom scrapers may lack link_type field. Include all non-portal jobs
+            clauses.push({
+                $or: [
+                    { link_type: 'direct_apply' },
+                    { link_type: { $exists: false } },
+                    { link_type: null },
+                    { link_type: '' },
+                    { link_type: { $nin: ['filtered_list', 'career_homepage'] } }
+                ]
+            });
+        } else {
+            clauses.push({ link_type: 'direct_apply' });
+        }
 
         // Verdict (experience gate only applies to individual direct apply vacancies)
         if (verdict && verdict !== "all") {
             clauses.push({ experience_verdict: verdict });
-        } else {
-            // Never serve rejected or blocked jobs
+        } else if (!isCustom) {
+            // Never serve rejected or blocked jobs on curated stream
             clauses.push({ experience_verdict: { $nin: ['REJECTED', 'BLOCKED'] } });
         }
 
-        // Functional Category filter (direct indexed lookup; classified by scraper at ingestion)
+        // Functional Category filter
         if (category && category !== "all") {
             clauses.push({ category: category });
         }
@@ -161,14 +184,19 @@ function buildQueryFilter({ category, link_type, verdict, location, search }) {
 
     // Search query across title, company, location, and requirements/skills (applies to BOTH)
     if (search && search.trim()) {
-        const q = escapeRegex(search.trim());
+        const q = escapeRegex(search.trim().slice(0, 100));
         const searchRegex = { $regex: q, $options: "i" };
         clauses.push({
             $or: [
                 { title: searchRegex },
+                { job_title: searchRegex },
+                { position: searchRegex },
                 { company_name: searchRegex },
+                { company: searchRegex },
                 { location: searchRegex },
-                { core_requirements: searchRegex }
+                { core_requirements: searchRegex },
+                { requirements: searchRegex },
+                { description: searchRegex }
             ]
         });
     }
@@ -197,14 +225,22 @@ exports.handler = async (event, context) => {
 
     const params = event.queryStringParameters || {};
     const headers = event.headers || {};
-    
+    const requestedStream = (params.stream || params.active_stream || "").toLowerCase().trim();
+
     // Resolve custom MongoDB URI:
-    // 1. First check header 'x-mongo-uri' or query param 'custom_mongo_uri'
-    // 2. Otherwise if user is logged in with JWT, check user's profile in Netlify DB
-    let customUri = (headers['x-mongo-uri'] || headers['X-Mongo-Uri'] || params.custom_mongo_uri || "").trim();
-    if (!customUri) {
-        const userDbUri = await resolveUserCustomUri(event, context);
-        if (userDbUri) customUri = userDbUri.trim();
+    // If client requested 'curated' / 'inbuilt', bypass custom URI resolution
+    let customUri = "";
+    if (requestedStream !== "curated" && requestedStream !== "inbuilt" && requestedStream !== "fresher") {
+        const rawHeader = (headers['x-mongo-uri'] || headers['X-Mongo-Uri'] || params.custom_mongo_uri || "").trim();
+        if (rawHeader && rawHeader !== "[CONFIGURED]" && rawHeader.startsWith("mongodb+srv://")) {
+            customUri = rawHeader;
+        }
+        if (!customUri) {
+            const userDbUri = await resolveUserCustomUri(event, context);
+            if (userDbUri && userDbUri !== "[CONFIGURED]" && userDbUri.startsWith("mongodb+srv://")) {
+                customUri = userDbUri.trim();
+            }
+        }
     }
     if (customUri) {
         customUri = normalizeMongoAtlasUri(customUri);
@@ -222,6 +258,7 @@ exports.handler = async (event, context) => {
         }
     }
 
+    const isCustomDb = Boolean(customUri);
     const category   = params.category   || null;
     const link_type  = params.link_type  || "direct_apply"; // Default to direct apply
     const page       = Math.max(parseInt(params.page ?? "1", 10), 1);
@@ -266,15 +303,32 @@ exports.handler = async (event, context) => {
             db = client.db("job_aggregator");
         }
 
-        const collection = db.collection("jobs");
+        let collection = db.collection("jobs");
+        if (isCustomDb) {
+            try {
+                const collections = await db.listCollections().toArray();
+                const colNames = collections.map(c => c.name);
+                if (!colNames.includes("jobs")) {
+                    const alt = colNames.find(n => ["job_postings", "postings", "all_jobs", "scraped_jobs", "vacancies"].includes(n.toLowerCase()));
+                    if (alt) {
+                        collection = db.collection(alt);
+                    } else {
+                        const nonSys = colNames.filter(n => !n.startsWith("system."));
+                        if (nonSys.length === 1) collection = db.collection(nonSys[0]);
+                    }
+                }
+            } catch (colErr) {
+                collection = db.collection("jobs");
+            }
+        }
 
-        const filter = buildQueryFilter({ category, link_type, verdict, location, search });
+        const filter = buildQueryFilter({ category, link_type, verdict, location, search }, isCustomDb);
 
         // Build disjoint filters for live tab counts under current filters
-        const directFilter = buildQueryFilter({ category, link_type: 'direct_apply', verdict, location, search });
-        const portalFilter = buildQueryFilter({ category: 'all', link_type: 'filtered_list', verdict: 'all', location: 'all', search });
+        const directFilter = buildQueryFilter({ category, link_type: 'direct_apply', verdict, location, search }, isCustomDb);
+        const portalFilter = buildQueryFilter({ category: 'all', link_type: 'filtered_list', verdict: 'all', location: 'all', search }, isCustomDb);
 
-        const projection = {
+        const projection = isCustomDb ? {} : {
             _id: 1,
             title: 1,
             company_name: 1,
@@ -293,26 +347,41 @@ exports.handler = async (event, context) => {
         const skip = (page - 1) * limit;
 
         // Disjoint count optimization: avoid redundant count query for active link_type
-        const countOtherPromise = link_type === 'direct_apply'
-            ? collection.countDocuments(portalFilter)
-            : collection.countDocuments(directFilter);
+        const countOtherPromise = (link_type === 'direct_apply'
+            ? collection.countDocuments(portalFilter, { maxTimeMS: 2500 })
+            : collection.countDocuments(directFilter, { maxTimeMS: 2500 })
+        ).catch(err => {
+            console.warn("Secondary tab count timed out:", err.message);
+            return 0;
+        });
 
         // Fetch distinct categories and metadata in parallel for dynamic frontend rendering
-        const metaPromise = db.collection("meta").findOne({ _id: "active_profile" }).catch(() => null);
-        const distinctCatsPromise = collection.distinct("category").catch(() => []);
+        const metaPromise = db.collection("meta").findOne({ _id: "active_profile" }, { maxTimeMS: 2000 }).catch(() => null);
+
+        const now = Date.now();
+        const shouldFetchCats = !cachedCategories || (now - lastCategoriesFetchTime > CATEGORIES_CACHE_TTL);
+        const distinctCatsPromise = shouldFetchCats
+            ? collection.distinct("category", {}, { maxTimeMS: 2000 }).catch(() => [])
+            : Promise.resolve(cachedCategories);
 
         // Run queries in parallel for lowest latency
         const [total, rawJobs, otherCount, metaDoc, distinctCats] = await Promise.all([
-            collection.countDocuments(filter),
+            collection.countDocuments(filter, { maxTimeMS: 3000 }),
             collection.find(filter, { projection })
-                .sort({ scraped_at: -1, _id: -1 })
+                .sort({ scraped_at: -1, created_at: -1, _id: -1 })
                 .skip(skip)
                 .limit(limit)
+                .maxTimeMS(3000)
                 .toArray(),
             countOtherPromise,
             metaPromise,
             distinctCatsPromise
         ]);
+
+        if (distinctCats && distinctCats.length > 0) {
+            cachedCategories = distinctCats;
+            lastCategoriesFetchTime = now;
+        }
 
         const directCount = link_type === 'direct_apply' ? total : otherCount;
         const portalCount = link_type === 'direct_apply' ? otherCount : total;
@@ -322,7 +391,9 @@ exports.handler = async (event, context) => {
         if (metaDoc && Array.isArray(metaDoc.enabled_categories)) {
             metaDoc.enabled_categories.forEach(c => c && catSet.add(c.toLowerCase().trim()));
         }
-        distinctCats.forEach(c => c && catSet.add(c.toLowerCase().trim()));
+        if (Array.isArray(distinctCats)) {
+            distinctCats.forEach(c => c && catSet.add(c.toLowerCase().trim()));
+        }
 
         let dynamicCategories = Array.from(catSet).filter(c => c !== "other");
         dynamicCategories.sort();
@@ -348,12 +419,27 @@ exports.handler = async (event, context) => {
         const seenLinks = new Set();
         const jobs = [];
         for (const j of rawJobs) {
-            const linkKey = (j.link && j.link !== '#') ? j.link.trim().toLowerCase() : j._id.toString();
+            const rawLink = j.link || j.url || j.apply_url || j.job_url || j.apply_link || '#';
+            const linkKey = (rawLink && rawLink !== '#') ? String(rawLink).trim().toLowerCase() : j._id.toString();
             if (!seenLinks.has(linkKey)) {
                 seenLinks.add(linkKey);
 
-                // Sanitize scraper bot artifacts / cookie blocker text from core_requirements
-                let cleanReqs = (j.core_requirements || "").trim();
+                // Safe extraction of requirements text (handles string or array)
+                let cleanReqs = "";
+                if (typeof j.core_requirements === "string") {
+                    cleanReqs = j.core_requirements.trim();
+                } else if (Array.isArray(j.core_requirements)) {
+                    cleanReqs = j.core_requirements.filter(Boolean).join(" • ");
+                } else if (typeof j.requirements === "string") {
+                    cleanReqs = j.requirements.trim();
+                } else if (Array.isArray(j.requirements)) {
+                    cleanReqs = j.requirements.filter(Boolean).join(" • ");
+                } else if (typeof j.description === "string") {
+                    cleanReqs = j.description.trim().slice(0, 300);
+                } else if (Array.isArray(j.skills)) {
+                    cleanReqs = j.skills.filter(Boolean).join(" • ");
+                }
+
                 if (
                     cleanReqs.toLowerCase().includes("javascript to run") ||
                     cleanReqs.toLowerCase().includes("enable javascript") ||
@@ -363,20 +449,26 @@ exports.handler = async (event, context) => {
                     cleanReqs = "";
                 }
 
+                const title = j.title || j.job_title || j.position || j.role || 'Untitled';
+                const comp = j.company_name || j.company || j.companyName || '';
+                const loc = typeof j.location === 'string'
+                    ? j.location
+                    : (Array.isArray(j.location) ? j.location.join(', ') : (j.location?.city || j.city || ''));
+
                 jobs.push({
                     _id: j._id,
-                    title: j.title || 'Untitled',
-                    company_name: j.company_name || '',
-                    location: j.location || '',
-                    category: j.category || 'other',
-                    link: j.link || '#',
+                    title,
+                    company_name: comp,
+                    location: loc,
+                    category: j.category || (Array.isArray(j.categories) ? j.categories[0] : 'other'),
+                    link: rawLink,
                     link_type: j.link_type || 'direct_apply',
                     experience_verdict: j.experience_verdict || null,
                     core_requirements: cleanReqs,
-                    ats_name: j.ats_name || 'Direct',
+                    ats_name: j.ats_name || j.source || 'Direct',
                     verdict_reason: j.verdict_reason || '',
-                    scraped_at: j.scraped_at || null,
-                    first_seen: j.first_seen || j.scraped_at || null
+                    scraped_at: j.scraped_at || j.created_at || j.posted_at || null,
+                    first_seen: j.first_seen || j.scraped_at || j.created_at || null
                 });
             }
         }
@@ -387,8 +479,9 @@ exports.handler = async (event, context) => {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
                 "Vary": "Accept-Encoding, x-mongo-uri, Authorization",
-                "Cache-Control": customUri ? "no-store" : "public, max-age=180, s-maxage=180, stale-while-revalidate=360",
-                "Netlify-CDN-Cache-Control": customUri ? "no-store" : "public, durable, max-age=180, stale-while-revalidate=360",
+                "Cache-Control": isCustomDb ? "private, no-cache, no-store, must-revalidate" : "public, max-age=180, s-maxage=180, stale-while-revalidate=360",
+                "Netlify-CDN-Cache-Control": isCustomDb ? "no-store" : "public, durable, max-age=180, stale-while-revalidate=360",
+                "Pragma": isCustomDb ? "no-cache" : "public"
             },
             body: JSON.stringify({
                 jobs,
@@ -406,7 +499,7 @@ exports.handler = async (event, context) => {
                     },
                     categories: dynamicCategories,
                     locations: locPills,
-                    isCustomDb: Boolean(customUri)
+                    isCustomDb: isCustomDb
                 }
             }),
         };

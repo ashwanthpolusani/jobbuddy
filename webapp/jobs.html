@@ -1361,6 +1361,41 @@
         }
         .stream-banner-btn:hover { text-decoration: underline; }
 
+        /* Stream Mode Pill Switcher */
+        .stream-switcher-pill {
+            display: inline-flex;
+            align-items: center;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 3px;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        .stream-toggle-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text2);
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stream-toggle-btn:hover:not(.active) {
+            color: var(--text);
+            background: var(--surface3);
+        }
+        .stream-toggle-btn.active {
+            background: var(--surface);
+            color: var(--accent);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            font-weight: 700;
+        }
     </style>
     <link rel="stylesheet" href="/shared.css">
 </head>
@@ -1422,6 +1457,16 @@
                         <h1 class="page-main-heading" id="jobs-main-title" style="font-size: 1.25rem; font-weight: 800; color: var(--text); margin: 0 0 12px; letter-spacing: -0.02em; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                             <span>Direct Tech Requisitions <span style="font-size: 0.82rem; font-weight: 500; color: var(--text3); font-family: inherit;">· Official ATS Job Stream</span></span>
                         </h1>
+
+                        <!-- Dynamic Stream Switcher Toggle (Visible when custom DB is configured) -->
+                        <div class="stream-switcher-pill" id="stream-switcher-wrap" style="display: none;" role="tablist" aria-label="Job Data Stream Selection">
+                            <button type="button" class="stream-toggle-btn active" id="btn-stream-curated" onclick="setStreamMode('curated')" role="tab" aria-selected="true">
+                                🟢 Curated Freshers Feed
+                            </button>
+                            <button type="button" class="stream-toggle-btn" id="btn-stream-custom" onclick="setStreamMode('custom')" role="tab" aria-selected="false">
+                                🟣 My Scraper Database
+                            </button>
+                        </div>
 
                         <!-- Stream Context Banner: Dynamic between Freshers (Guest) and Connected Workspace -->
                         <div class="stream-banner" id="stream-context-banner">
@@ -1624,8 +1669,8 @@
             <div class="footer-col">
                 <h4 class="footer-heading">Open Source &amp; Legal</h4>
                 <ul class="footer-nav-list">
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanth-1729/scrapperbuddy" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanth-1729/scrapperbuddy/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
                     <li><a href="/privacy">Privacy Policy</a></li>
                     <li><a href="/terms">Terms of Service</a></li>
                 </ul>
@@ -1715,11 +1760,13 @@
                             <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" autocomplete="off" style="width: 100%; padding-right: 40px;" />
                             <button type="button" id="btn-jobs-mongo-vis" onclick="toggleMongoPasswordVisibility()" aria-label="Show connection URI" aria-pressed="false" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
                         </div>
+                        <div id="jobs-modal-feedback" class="inline-feedback"></div>
                         <span class="db-hint">&#128274; Replace &lt;db_user&gt; and &lt;db_password&gt; with your Atlas credentials. Saved securely to your Netlify cloud profile.</span>
                     </div>
                     <div class="ws-btn-row">
-                        <button class="btn-db-save" onclick="saveCustomDb()">Save to Netlify Profile</button>
-                        <button class="btn-db-reset" onclick="disconnectDatabase()">Disconnect Database</button>
+                        <button type="button" class="btn-db-reset" id="btn-jobs-test-conn" onclick="testJobsDbConnection()">🔍 Test Connection</button>
+                        <button type="button" class="btn-db-save" id="btn-save-custom-db" onclick="saveCustomDb()">Save to Netlify Profile</button>
+                        <button type="button" class="btn-db-reset" id="btn-disconnect-db" onclick="disconnectDatabase()" style="display: none;">Disconnect Database</button>
                     </div>
                 </div>
             </div>
@@ -1750,7 +1797,62 @@
         let currentUser = (authCore && authCore.getUser()) || null;
         let userProfile = null;
 
-        let CURRENT_CACHE_KEY = 'rolenaut_cache_v1';
+        // Auto-purge any stale [CONFIGURED] mask strings from localStorage
+        try {
+            if (localStorage.getItem('rolenaut_custom_mongo_uri') === '[CONFIGURED]') {
+                localStorage.removeItem('rolenaut_custom_mongo_uri');
+            }
+            if (localStorage.getItem('jobbuddy_custom_mongo_uri') === '[CONFIGURED]') {
+                localStorage.removeItem('jobbuddy_custom_mongo_uri');
+            }
+        } catch (e) {}
+
+        function hasValidCustomUri() {
+            const u = (localStorage.getItem('rolenaut_custom_mongo_uri') || localStorage.getItem('jobbuddy_custom_mongo_uri') || '').trim();
+            return Boolean(u && u !== '[CONFIGURED]' && (u.startsWith('mongodb+srv://') || u.startsWith('mongodb://')));
+        }
+
+        let activeStream = localStorage.getItem('rolenaut_active_stream') || (hasValidCustomUri() ? 'custom' : 'curated');
+
+        function showJobsToast(msg, type = 'info') {
+            const t = document.getElementById('jobs-toast');
+            if (!t) return;
+            t.className = 'rolenaut-toast ' + type + ' show';
+            t.innerHTML = (type === 'success' ? '✓ ' : type === 'error' ? '⚠️ ' : 'ℹ️ ') + msg;
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        function showJobsModalFeedback(msg, isError = false) {
+            const fb = document.getElementById('jobs-modal-feedback');
+            if (!fb) return;
+            fb.textContent = msg;
+            fb.className = 'inline-feedback ' + (isError ? 'error' : 'success');
+        }
+
+        function clearJobsModalFeedback() {
+            const fb = document.getElementById('jobs-modal-feedback');
+            if (fb) fb.className = 'inline-feedback';
+        }
+
+        function setStreamMode(mode) {
+            if (mode === activeStream) return;
+            const hasCustom = hasValidCustomUri() || Boolean(userProfile && (userProfile.has_custom_db || userProfile.db_mode === 'custom'));
+            if (mode === 'custom' && !hasCustom) {
+                openDbModal();
+                return;
+            }
+            activeStream = mode;
+            localStorage.setItem('rolenaut_active_stream', mode);
+            window.dispatchEvent(new CustomEvent('rolenaut_stream_change', { detail: { stream: mode } }));
+            clearAllCache();
+            currentPage = 1;
+            activeCat = 'all';
+            activeLoc = 'all';
+            updateWorkspaceIndicator();
+            fetchJobs(1);
+        }
+
+        let CURRENT_CACHE_KEY = 'rolenaut_cache_v2';
         const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
         // View Switcher (Job Openings vs Company Career Pages)
@@ -1872,6 +1974,7 @@
 
         // Category Filter
         function setCat(cat, btn) {
+            if (activeCat === cat) return;
             activeCat = cat;
             syncFilterUI();
             updateURL();
@@ -1881,6 +1984,7 @@
 
         // Location filter (supports dynamic cities)
         function setLoc(val, btn) {
+            if (activeLoc === val) return;
             activeLoc = val;
             syncFilterUI();
             updateURL();
@@ -1890,6 +1994,7 @@
 
         // Confidence filter with color-coded active states
         function setConf(val, btn) {
+            if (activeConf === val) return;
             activeConf = val;
             syncFilterUI();
             currentPage = 1;
@@ -2209,7 +2314,7 @@
         }
 
         function goToPage(page) {
-            if (page < 1 || page > totalPages || page === currentPage) return;
+            if (isLoading || page < 1 || page > totalPages || page === currentPage) return;
             fetchJobs(page);
             const panel = document.getElementById('panel-jobs');
             if (panel) {
@@ -2299,16 +2404,22 @@
             currentPage = page;
             cardIdx = 0;
 
-            const searchVal = document.getElementById("search-input") ? document.getElementById("search-input").value : "";
+            const searchVal = document.getElementById("search-input") ? document.getElementById("search-input").value.trim() : "";
             const catParam = activeViewType === 'direct_apply' ? (activeCat === 'all' ? '' : activeCat) : '';
             const locParam = activeViewType === 'direct_apply' ? activeLoc : 'all';
             const confParam = activeViewType === 'direct_apply' ? activeConf : 'all';
-            let customDbUri = localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri");
-            if (customDbUri) {
-                customDbUri = normalizeClientMongoUri(customDbUri);
+
+            let customDbUri = null;
+            if (activeStream === 'custom') {
+                const rawUri = (localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri") || "").trim();
+                if (rawUri && rawUri !== '[CONFIGURED]' && (rawUri.startsWith("mongodb+srv://") || rawUri.startsWith("mongodb://"))) {
+                    customDbUri = normalizeClientMongoUri(rawUri);
+                }
             }
-            const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}`;
-            CURRENT_CACHE_KEY = "rolenaut_cache_v1_" + (customDbUri ? "c_" : "d_") + encodeURIComponent(url);
+
+            const streamQuery = activeStream === 'custom' ? 'custom' : 'curated';
+            const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&stream=${streamQuery}&search=${encodeURIComponent(searchVal)}`;
+            CURRENT_CACHE_KEY = `rolenaut_cache_v2_${streamQuery}_${encodeURIComponent(url)}`;
 
             const cached = loadCache();
             if (cached && cached.jobs) {
@@ -2329,7 +2440,9 @@
             }
 
             try {
-                const headers = {};
+                const headers = {
+                    'Cache-Control': 'no-cache'
+                };
                 const auth = window.RolenautAuth || window.JobBuddyAuth;
                 if (auth && typeof auth.getToken === 'function') {
                     const token = await auth.getToken();
@@ -2338,7 +2451,7 @@
                 if (customDbUri) {
                     headers['x-mongo-uri'] = customDbUri;
                 }
-                const res = await fetch(url, { headers });
+                const res = await fetch(url, { headers, cache: 'no-store' });
                 const data = await res.json();
 
                 // Seamlessly handle both new metadata response and legacy array response
@@ -2414,9 +2527,10 @@
                         };
                         let html = `<button class="cat-btn ${activeCat === 'all' ? 'active' : ''}" data-cat="all" id="cat-all" role="tab" aria-selected="${activeCat === 'all'}" onclick="setCat('all',this)">All</button>`;
                         meta.categories.forEach(cat => {
+                            const safeCat = esc(cat);
                             const label = labelMap[cat] || cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                             const isActive = activeCat === cat;
-                            html += `<button class="cat-btn ${isActive ? 'active' : ''}" data-cat="${cat}" id="cat-${cat}" role="tab" aria-selected="${isActive}" onclick="setCat('${cat}',this)">${label}</button>`;
+                            html += `<button class="cat-btn ${isActive ? 'active' : ''}" data-cat="${safeCat}" id="cat-${safeCat}" role="tab" aria-selected="${isActive}" onclick="setCat('${safeCat}',this)">${esc(label)}</button>`;
                         });
                         container.innerHTML = html;
                     }
@@ -2432,8 +2546,9 @@
                     if (currentLocs !== newLocs) {
                         let html = '';
                         meta.locations.forEach(loc => {
+                            const safeId = esc(loc.id);
                             const isActive = activeLoc === loc.id;
-                            html += `<button class="filt-btn ${isActive ? 'active-blue' : ''}" id="loc-${loc.id}" data-loc="${loc.id}" onclick="setLoc('${loc.id}',this)">${esc(loc.label)}</button>`;
+                            html += `<button class="filt-btn ${isActive ? 'active-blue' : ''}" id="loc-${safeId}" data-loc="${safeId}" onclick="setLoc('${safeId}',this)">${esc(loc.label)}</button>`;
                         });
                         locWrap.innerHTML = html;
                     }
@@ -2502,30 +2617,22 @@
                             window.RolenautAuth.setDisplayName(userProfile.display_name);
                         }
 
-                        const hadLocalUri = Boolean(localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri"));
-
-                        if (userProfile.db_mode === 'custom' && userProfile.custom_mongo_uri) {
+                        // Never overwrite local valid URI with [CONFIGURED] mask
+                        if (userProfile.custom_mongo_uri && userProfile.custom_mongo_uri !== '[CONFIGURED]') {
                             const normalized = normalizeClientMongoUri(userProfile.custom_mongo_uri);
                             localStorage.setItem("rolenaut_custom_mongo_uri", normalized);
                             localStorage.setItem("jobbuddy_custom_mongo_uri", normalized);
-                            updateWorkspaceIndicator(true);
-                            if (!hadLocalUri || !latestMeta?.isCustomDb) {
-                                clearAllCache();
-                                currentPage = 1;
-                                fetchJobs(1);
-                            }
-                        } else if (userProfile.db_mode === 'inbuilt') {
-                            localStorage.removeItem("rolenaut_custom_mongo_uri");
-                            localStorage.removeItem("jobbuddy_custom_mongo_uri");
-                            updateWorkspaceIndicator(false);
-                            if (hadLocalUri || latestMeta?.isCustomDb) {
-                                clearAllCache();
-                                currentPage = 1;
-                                fetchJobs(1);
-                            }
-                        } else {
-                            updateWorkspaceIndicator();
                         }
+
+                        if (userProfile.active_stream) {
+                            activeStream = userProfile.active_stream;
+                            localStorage.setItem("rolenaut_active_stream", activeStream);
+                        } else if (userProfile.db_mode === 'custom' || userProfile.has_custom_db) {
+                            activeStream = 'custom';
+                            localStorage.setItem("rolenaut_active_stream", 'custom');
+                        }
+
+                        updateWorkspaceIndicator();
                     }
                 }
             } catch (e) {
@@ -2547,27 +2654,69 @@
             }
         }
 
+        async function testJobsDbConnection() {
+            clearJobsModalFeedback();
+            const input = document.getElementById('custom-mongo-input');
+            const btn = document.getElementById('btn-jobs-test-conn');
+            const rawUri = input ? input.value.trim() : '';
+
+            if (!rawUri || !rawUri.startsWith('mongodb+srv://') || !rawUri.includes('.mongodb.net')) {
+                showJobsModalFeedback('Please enter a valid MongoDB Atlas SRV URI.', true);
+                return;
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="btn-spinner"></span> Testing...';
+            }
+            showJobsModalFeedback('Testing connection to cluster...', false);
+
+            try {
+                const testUri = normalizeClientMongoUri(rawUri);
+                const res = await fetch(`/.netlify/functions/getJobs?page=1&limit=1`, {
+                    headers: { 'x-mongo-uri': testUri }
+                });
+                const data = await res.json();
+                if (res.ok && data.meta && data.meta.isCustomDb) {
+                    showJobsModalFeedback(`✓ Connected successfully! Found ${data.total || 0} requisitions in cluster.`, false);
+                } else {
+                    showJobsModalFeedback(`Connection failed: ${data.details || data.error || 'Cluster unreachable'}. Ensure IP whitelist allows 0.0.0.0/0.`, true);
+                }
+            } catch (err) {
+                showJobsModalFeedback(`Connection error: ${err.message}.`, true);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🔍 Test Connection';
+                }
+            }
+        }
+
         async function saveCustomDb() {
+            clearJobsModalFeedback();
             if (!currentUser) {
-                alert("Please sign in first to connect and sync your database to your Netlify account profile.");
+                showJobsModalFeedback("Please sign in first to connect and sync your database.", true);
                 openIdentityModal();
                 return;
             }
 
             const input = document.getElementById('custom-mongo-input');
             const rawUri = input ? input.value.trim() : "";
-            if (!rawUri) {
+            if (!rawUri && !userProfile?.has_custom_db) {
                 disconnectDatabase();
                 return;
             }
-            if (!rawUri.startsWith("mongodb://") && !rawUri.startsWith("mongodb+srv://")) {
-                alert("Please enter a valid MongoDB connection string (starts with mongodb:// or mongodb+srv://)");
+            if (rawUri && (!rawUri.startsWith("mongodb+srv://") || !rawUri.includes(".mongodb.net"))) {
+                showJobsModalFeedback("Please enter a valid MongoDB Atlas SRV URI (mongodb+srv://...)", true);
                 return;
             }
-            const uri = normalizeClientMongoUri(rawUri);
 
-            const btn = document.querySelector('.btn-db-save');
-            if (btn) btn.textContent = 'Saving to Netlify DB...';
+            const uri = rawUri ? normalizeClientMongoUri(rawUri) : "[CONFIGURED]";
+            const btn = document.getElementById('btn-save-custom-db');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="btn-spinner"></span> Saving...';
+            }
 
             try {
                 const auth = window.RolenautAuth || window.JobBuddyAuth;
@@ -2585,7 +2734,8 @@
                     headers: headers,
                     body: JSON.stringify({
                         db_mode: 'custom',
-                        custom_mongo_uri: uri
+                        custom_mongo_uri: uri,
+                        active_stream: 'custom'
                     })
                 });
 
@@ -2594,23 +2744,32 @@
                     throw new Error(errData.error || 'Failed to save');
                 }
 
-                localStorage.setItem("rolenaut_custom_mongo_uri", uri);
-                localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
+                if (rawUri) {
+                    localStorage.setItem("rolenaut_custom_mongo_uri", uri);
+                    localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
+                }
+                localStorage.setItem("rolenaut_active_stream", "custom");
+                activeStream = "custom";
                 clearAllCache();
                 updateWorkspaceIndicator(true);
                 closeDbModal();
+                showJobsToast("Connected to your MongoDB Atlas database!", "success");
                 activeCat = "all";
                 activeLoc = "all";
                 currentPage = 1;
                 fetchJobs(1);
             } catch (err) {
-                alert("Error saving to Netlify database: " + err.message);
+                showJobsModalFeedback("Error saving database: " + err.message, true);
             } finally {
-                if (btn) btn.textContent = 'Save to Netlify Profile';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Save to Netlify Profile';
+                }
             }
         }
 
         async function disconnectDatabase() {
+            clearJobsModalFeedback();
             if (currentUser) {
                 try {
                     const auth = window.RolenautAuth || window.JobBuddyAuth;
@@ -2627,7 +2786,8 @@
                         headers: headers,
                         body: JSON.stringify({
                             db_mode: 'inbuilt',
-                            custom_mongo_uri: ''
+                            custom_mongo_uri: '',
+                            active_stream: 'curated'
                         })
                     });
                 } catch (e) {}
@@ -2635,11 +2795,18 @@
 
             localStorage.removeItem("rolenaut_custom_mongo_uri");
             localStorage.removeItem("jobbuddy_custom_mongo_uri");
+            localStorage.setItem("rolenaut_active_stream", "curated");
+            activeStream = "curated";
+            if (userProfile) {
+                userProfile.db_mode = 'inbuilt';
+                userProfile.has_custom_db = false;
+            }
             const input = document.getElementById('custom-mongo-input');
             if (input) input.value = "";
             clearAllCache();
             updateWorkspaceIndicator(false);
             closeDbModal();
+            showJobsToast("Switched back to curated verified stream", "info");
             activeCat = "all";
             activeLoc = "all";
             currentPage = 1;
@@ -2656,12 +2823,25 @@
             const bannerBadge = document.getElementById('stream-banner-badge');
             const bannerText = document.getElementById('stream-banner-text');
             const bannerActions = document.getElementById('stream-banner-actions');
-            
-            const hasLocalCustom = Boolean(localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri"));
-            const hasProfileCustom = Boolean(userProfile && (userProfile.db_mode === 'custom' || userProfile.has_custom_db));
-            const isCustom = forceCustomState !== undefined ? Boolean(forceCustomState) : (hasLocalCustom || hasProfileCustom);
+            const streamSwitcher = document.getElementById('stream-switcher-wrap');
+            const btnCurated = document.getElementById('btn-stream-curated');
+            const btnCustom = document.getElementById('btn-stream-custom');
 
-            if (isCustom) {
+            const hasCustomConn = hasValidCustomUri() || Boolean(userProfile && (userProfile.has_custom_db || userProfile.db_mode === 'custom'));
+            const isCustomActive = activeStream === 'custom' && hasCustomConn;
+
+            // Stream pill switcher visibility and active class
+            if (streamSwitcher) {
+                streamSwitcher.style.display = hasCustomConn ? 'inline-flex' : 'none';
+            }
+            if (btnCurated && btnCustom) {
+                btnCurated.classList.toggle('active', !isCustomActive);
+                btnCurated.setAttribute('aria-selected', !isCustomActive);
+                btnCustom.classList.toggle('active', isCustomActive);
+                btnCustom.setAttribute('aria-selected', isCustomActive);
+            }
+
+            if (isCustomActive) {
                 // Connected custom database: remove the freshers text completely!
                 if (bannerBadge) {
                     bannerBadge.className = 'stream-banner-badge custom';
@@ -2671,19 +2851,19 @@
                     bannerText.textContent = 'Streaming custom scraped requisitions from your connected MongoDB Atlas cluster across all configured tracks and experience levels.';
                 }
                 if (bannerActions) {
-                    bannerActions.innerHTML = '<button class="stream-banner-btn" onclick="openDbModal()">⚙️ Workspace Settings</button>';
+                    bannerActions.innerHTML = '<button type="button" class="stream-banner-btn" onclick="openDbModal()">⚙️ Workspace Settings</button>';
                 }
             } else if (currentUser) {
                 // Logged in with personal cloud profile
                 if (bannerBadge) {
                     bannerBadge.className = 'stream-banner-badge user';
-                    bannerBadge.innerHTML = '👤 Personal Candidate Workspace';
+                    bannerBadge.innerHTML = '👤 Verified Curated Freshers Stream';
                 }
                 if (bannerText) {
-                    bannerText.textContent = 'Synced to your Rolenaut cloud profile. Verified requisitions with direct ATS application tracking.';
+                    bannerText.textContent = 'Verified 0–2 YOE tech requisitions with direct ATS tracking, synced to your Rolenaut cloud profile.';
                 }
                 if (bannerActions) {
-                    bannerActions.innerHTML = '<a href="/profile" class="stream-banner-link">Profile &amp; Bookmarks &rarr;</a>';
+                    bannerActions.innerHTML = '<a href="/profile" class="stream-banner-link">Profile &amp; Settings &rarr;</a>';
                 }
             } else {
                 // Guest / Not logged in: Loudly declare Freshers & Early-Career Stream!
@@ -2705,13 +2885,8 @@
                 if (headerEmail) headerEmail.textContent = currentUser.email;
                 if (headerAvatar) headerAvatar.textContent = (currentUser.email ? currentUser.email[0].toUpperCase() : '👤');
                 if (statusDot) {
-                    if (isCustom) {
-                        statusDot.className = 'db-status-pill is-custom';
-                        statusDot.title = 'Personal MongoDB Connected';
-                    } else {
-                        statusDot.className = 'db-status-pill';
-                        statusDot.title = 'No MongoDB Connected';
-                    }
+                    statusDot.className = isCustomActive ? 'db-status-pill is-custom' : 'db-status-pill';
+                    statusDot.title = isCustomActive ? 'Personal MongoDB Connected' : 'Verified Curated Stream';
                 }
             } else {
                 if (signInBtn) signInBtn.style.display = 'inline-flex';
@@ -2720,20 +2895,37 @@
         }
 
         function updateWorkspaceModalUI() {
+            clearJobsModalFeedback();
             const userSection = document.getElementById('modal-user-section');
             const guestSection = document.getElementById('modal-guest-section');
             const dbSection = document.getElementById('modal-db-section');
             const modalEmail = document.getElementById('modal-account-email');
             const modalDbBadge = document.getElementById('modal-db-badge');
             const input = document.getElementById('custom-mongo-input');
-            const currentUri = localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri") || (userProfile && userProfile.custom_mongo_uri) || "";
-            const isCustom = Boolean(currentUri);
+            const btnDisconnect = document.getElementById('btn-disconnect-db');
 
-            if (input && !input.value) input.value = currentUri;
+            const hasCustom = hasValidCustomUri() || Boolean(userProfile && (userProfile.has_custom_db || userProfile.db_mode === 'custom'));
+            const localUri = (localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri") || "").trim();
+
+            if (input) {
+                if (localUri && localUri !== '[CONFIGURED]') {
+                    input.value = localUri;
+                } else if (hasCustom) {
+                    input.value = '';
+                    input.placeholder = 'Leave blank to keep existing cluster, or enter new URI...';
+                } else {
+                    input.value = '';
+                    input.placeholder = 'mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator';
+                }
+            }
 
             if (modalDbBadge) {
-                modalDbBadge.textContent = isCustom ? 'Personal MongoDB Active (Netlify Cloud)' : 'No Database Connected';
-                modalDbBadge.className = isCustom ? 'ws-status-badge' : 'ws-status-badge neutral';
+                modalDbBadge.textContent = hasCustom ? 'Personal MongoDB Active (Netlify Cloud)' : 'No Database Connected';
+                modalDbBadge.className = hasCustom ? 'ws-status-badge' : 'ws-status-badge neutral';
+            }
+
+            if (btnDisconnect) {
+                btnDisconnect.style.display = hasCustom ? 'inline-block' : 'none';
             }
 
             if (currentUser) {
@@ -2877,6 +3069,24 @@
             };
             window.addEventListener("rolenaut_auth_change", handleAuthUpdate);
             window.addEventListener("jb_auth_change", handleAuthUpdate);
+            window.addEventListener("rolenaut_stream_change", (e) => {
+                if (e.detail && e.detail.stream && e.detail.stream !== activeStream) {
+                    activeStream = e.detail.stream;
+                    clearAllCache();
+                    currentPage = 1;
+                    updateWorkspaceIndicator();
+                    fetchJobs(1);
+                }
+            });
+            window.addEventListener("storage", (e) => {
+                if (e.key === "rolenaut_active_stream" && e.newValue && e.newValue !== activeStream) {
+                    activeStream = e.newValue;
+                    clearAllCache();
+                    currentPage = 1;
+                    updateWorkspaceIndicator();
+                    fetchJobs(1);
+                }
+            });
 
             // Clean up legacy localStorage cache keys
             clearAllCache();
@@ -2940,5 +3150,6 @@
             }
         });
     </script>
+    <div class="rolenaut-toast" id="jobs-toast" role="status" aria-live="polite"></div>
 </body>
 </html>

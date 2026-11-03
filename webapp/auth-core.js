@@ -4,8 +4,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 (function () {
+    // State latch: prevents Netlify Identity widget's in-memory user from resurrecting during async logout
+    let isExplicitlyLoggedOut = false;
+
     // 1. Synchronously retrieve user from localStorage to eliminate refresh flicker
     function getStoredUser() {
+        if (isExplicitlyLoggedOut) return null;
+
         try {
             const raw = localStorage.getItem('gotrue.user');
             if (raw) {
@@ -60,6 +65,8 @@
 
     // 2. Retrieve JWT access token with fallback to stored token
     async function getAuthToken() {
+        if (isExplicitlyLoggedOut) return null;
+
         if (window.netlifyIdentity && typeof window.netlifyIdentity.currentUser === 'function') {
             const current = window.netlifyIdentity.currentUser();
             if (current && typeof current.jwt === 'function') {
@@ -120,6 +127,10 @@
             return;
         }
         const savedDisplayName = localStorage.getItem('rolenaut_display_name') || user.display_name || (user.user_metadata && (user.user_metadata.display_name || user.user_metadata.full_name)) || '';
+        if (user.user_metadata && savedDisplayName) {
+            user.user_metadata.display_name = savedDisplayName;
+            user.user_metadata.full_name = savedDisplayName;
+        }
         const cache = {
             id: user.id || ('usr_' + btoa(user.email).replace(/=/g, '').slice(0, 16)),
             email: user.email,
@@ -136,20 +147,42 @@
         } catch (e) {}
     }
 
-    function setDisplayName(name) {
+    async function setDisplayName(name) {
         const cleanName = String(name || '').trim();
-        if (cleanName) {
-            localStorage.setItem('rolenaut_display_name', cleanName);
-            const user = getStoredUser();
-            if (user) {
-                user.display_name = cleanName;
-                if (!user.user_metadata) user.user_metadata = {};
-                user.user_metadata.display_name = cleanName;
-                persistUserCache(user);
-            }
-            renderAuthHeader();
-            // Crucial: Do NOT call dispatchAuthEvent here - setting display name is purely visual and must not re-trigger lifecycle auth loops!
+        if (!cleanName) return;
+
+        localStorage.setItem('rolenaut_display_name', cleanName);
+        const user = getStoredUser();
+        if (user) {
+            user.display_name = cleanName;
+            if (!user.user_metadata) user.user_metadata = {};
+            user.user_metadata.display_name = cleanName;
+            user.user_metadata.full_name = cleanName;
+            persistUserCache(user);
         }
+        renderAuthHeader();
+
+        // Two-way sync: persist display_name and full_name to Netlify Identity GoTrue cloud metadata
+        try {
+            if (window.netlifyIdentity && typeof window.netlifyIdentity.currentUser === 'function') {
+                const idUser = window.netlifyIdentity.currentUser();
+                if (idUser && typeof idUser.update === 'function') {
+                    const updatedUser = await idUser.update({
+                        data: {
+                            display_name: cleanName,
+                            full_name: cleanName
+                        }
+                    });
+                    if (updatedUser) {
+                        persistUserCache(updatedUser);
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn('[RolenautAuth] GoTrue metadata cloud sync notice:', err && err.message);
+        }
+
+        window.dispatchEvent(new CustomEvent('rolenaut_display_name_change', { detail: { displayName: cleanName } }));
     }
 
     // Helper: notify auth state changes across all listeners (both modern and legacy events)
@@ -161,6 +194,7 @@
 
     // 4. Open Auth Modal reliably
     function openAuthModal(action) {
+        isExplicitlyLoggedOut = false;
         if (window.netlifyIdentity) {
             window.netlifyIdentity.open(action || 'login');
         } else {
@@ -180,17 +214,25 @@
 
     // 5. Logout reliably
     function logoutUser() {
+        isExplicitlyLoggedOut = true;
         persistUserCache(null);
         localStorage.removeItem('rolenaut_custom_mongo_uri');
         localStorage.removeItem('jobbuddy_custom_mongo_uri');
         localStorage.removeItem('rolenaut_display_name');
+        localStorage.removeItem('rolenaut_active_stream');
+        document.cookie = "nf_jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
         try {
-            Object.keys(localStorage).forEach(k => {
-                if (k.startsWith("rolenaut_cache_") || k.startsWith("jobbuddy_cache_") || k.startsWith("jb_cache_")) {
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const k = localStorage.key(i);
+                if (k && (k.startsWith("rolenaut_cache_") || k.startsWith("jobbuddy_cache_") || k.startsWith("jb_cache_") || k.startsWith("jb_v"))) {
                     localStorage.removeItem(k);
                 }
-            });
+            }
         } catch (e) {}
+
+        const card = document.getElementById('mini-profile-card');
+        if (card) card.style.display = 'none';
 
         if (window.netlifyIdentity && typeof window.netlifyIdentity.logout === 'function') {
             try { window.netlifyIdentity.logout(); } catch (e) {}
@@ -342,9 +384,10 @@
         const fullName = (user.user_metadata && user.user_metadata.full_name) || '';
         const displayName = savedDisplayName || fullName || email.split('@')[0] || 'Candidate';
         const initial = displayName.charAt(0).toUpperCase();
-        const isCustomDb = !!localStorage.getItem('rolenaut_custom_mongo_uri') ||
-                           !!localStorage.getItem('jobbuddy_custom_mongo_uri') || 
-                           (user.user_metadata && user.user_metadata.has_custom_db);
+        const customUri = (localStorage.getItem('rolenaut_custom_mongo_uri') || localStorage.getItem('jobbuddy_custom_mongo_uri') || '').trim();
+        const hasValidCustomUri = customUri && customUri !== '[CONFIGURED]' && customUri.startsWith('mongodb+srv://');
+        const activeStream = localStorage.getItem('rolenaut_active_stream') || (hasValidCustomUri ? 'custom' : 'curated');
+        const isCustomDb = (activeStream === 'custom') && (hasValidCustomUri || (user.user_metadata && user.user_metadata.has_custom_db));
 
         wrapper.innerHTML = `
             <div class="user-profile-menu-container">
@@ -356,9 +399,9 @@
                 <div class="mini-profile-card" id="mini-profile-card" style="display: none;">
                     <div class="mini-profile-header">
                         <div class="mini-avatar-large">${initial}</div>
-                        <div class="mini-user-info">
-                            <div class="mini-user-name">${escapeHtml(displayName)}</div>
-                            <div class="mini-user-email">${escapeHtml(email)}</div>
+                        <div class="mini-user-info" style="min-width: 0;">
+                            <div class="mini-user-name" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(displayName)}</div>
+                            <div class="mini-user-email" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(email)}</div>
                         </div>
                     </div>
                     <div class="mini-profile-body">
@@ -399,15 +442,20 @@
 
     // 10. Identity listeners setup with retry polling
     let identityInitialized = false;
+    let identityRetries = 0;
     function setupIdentityListeners() {
         if (identityInitialized) return;
         if (!window.netlifyIdentity) {
-            setTimeout(setupIdentityListeners, 50);
+            identityRetries++;
+            if (identityRetries < 40) {
+                setTimeout(setupIdentityListeners, 50);
+            }
             return;
         }
         identityInitialized = true;
 
         window.netlifyIdentity.on('init', (user) => {
+            if (user) isExplicitlyLoggedOut = false;
             const finalUser = user || getStoredUser();
             persistUserCache(finalUser);
             dispatchAuthEvent(finalUser);
@@ -415,6 +463,7 @@
         });
 
         window.netlifyIdentity.on('login', (user) => {
+            isExplicitlyLoggedOut = false;
             if (window.netlifyIdentity) window.netlifyIdentity.close();
             persistUserCache(user);
             dispatchAuthEvent(user);
@@ -422,21 +471,52 @@
         });
 
         window.netlifyIdentity.on('logout', () => {
+            isExplicitlyLoggedOut = true;
             persistUserCache(null);
             localStorage.removeItem('rolenaut_custom_mongo_uri');
             localStorage.removeItem('jobbuddy_custom_mongo_uri');
+            localStorage.removeItem('rolenaut_display_name');
+            localStorage.removeItem('rolenaut_active_stream');
             dispatchAuthEvent(null);
             renderAuthHeader();
+            if (window.location.pathname.startsWith('/profile') || window.location.pathname.startsWith('/onboarding')) {
+                window.location.replace('/');
+            }
         });
 
         // In case the widget initialized before listeners attached
         const current = window.netlifyIdentity.currentUser();
-        if (current) {
+        if (current && !isExplicitlyLoggedOut) {
             persistUserCache(current);
             dispatchAuthEvent(current);
             renderAuthHeader();
         }
     }
+
+    // Cross-tab synchronization via storage event
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'gotrue.user' || e.key === 'rolenaut_cached_user') {
+            if (!e.newValue) {
+                // Another tab logged out
+                isExplicitlyLoggedOut = true;
+                renderAuthHeader();
+                dispatchAuthEvent(null);
+                if (window.location.pathname.startsWith('/profile')) {
+                    window.location.replace('/');
+                }
+            } else {
+                isExplicitlyLoggedOut = false;
+                renderAuthHeader();
+                dispatchAuthEvent(getStoredUser());
+            }
+        } else if (e.key === 'rolenaut_display_name') {
+            renderAuthHeader();
+            window.dispatchEvent(new CustomEvent('rolenaut_display_name_change', { detail: { displayName: e.newValue || '' } }));
+        } else if (e.key === 'rolenaut_active_stream' || e.key === 'rolenaut_custom_mongo_uri') {
+            renderAuthHeader();
+            window.dispatchEvent(new CustomEvent('rolenaut_stream_change', { detail: { stream: localStorage.getItem('rolenaut_active_stream') || 'curated' } }));
+        }
+    });
 
     // 11. Initial Synchronous Render
     if (document.readyState === 'loading') {
@@ -461,7 +541,7 @@
                 '[data-netlify-deploy-id]',
                 '#nl-badge-frame',
                 '.netlify-badge',
-                'iframe[src*="netlify"]',
+                'iframe[src*="netlify"]:not(#netlify-identity-widget)',
                 'img[alt*="Deploys by Netlify"]',
                 'img[alt*="Powered by Netlify"]',
                 'img[alt*="Netlify"]'
@@ -481,14 +561,13 @@
             killNetlifyBadges();
             setTimeout(killNetlifyBadges, 500);
             setTimeout(killNetlifyBadges, 1500);
-            setTimeout(killNetlifyBadges, 3000);
         });
 
         if (typeof MutationObserver !== 'undefined') {
             const observer = new MutationObserver(() => killNetlifyBadges());
             if (document.documentElement) {
                 observer.observe(document.documentElement, { childList: true, subtree: true });
-                setTimeout(() => observer.disconnect(), 15000);
+                setTimeout(() => observer.disconnect(), 4000);
             }
         }
     }

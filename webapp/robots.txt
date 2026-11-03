@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
+Allow: /api/jobs
+Allow: /.netlify/functions/getJobs
+Allow: /api/site-stats
+Allow: /.netlify/functions/getSiteStats
 Disallow: /.netlify/
 Disallow: /api/
 Disallow: /onboarding

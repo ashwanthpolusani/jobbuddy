@@ -7,24 +7,12 @@
     <title>Profile — Rolenaut</title>
     <meta name="robots" content="noindex, nofollow">
     
-    <script>
-        (function() {
-            try {
-                var raw = localStorage.getItem('gotrue.user') || localStorage.getItem('rolenaut_cached_user') || localStorage.getItem('rolenaut_user_session');
-                var hash = window.location.hash || '';
-                var search = window.location.search || '';
-                var isInviteOrRecovery = hash.includes('recovery_token') || hash.includes('invite_token') || search.includes('token=');
-                if (!raw && !isInviteOrRecovery) {
-                    window.location.replace('/');
-                }
-            } catch (e) {}
-        })();
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
     <script src="/auth-core.js"></script>
+    <link rel="stylesheet" href="/shared.css">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
@@ -57,19 +45,6 @@
         }
         a { color: inherit; text-decoration: none; }
         .wordmark .accent { color: var(--accent); }
-
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--muted);
-            padding: 8px 14px;
-            border-radius: var(--radius);
-            transition: all 0.15s ease;
-        }
-        .btn-back:hover { background: var(--surface2); color: var(--text); }
 
         .profile-container {
             max-width: 900px;
@@ -104,6 +79,8 @@
             margin-bottom: 16px;
             padding-bottom: 14px;
             border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 12px;
         }
         .card-title {
             font-size: 1.05rem;
@@ -140,7 +117,7 @@
             border-radius: 6px;
             font-size: 0.88rem;
             outline: none;
-            max-width: 340px;
+            max-width: 380px;
             width: 100%;
         }
         .input-inline:focus {
@@ -169,7 +146,7 @@
         }
 
         .btn-small {
-            padding: 7px 14px;
+            padding: 8px 16px;
             border-radius: 6px;
             font-size: 0.82rem;
             font-weight: 600;
@@ -178,21 +155,45 @@
             background: var(--surface);
             color: var(--text2);
             transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        .btn-small:hover {
+        .btn-small:hover:not(:disabled) {
             border-color: var(--accent);
             color: var(--accent);
             background: var(--surface2);
+        }
+        .btn-small:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
         }
         .btn-primary-sm {
             background: var(--accent);
             color: white;
             border-color: var(--accent);
         }
-        .btn-primary-sm:hover {
+        .btn-primary-sm:hover:not(:disabled) {
             background: var(--accent-hover);
             color: white;
         }
+
+        .source-status-panel {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        .source-meta-title { font-size: 0.92rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+        .source-meta-desc { font-size: 0.82rem; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+        .source-cluster-tag { font-family: monospace; font-size: 0.78rem; background: var(--surface); border: 1px solid var(--border); padding: 3px 8px; border-radius: 4px; color: var(--text2); display: inline-block; margin-top: 6px; }
+        .source-action-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 
         .edit-source-box {
             background: var(--surface2);
@@ -200,7 +201,6 @@
             border-radius: 8px;
             padding: 18px;
             margin-top: 14px;
-            display: none;
         }
 
         .danger-card {
@@ -239,55 +239,30 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        .btn-danger:hover {
+        .btn-danger:hover:not(:disabled) {
             background: var(--red);
             color: white;
         }
-
-        /* Toast notifications */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--accent);
-            padding: 12px 18px;
-            border-radius: 8px;
-            font-size: 0.84rem;
-            font-weight: 600;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            transform: translateY(20px);
-            opacity: 0;
-            transition: all 0.2s ease;
-            pointer-events: none;
-            z-index: 1000;
-        }
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    
-        /* Kill Netlify badge */
-        a[href*="netlify.com"][style*="fixed"],
-        a[href*="netlify.app"][style*="fixed"],
-        a[href*="netlify.com"][target="_blank"],
-        [data-netlify-deploy-id],
-        #nl-badge-frame,
-        .netlify-badge,
-        iframe[src*="netlify"],
-        img[alt*="Deploys by Netlify"],
-        img[alt*="Powered by Netlify"],
-        img[alt*="Netlify"] {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
+        .btn-danger:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
+        .guest-card {
+            text-align: center;
+            padding: 48px 32px;
+            max-width: 560px;
+            margin: 60px auto;
+        }
+        .guest-icon { font-size: 2.8rem; margin-bottom: 12px; }
+        .guest-title { font-size: 1.35rem; font-weight: 800; margin-bottom: 8px; }
+        .guest-desc { font-size: 0.90rem; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+        .guest-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
     </style>
-        <link rel="stylesheet" href="/shared.css">
 </head>
 <body>
     <a href="#main-profile" class="skip-link">Skip to profile settings</a>
@@ -296,21 +271,21 @@
         <div class="header-inner">
             <a class="brand-block" href="/" aria-label="Rolenaut home">
                 <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
-    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
-    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
-    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
-    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
-    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
-    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-</svg>
+                    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+                    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+                    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+                    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+                    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+                    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+                    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+                    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
                 <div class="brand-text-wrap">
                     <div class="wordmark">Role<span class="accent">naut</span></div>
                     <div class="header-sub">Navigate your next leap &middot; Your career has no ceiling.</div>
@@ -318,11 +293,11 @@
             </a>
             <div class="header-actions">
                 <nav class="header-nav-links" aria-label="Main Navigation">
-                    <a href="/jobs" class="header-nav-link " >Live Jobs</a>
-                    <a href="/scraper-guide" class="header-nav-link ">Scraper Setup</a>
-                    <a href="/interview-prep" class="header-nav-link ">Interview Prep</a>
-                    <a href="/resume-guide" class="header-nav-link ">Resume Guide</a>
-                    <a href="/about" class="header-nav-link ">About</a>
+                    <a href="/jobs" class="header-nav-link">Live Jobs</a>
+                    <a href="/scraper-guide" class="header-nav-link">Scraper Setup</a>
+                    <a href="/interview-prep" class="header-nav-link">Interview Prep</a>
+                    <a href="/resume-guide" class="header-nav-link">Resume Guide</a>
+                    <a href="/about" class="header-nav-link">About</a>
                 </nav>
                 <div class="auth-wrapper" id="auth-header-wrapper">
                     <!-- Managed synchronously by auth-core.js -->
@@ -332,127 +307,160 @@
     </header>
 
     <main class="profile-container" id="main-profile">
-        <h1 class="page-title">Profile</h1>
-        <p class="page-sub">Manage your display name, connected scraper database, and account data.</p>
-
-        <!-- CARD 1: Identity & Profile -->
-        <section class="settings-card">
-            <div class="card-header">
-                <h2 class="card-title">👤 Account Information</h2>
+        <!-- Guest View: Shown cleanly if not signed in -->
+        <div id="profile-guest-card" class="settings-card guest-card" style="display: none;">
+            <div class="guest-icon">👤</div>
+            <h2 class="guest-title">Sign In to Rolenaut</h2>
+            <p class="guest-desc">Sign in or create an account to customize your profile display name, connect your personal MongoDB Atlas database, and manage your account data.</p>
+            <div class="guest-actions">
+                <button class="btn-small btn-primary-sm" onclick="window.RolenautAuth.openModal()" style="padding: 10px 22px; font-size: 0.90rem;">Sign In / Register</button>
+                <a href="/jobs" class="btn-small" style="padding: 10px 22px; font-size: 0.90rem;">Browse Live Jobs</a>
             </div>
+        </div>
 
-            <div class="form-row">
-                <div class="field-label">Email Address</div>
-                <div class="field-value" id="profile-email">Loading...</div>
-            </div>
+        <!-- Authenticated View: Hydrated when user session is present -->
+        <div id="profile-auth-section" style="display: none;">
+            <h1 class="page-title">Profile</h1>
+            <p class="page-sub">Manage your display name, connected scraper database, and account data.</p>
 
-            <div class="form-row">
-                <label for="profile-name-input" class="field-label">Display Name</label>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <input type="text" id="profile-name-input" class="input-inline" placeholder="Enter your name" aria-label="Candidate Display Name">
-                    <button class="btn-small btn-primary-sm" onclick="saveDisplayName()">Save Name</button>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="field-label">Member Since</div>
-                <div class="field-value" id="profile-created">November 2026</div>
-            </div>
-        </section>
-
-        <!-- CARD 2: Job Data Source -->
-        <section class="settings-card">
-            <div class="card-header">
-                <h2 class="card-title">🗄️ Job Data Source &amp; Scraper Connection</h2>
-                <button class="btn-small" id="btn-toggle-source-edit" onclick="toggleSourceEdit()">Edit Source</button>
-            </div>
-
-            <div class="form-row">
-                <div class="field-label">Active Source</div>
-                <div id="source-status-display">
-                    <span class="status-pill curated" id="source-pill">🟢 Inbuilt Curated Stream</span>
-                </div>
-            </div>
-
-            <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 8px;">
-                You can switch between our verified fresher stream and your personal MongoDB Atlas database populated by your scraper.
-            </p>
-
-            <!-- Edit source drawer -->
-            <div class="edit-source-box" id="edit-source-box">
-                <div style="font-size: 0.86rem; font-weight: 700; color: var(--text); margin-bottom: 10px;">Select Job Stream:</div>
-                
-                <div style="margin-bottom: 14px;">
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">
-                        <input type="radio" name="source-choice" id="choice-inbuilt" value="inbuilt" checked onchange="handleSourceChoiceChange()" aria-label="Use Inbuilt Curated Stream">
-                        <span>Use Inbuilt Curated Stream (Recommended)</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
-                        <input type="radio" name="source-choice" id="choice-custom" value="custom" onchange="handleSourceChoiceChange()" aria-label="Connect Custom MongoDB Atlas Connection String">
-                        <span>Connect Custom MongoDB Atlas Connection String</span>
-                    </label>
+            <!-- CARD 1: Identity & Profile -->
+            <section class="settings-card">
+                <div class="card-header">
+                    <h2 class="card-title">👤 Account Information</h2>
                 </div>
 
-                <div id="custom-uri-input-box" style="display: none; margin-bottom: 14px;">
-                    <label for="new-mongo-uri-input" class="field-label" style="display: block; margin-bottom: 6px;">New MongoDB Atlas Connection URI</label>
+                <div class="form-row">
+                    <div class="field-label">Email Address</div>
+                    <div class="field-value" id="profile-email">Loading...</div>
+                </div>
+
+                <div class="form-row">
+                    <label for="profile-name-input" class="field-label">Display Name</label>
+                    <div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <input type="text" id="profile-name-input" class="input-inline" placeholder="Enter your name" aria-label="Candidate Display Name">
+                            <button class="btn-small btn-primary-sm" id="btn-save-name" onclick="saveDisplayName()" disabled>Save Name</button>
+                        </div>
+                        <div id="profile-name-feedback" class="inline-feedback"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="field-label">Member Since</div>
+                    <div class="field-value" id="profile-created">November 2026</div>
+                </div>
+            </section>
+
+            <!-- CARD 2: Job Data Source -->
+            <section class="settings-card">
+                <div class="card-header">
+                    <h2 class="card-title">🗄️ Job Data Source &amp; Scraper Connection</h2>
+                </div>
+
+                <!-- Streamlined Status Display -->
+                <div class="source-status-panel">
+                    <div>
+                        <div class="source-meta-title">
+                            <span id="source-pill" class="status-pill curated">🟢 Inbuilt Curated Stream Active</span>
+                        </div>
+                        <div class="source-meta-desc" id="source-desc">Directly streaming verified requisitions from Greenhouse, Lever, Ashby, and Workday.</div>
+                        <div id="source-cluster-wrap" style="display: none;">
+                            <span class="source-cluster-tag" id="source-cluster-host">cluster0.xxxxx.mongodb.net</span>
+                        </div>
+                    </div>
+                    <div class="source-action-btns">
+                        <button type="button" class="btn-small" id="btn-revert-inbuilt" onclick="switchToInbuiltStream()" style="display: none;">🟢 Switch to Curated</button>
+                        <button type="button" class="btn-small btn-primary-sm" id="btn-connect-custom" onclick="toggleCustomUriForm()">🔌 Connect Custom MongoDB</button>
+                    </div>
+                </div>
+
+                <!-- Clean Inline MongoDB Atlas Connection Form -->
+                <div class="edit-source-box" id="edit-source-box" style="display: none;">
+                    <label for="new-mongo-uri-input" class="field-label" style="display: block; margin-bottom: 6px;">MongoDB Atlas Connection URI (SRV)</label>
                     <div style="position: relative; display: flex; align-items: center; width: 100%;">
                         <input type="password" id="new-mongo-uri-input" class="input-inline" style="max-width: 100%; width: 100%; padding-right: 40px;" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" aria-describedby="mongo-uri-security-note">
                         <button type="button" id="btn-toggle-profile-uri-vis" onclick="toggleProfileMongoPasswordVisibility()" aria-label="Show connection URI" aria-pressed="false" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
                     </div>
-                    <div id="mongo-uri-security-note" style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">
-                        🔒 Replace &lt;db_user&gt; and &lt;db_password&gt; with your Atlas credentials. Verified server-side and stored securely in Netlify Database.
+                    <div id="source-feedback" class="inline-feedback"></div>
+                    <div id="mongo-uri-security-note" style="font-size: 0.74rem; color: var(--muted); margin-top: 6px;">
+                        🔒 Verified server-side and stored securely in Netlify Database. Rolenaut uses this connection solely to read your <code>job_aggregator</code> collection.
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;">
+                        <button type="button" class="btn-small" id="btn-profile-test-uri" onclick="testProfileUriConnection()">🔍 Test Connection</button>
+                        <button type="button" class="btn-small btn-primary-sm" id="btn-save-source" onclick="saveSourceChanges()">Save &amp; Connect Database</button>
+                        <button type="button" class="btn-small" onclick="toggleCustomUriForm(false)">Cancel</button>
                     </div>
                 </div>
+            </section>
 
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn-small btn-primary-sm" onclick="saveSourceChanges()">Save Data Source</button>
-                    <button class="btn-small" onclick="toggleSourceEdit(false)">Cancel</button>
+            <!-- CARD 3: GDPR Data Portability & Rights -->
+            <section class="settings-card">
+                <div class="card-header">
+                    <h2 class="card-title">📜 GDPR Data Portability (Right of Access)</h2>
                 </div>
-            </div>
-        </section>
+                <p style="font-size: 0.84rem; color: var(--text2); margin-bottom: 16px;">
+                    Under Article 20 of GDPR and global data protection standards, you have the right to receive all personal data held about you in a structured, commonly used machine-readable format.
+                </p>
 
-        <!-- CARD 3: GDPR Data Portability & Rights -->
-        <section class="settings-card">
-            <div class="card-header">
-                <h2 class="card-title">📜 GDPR Data Portability (Right of Access)</h2>
-            </div>
-            <p style="font-size: 0.84rem; color: var(--text2); margin-bottom: 16px;">
-                Under Article 20 of GDPR and global data protection standards, you have the right to receive all personal data held about you in a structured, commonly used machine-readable format.
-            </p>
+                <button class="btn-small" id="btn-export-data" onclick="exportUserData()">
+                    📥 Download My Complete Data Profile (JSON)
+                </button>
+            </section>
 
-            <button class="btn-small" onclick="exportUserData()">
-                📥 Download My Complete Data Profile (JSON)
-            </button>
-        </section>
-
-        <!-- CARD 4: Danger Zone -->
-        <section class="settings-card danger-card">
-            <div class="card-header">
-                <h2 class="card-title">⚠️ Danger Zone &amp; Account Erasure</h2>
-            </div>
-
-            <div class="danger-action-row">
-                <div>
-                    <div style="font-size: 0.88rem; font-weight: 700; color: var(--red);">Permanently Delete Account (Right to Erasure)</div>
-                    <div class="danger-desc">Purges your profile record, custom database connection, and settings from our database.</div>
+            <!-- CARD 4: Danger Zone -->
+            <section class="settings-card danger-card">
+                <div class="card-header">
+                    <h2 class="card-title">⚠️ Danger Zone &amp; Account Erasure</h2>
                 </div>
-                <button class="btn-danger" onclick="deleteAccountPermanently()">Delete Account</button>
-            </div>
-        </section>
+
+                <div class="danger-action-row">
+                    <div>
+                        <div style="font-size: 0.88rem; font-weight: 700; color: var(--red);">Permanently Delete Account (Right to Erasure)</div>
+                        <div class="danger-desc">Purges your profile record, custom database connection, and settings from our database.</div>
+                    </div>
+                    <button class="btn-danger" onclick="openDeleteModal()">Delete Account</button>
+                </div>
+            </section>
+        </div>
     </main>
 
-    <div class="toast" id="toast">Changes saved</div>
+    <!-- Accessible GDPR Account Erasure Modal -->
+    <div id="delete-modal-backdrop" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(3px); z-index: 100000; align-items: center; justify-content: center; padding: 16px;" role="dialog" aria-modal="true" aria-labelledby="del-modal-title">
+        <div class="settings-card danger-card" style="max-width: 500px; width: 100%; margin: 0; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+            <div class="card-header" style="border-bottom: 1px solid rgba(220, 38, 38, 0.2); padding-bottom: 12px;">
+                <h3 id="del-modal-title" style="color: var(--danger); font-size: 1.1rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    ⚠️ Confirm Account Erasure
+                </h3>
+                <button type="button" onclick="closeDeleteModal()" aria-label="Cancel" style="background: transparent; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted);">&times;</button>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text2); margin: 14px 0 10px; line-height: 1.55;">
+                Under GDPR Article 17 (Right to Erasure), this action will permanently delete your user profile, custom database connection, and settings. This action cannot be undone.
+            </p>
+            <p style="font-size: 0.82rem; font-weight: 700; color: var(--danger); margin-bottom: 8px;">
+                Type <code style="background: rgba(220,38,38,0.1); padding: 2px 6px; border-radius: 4px;">DELETE</code> below to confirm:
+            </p>
+            <input type="text" id="delete-confirmation-input" class="input-inline" style="max-width: 100%; width: 100%; margin-bottom: 10px;" placeholder="Type DELETE to enable button" oninput="handleDeleteInputChange(this.value)" autocomplete="off">
+            <div id="delete-modal-feedback" class="inline-feedback"></div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+                <button type="button" class="btn-small" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn-danger" id="btn-execute-delete" onclick="executePermanentDeletion()" disabled>Permanently Delete Everything</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="rolenaut-toast" id="toast" role="status" aria-live="polite"></div>
 
     <script>
         let currentProfile = null;
+        let isNameEditing = false;
         let isNameInputDirty = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             const nameInput = document.getElementById('profile-name-input');
             if (nameInput) {
-                nameInput.addEventListener('input', () => {
-                    isNameInputDirty = true;
-                });
+                nameInput.addEventListener('focus', () => { isNameEditing = true; });
+                nameInput.addEventListener('blur', () => { isNameEditing = false; });
+                nameInput.addEventListener('input', checkNameDirty);
                 nameInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -462,11 +470,45 @@
             }
         });
 
-        function showToast(msg) {
+        function checkNameDirty() {
+            const nameInput = document.getElementById('profile-name-input');
+            const btn = document.getElementById('btn-save-name');
+            if (!nameInput || !btn) return;
+            isNameInputDirty = true;
+            clearNameFeedback();
+            const currentSaved = (currentProfile && currentProfile.display_name) || localStorage.getItem('rolenaut_display_name') || '';
+            const trimmed = nameInput.value.trim();
+            const isChanged = trimmed.length > 0 && trimmed !== currentSaved;
+            btn.disabled = !isChanged;
+        }
+
+        function showToast(msg, type = 'info') {
             const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            if (!t) return;
+            t.className = 'rolenaut-toast ' + type + ' show';
+            t.innerHTML = (type === 'success' ? '✓ ' : type === 'error' ? '⚠️ ' : 'ℹ️ ') + msg;
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        function showNameFeedback(msg, isError = false) {
+            const fb = document.getElementById('profile-name-feedback');
+            if (!fb) return;
+            fb.textContent = msg;
+            fb.className = 'inline-feedback ' + (isError ? 'error' : 'success');
+        }
+        function clearNameFeedback() {
+            const fb = document.getElementById('profile-name-feedback');
+            if (fb) fb.className = 'inline-feedback';
+        }
+        function showSourceFeedback(msg, isError = false) {
+            const fb = document.getElementById('source-feedback');
+            if (!fb) return;
+            fb.textContent = msg;
+            fb.className = 'inline-feedback ' + (isError ? 'error' : 'success');
+        }
+        function clearSourceFeedback() {
+            const fb = document.getElementById('source-feedback');
+            if (fb) fb.className = 'inline-feedback';
         }
 
         async function getAuthToken() {
@@ -498,13 +540,23 @@
             return uri;
         }
 
+        function showGuestState() {
+            document.getElementById('profile-guest-card').style.display = 'block';
+            document.getElementById('profile-auth-section').style.display = 'none';
+        }
+        function showAuthenticatedState(user) {
+            document.getElementById('profile-guest-card').style.display = 'none';
+            document.getElementById('profile-auth-section').style.display = 'block';
+        }
+
         async function loadProfile() {
             const auth = window.RolenautAuth || window.JobBuddyAuth;
             const user = auth ? auth.getUser() : (window.netlifyIdentity && window.netlifyIdentity.currentUser());
             if (!user) {
-                window.location.replace('/');
+                showGuestState();
                 return;
             }
+            showAuthenticatedState(user);
 
             document.getElementById('profile-email').textContent = user.email || '—';
 
@@ -512,7 +564,7 @@
             const savedLocalName = localStorage.getItem('rolenaut_display_name') || '';
             const initialResolved = savedLocalName || user.display_name || user.user_metadata?.display_name || user.user_metadata?.full_name || '';
             const nameInput = document.getElementById('profile-name-input');
-            if (initialResolved && nameInput && !isNameInputDirty && !nameInput.value) {
+            if (initialResolved && nameInput && !isNameInputDirty && !isNameEditing && document.activeElement !== nameInput) {
                 nameInput.value = initialResolved;
             }
 
@@ -525,7 +577,7 @@
                 if (data && data.profile) {
                     currentProfile = data.profile;
                     const resolvedName = currentProfile.display_name || savedLocalName || user.display_name || user.user_metadata?.display_name || user.user_metadata?.full_name || '';
-                    if (nameInput && !isNameInputDirty && document.activeElement !== nameInput) {
+                    if (nameInput && !isNameInputDirty && !isNameEditing && document.activeElement !== nameInput) {
                         nameInput.value = resolvedName;
                     }
                     if (resolvedName && window.RolenautAuth?.setDisplayName) {
@@ -534,24 +586,7 @@
                         }
                     }
 
-                    if (currentProfile.custom_mongo_uri && currentProfile.custom_mongo_uri !== "[CONFIGURED]") {
-                        const uriInput = document.getElementById('new-mongo-uri-input');
-                        if (uriInput && !uriInput.value) uriInput.value = currentProfile.custom_mongo_uri;
-                    }
-
-                    const pill = document.getElementById('source-pill');
-                    if (currentProfile.db_mode === 'custom' || currentProfile.has_custom_db) {
-                        pill.className = 'status-pill custom';
-                        pill.textContent = '🟣 Custom Scraper MongoDB Active';
-                        const c = document.getElementById('choice-custom');
-                        if (c) c.checked = true;
-                    } else {
-                        pill.className = 'status-pill curated';
-                        pill.textContent = '🟢 Inbuilt Curated Stream';
-                        const c = document.getElementById('choice-inbuilt');
-                        if (c) c.checked = true;
-                    }
-                    handleSourceChoiceChange();
+                    renderDataSourceState();
 
                     if (currentProfile.created_at) {
                         const d = new Date(currentProfile.created_at);
@@ -563,17 +598,62 @@
             }
         }
 
+        function renderDataSourceState() {
+            const isCustom = Boolean(currentProfile && (currentProfile.db_mode === 'custom' || currentProfile.has_custom_db));
+            const pill = document.getElementById('source-pill');
+            const desc = document.getElementById('source-desc');
+            const clusterWrap = document.getElementById('source-cluster-wrap');
+            const clusterHost = document.getElementById('source-cluster-host');
+            const btnRevert = document.getElementById('btn-revert-inbuilt');
+            const btnConnect = document.getElementById('btn-connect-custom');
+            const uriInput = document.getElementById('new-mongo-uri-input');
+
+            if (isCustom) {
+                pill.className = 'status-pill custom';
+                pill.textContent = '🟣 Custom Scraper MongoDB Active';
+                desc.textContent = 'Extracting direct requisitions from your personal MongoDB Atlas database.';
+                const localUri = localStorage.getItem('rolenaut_custom_mongo_uri') || '';
+                const hostMatch = localUri.match(/@([^/?#]+)/);
+                const host = hostMatch ? hostMatch[1] : 'cluster0.mongodb.net';
+                clusterHost.textContent = 'Cluster Host: ' + host + ' / job_aggregator';
+                clusterWrap.style.display = 'block';
+                btnRevert.style.display = 'inline-flex';
+                btnConnect.textContent = '✏️ Update Connection URI';
+                if (uriInput) uriInput.placeholder = 'Leave blank to keep existing cluster, or enter new URI...';
+            } else {
+                pill.className = 'status-pill curated';
+                pill.textContent = '🟢 Inbuilt Curated Stream Active';
+                desc.textContent = 'Directly streaming verified requisitions from Greenhouse, Lever, Ashby, and Workday.';
+                clusterWrap.style.display = 'none';
+                btnRevert.style.display = 'none';
+                btnConnect.textContent = '🔌 Connect Custom MongoDB';
+                if (uriInput) uriInput.placeholder = 'mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator';
+            }
+        }
+
+        function toggleCustomUriForm(show) {
+            const box = document.getElementById('edit-source-box');
+            if (!box) return;
+            clearSourceFeedback();
+            const isVisible = box.style.display === 'block';
+            box.style.display = (show !== undefined) ? (show ? 'block' : 'none') : (isVisible ? 'none' : 'block');
+        }
+
         async function saveDisplayName() {
             const newName = document.getElementById('profile-name-input').value.trim();
             if (!newName) {
-                showToast('Please enter a display name');
+                showNameFeedback('Please enter a display name', true);
                 return;
             }
             const token = await getAuthToken();
             if (!token) return;
 
-            const btn = document.querySelector('button[onclick="saveDisplayName()"]');
-            if (btn) btn.textContent = 'Saving...';
+            const btn = document.getElementById('btn-save-name');
+            if (btn) {
+                btn.disabled = true;
+                btn.setAttribute('aria-busy', 'true');
+                btn.innerHTML = '<span class="btn-spinner"></span> Saving...';
+            }
 
             try {
                 const res = await fetch('/api/user-profile', {
@@ -590,18 +670,26 @@
                         currentProfile = data.profile;
                     }
                     isNameInputDirty = false;
+                    isNameEditing = false;
                     localStorage.setItem('rolenaut_display_name', newName);
-                    showToast('Display name updated!');
+                    showNameFeedback('Display name updated successfully!', false);
+                    showToast('Display name updated!', 'success');
                     if (window.RolenautAuth?.setDisplayName) {
-                        window.RolenautAuth.setDisplayName(newName);
+                        await window.RolenautAuth.setDisplayName(newName);
+                    }
+                    if (btn) {
+                        btn.textContent = 'Saved ✓';
+                        setTimeout(() => { btn.textContent = 'Save Name'; btn.disabled = true; }, 1500);
                     }
                 } else {
-                    showToast('Failed to update name');
+                    showNameFeedback('Failed to update name', true);
+                    if (btn) btn.disabled = false;
                 }
             } catch (e) {
-                showToast('Failed to update name');
+                showNameFeedback('Network error updating name', true);
+                if (btn) btn.disabled = false;
             } finally {
-                if (btn) btn.textContent = 'Save Name';
+                if (btn) btn.removeAttribute('aria-busy');
             }
         }
 
@@ -619,55 +707,76 @@
             }
         }
 
-        function toggleSourceEdit(show) {
-            const box = document.getElementById('edit-source-box');
-            if (!box) return;
-            if (show !== undefined) {
-                box.style.display = show ? 'block' : 'none';
-            } else {
-                box.style.display = box.style.display === 'block' ? 'none' : 'block';
-            }
-            if (box.style.display === 'block') {
-                handleSourceChoiceChange();
-            }
-        }
+        async function testProfileUriConnection() {
+            const input = document.getElementById('new-mongo-uri-input');
+            const feedback = document.getElementById('source-feedback');
+            const btn = document.getElementById('btn-profile-test-uri');
+            const rawUri = input ? input.value.trim() : '';
 
-        function handleSourceChoiceChange() {
-            const isCustom = document.getElementById('choice-custom').checked;
-            const inputBox = document.getElementById('custom-uri-input-box');
-            if (inputBox) {
-                inputBox.style.display = isCustom ? 'block' : 'none';
+            if (!rawUri || !rawUri.startsWith('mongodb+srv://') || !rawUri.includes('.mongodb.net')) {
+                showSourceFeedback('Please enter a valid MongoDB Atlas SRV URI.', true);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.setAttribute('aria-busy', 'true');
+            btn.innerHTML = '<span class="btn-spinner"></span> Testing...';
+            showSourceFeedback('Testing connection to cluster...', false);
+
+            try {
+                const testUri = normalizeClientMongoUri(rawUri);
+                const res = await fetch(`/.netlify/functions/getJobs?page=1&limit=1`, {
+                    headers: { 'x-mongo-uri': testUri }
+                });
+                const data = await res.json();
+                if (res.ok && data.meta && data.meta.isCustomDb) {
+                    showSourceFeedback(`✓ Connected successfully! Found ${data.total || 0} requisitions in cluster.`, false);
+                } else {
+                    showSourceFeedback(`Connection failed: ${data.details || data.error || 'Cluster unreachable'}. Ensure IP whitelist allows 0.0.0.0/0.`, true);
+                }
+            } catch (err) {
+                showSourceFeedback(`Connection error: ${err.message}.`, true);
+            } finally {
+                btn.disabled = false;
+                btn.removeAttribute('aria-busy');
+                btn.textContent = '🔍 Test Connection';
             }
         }
 
         async function saveSourceChanges() {
-            const isCustom = document.getElementById('choice-custom').checked;
-            const rawUri = document.getElementById('new-mongo-uri-input').value.trim();
-            const newUri = normalizeClientMongoUri(rawUri);
-            const finalUri = isCustom ? (newUri || currentProfile?.custom_mongo_uri || '') : '';
+            clearSourceFeedback();
+            const rawInput = document.getElementById('new-mongo-uri-input').value.trim();
+            const hasExisting = Boolean(currentProfile && currentProfile.has_custom_db);
 
-            if (isCustom && !finalUri) {
-                alert('Please provide a valid MongoDB Atlas connection string.');
+            if (!rawInput && !hasExisting) {
+                showSourceFeedback('Please enter a valid MongoDB Atlas connection URI.', true);
                 return;
+            }
+
+            let finalUri = '';
+            if (rawInput) {
+                if (!/^mongodb\+srv:\/\/[a-zA-Z0-9_\-\.%]+:[^@]+@[a-zA-Z0-9_\-\.]+\.mongodb\.net(?:\/.*)?$/.test(rawInput)) {
+                    showSourceFeedback('Only MongoDB Atlas (mongodb+srv://...mongodb.net) URIs are supported.', true);
+                    return;
+                }
+                finalUri = normalizeClientMongoUri(rawInput);
             }
 
             const token = await getAuthToken();
             if (!token) return;
 
-            const saveBtn = document.querySelector('#edit-source-box .btn-primary-sm');
-            if (saveBtn) saveBtn.textContent = 'Saving...';
+            const saveBtn = document.getElementById('btn-save-source');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.setAttribute('aria-busy', 'true');
+                saveBtn.innerHTML = '<span class="btn-spinner"></span> Connecting...';
+            }
 
             try {
-                const payload = {
-                    db_mode: isCustom ? 'custom' : 'inbuilt'
-                };
-                if (currentProfile && currentProfile.display_name) {
-                    payload.display_name = currentProfile.display_name;
-                }
-                if (isCustom && finalUri) {
+                const payload = { db_mode: 'custom' };
+                if (finalUri) {
                     payload.custom_mongo_uri = finalUri;
                 }
-
                 const res = await fetch('/api/user-profile', {
                     method: 'POST',
                     headers: {
@@ -678,54 +787,83 @@
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data.profile) {
-                        currentProfile = data.profile;
-                    }
-                    if (isCustom && finalUri) {
+                    if (data && data.profile) currentProfile = data.profile;
+                    if (finalUri) {
                         localStorage.setItem("rolenaut_custom_mongo_uri", finalUri);
                         localStorage.setItem("jobbuddy_custom_mongo_uri", finalUri);
-                    } else {
-                        localStorage.removeItem("rolenaut_custom_mongo_uri");
-                        localStorage.removeItem("jobbuddy_custom_mongo_uri");
                     }
+                    localStorage.setItem("rolenaut_active_stream", "custom");
 
-                    // Invalidate all stale job listing cache so switching streams takes effect immediately
+                    // Invalidate stale job listing caches
                     for (let i = localStorage.length - 1; i >= 0; i--) {
                         const key = localStorage.key(i);
                         if (key && (key.startsWith("rolenaut_cache_") || key.startsWith("jobbuddy_cache_") || key.startsWith("jb_cache_"))) {
                             localStorage.removeItem(key);
                         }
                     }
-
-                    const pill = document.getElementById('source-pill');
-                    if (pill) {
-                        if (isCustom) {
-                            pill.className = 'status-pill custom';
-                            pill.textContent = '🟣 Custom Scraper MongoDB Active';
-                        } else {
-                            pill.className = 'status-pill curated';
-                            pill.textContent = '🟢 Inbuilt Curated Stream';
-                        }
-                    }
-
-                    showToast('Job data source updated!');
-                    toggleSourceEdit(false);
+                    showToast('MongoDB Atlas Connected!', 'success');
+                    toggleCustomUriForm(false);
+                    renderDataSourceState();
+                    window.dispatchEvent(new CustomEvent('rolenaut_stream_change', { detail: { stream: 'custom' } }));
                 } else {
-                    const err = await res.json();
-                    alert(err.error || 'Failed to update source');
+                    const err = await res.json().catch(() => ({}));
+                    showSourceFeedback(err.error || 'Failed to update source', true);
                 }
             } catch (e) {
-                alert('Error updating source: ' + e.message);
+                showSourceFeedback('Error updating source: ' + e.message, true);
             } finally {
-                if (saveBtn) saveBtn.textContent = 'Save Data Source';
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.removeAttribute('aria-busy');
+                    saveBtn.textContent = 'Save & Connect Database';
+                }
+            }
+        }
+
+        async function switchToInbuiltStream() {
+            const token = await getAuthToken();
+            if (!token) return;
+            try {
+                const res = await fetch('/api/user-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ db_mode: 'inbuilt' })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.profile) currentProfile = data.profile;
+                    localStorage.setItem("rolenaut_active_stream", "curated");
+
+                    for (let i = localStorage.length - 1; i >= 0; i--) {
+                        const key = localStorage.key(i);
+                        if (key && (key.startsWith("rolenaut_cache_") || key.startsWith("jobbuddy_cache_") || key.startsWith("jb_cache_"))) {
+                            localStorage.removeItem(key);
+                        }
+                    }
+                    showToast('Switched to Inbuilt Curated Stream', 'success');
+                    toggleCustomUriForm(false);
+                    renderDataSourceState();
+                    window.dispatchEvent(new CustomEvent('rolenaut_stream_change', { detail: { stream: 'curated' } }));
+                }
+            } catch (e) {
+                showToast('Failed to switch data stream', 'error');
             }
         }
 
         async function exportUserData() {
             const token = await getAuthToken();
             if (!token) {
-                alert('Please sign in first to export your user profile data.');
+                showToast('Please sign in first to export your data', 'error');
                 return;
+            }
+            const btn = document.getElementById('btn-export-data');
+            if (btn) {
+                btn.disabled = true;
+                btn.setAttribute('aria-busy', 'true');
+                btn.innerHTML = '<span class="btn-spinner"></span> Preparing GDPR export...';
             }
             try {
                 const res = await fetch('/api/user-profile?export=true', {
@@ -736,34 +874,62 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'rolenaut-profile-export.json';
+                    a.download = `rolenaut-profile-${Date.now()}.json`;
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
                     window.URL.revokeObjectURL(url);
-                    showToast('Profile data exported successfully');
+                    showToast('Profile data exported successfully', 'success');
                 } else {
-                    alert('Failed to generate profile export. Please retry.');
+                    showToast('Failed to generate profile export. Please retry.', 'error');
                 }
             } catch (e) {
-                alert('Export error: ' + e.message);
+                showToast('Export error: ' + e.message, 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.removeAttribute('aria-busy');
+                    btn.innerHTML = '📥 Download My Complete Data Profile (JSON)';
+                }
             }
         }
 
-        async function deleteAccountPermanently() {
-            const conf = prompt('To permanently delete your profile and all stored data from the database, type "DELETE" below:');
-            if (conf !== 'DELETE') return;
+        function openDeleteModal() {
+            const modal = document.getElementById('delete-modal-backdrop');
+            const input = document.getElementById('delete-confirmation-input');
+            const err = document.getElementById('delete-modal-feedback');
+            const btn = document.getElementById('btn-execute-delete');
+            if (input) input.value = '';
+            if (err) err.style.display = 'none';
+            if (btn) btn.disabled = true;
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-modal-backdrop');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function handleDeleteInputChange(val) {
+            const btn = document.getElementById('btn-execute-delete');
+            if (btn) btn.disabled = val.trim() !== 'DELETE';
+        }
+
+        async function executePermanentDeletion() {
+            const errBox = document.getElementById('delete-modal-feedback');
+            const btn = document.getElementById('btn-execute-delete');
+            if (btn) {
+                btn.disabled = true;
+                btn.setAttribute('aria-busy', 'true');
+                btn.innerHTML = '<span class="btn-spinner"></span> Purging records...';
+            }
 
             let token = await getAuthToken();
             if (!token) {
-                const auth = window.RolenautAuth || window.JobBuddyAuth;
-                const user = auth ? auth.getUser() : null;
-                if (user && user.email) {
-                    token = "dev_token_" + btoa(user.email);
+                if (errBox) {
+                    errBox.className = 'inline-feedback error';
+                    errBox.textContent = 'Session expired. Please sign in again.';
                 }
-            }
-            if (!token) {
-                alert('Session expired. Please sign in again.');
                 return;
             }
 
@@ -773,27 +939,31 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
-                    alert('Your profile and database records have been permanently erased. Logging out...');
+                    showToast('Profile and database records erased. Logging out...', 'success');
                     const auth = window.RolenautAuth || window.JobBuddyAuth;
                     if (auth) {
                         auth.logout();
                     } else if (window.netlifyIdentity) {
                         try { window.netlifyIdentity.logout(); } catch (e) {}
                     }
-                    localStorage.removeItem('rolenaut_user_session');
-                    localStorage.removeItem('jobbuddy_user_session');
-                    localStorage.removeItem('rolenaut_custom_mongo_uri');
-                    localStorage.removeItem('jobbuddy_custom_mongo_uri');
-                    localStorage.removeItem('rolenaut_cached_user');
-                    localStorage.removeItem('jb_cached_user');
-                    localStorage.removeItem('gotrue.user');
-                    window.location.href = '/';
+                    localStorage.clear();
+                    setTimeout(() => { window.location.href = '/'; }, 800);
                 } else {
                     const data = await res.json().catch(() => ({}));
-                    alert('Failed to delete account: ' + (data.error || 'Server error'));
+                    if (errBox) {
+                        errBox.className = 'inline-feedback error';
+                        errBox.textContent = 'Failed to delete account: ' + (data.error || 'Server error');
+                    }
+                    if (btn) btn.disabled = false;
                 }
             } catch (e) {
-                alert('Failed to delete account: ' + e.message);
+                if (errBox) {
+                    errBox.className = 'inline-feedback error';
+                    errBox.textContent = 'Failed to delete account: ' + e.message;
+                }
+                if (btn) btn.disabled = false;
+            } finally {
+                if (btn) btn.removeAttribute('aria-busy');
             }
         }
 
@@ -809,7 +979,7 @@
                         loadProfile();
                     }
                 } else {
-                    window.location.replace('/');
+                    showGuestState();
                 }
             };
             window.addEventListener('rolenaut_auth_change', handleProfileAuth);
@@ -819,85 +989,84 @@
                 profileLoaded = true;
                 loadProfile();
             } else {
-                window.location.replace('/');
+                showGuestState();
             }
         });
     </script>
-<footer class="site-footer">
-    <div class="footer-container">
-        <div class="footer-grid">
-            <div class="footer-col-brand">
-                <div class="footer-logo-row">
-                    <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
-    <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
-    <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-    <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
-    <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
-    <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
-    <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
-    <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
-    <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-</svg>
-                    <span class="footer-brand">Role<span class="accent">naut</span></span>
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-col-brand">
+                    <div class="footer-logo-row">
+                        <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+                            <rect x="4" y="12" width="32" height="24" rx="6" fill="var(--accent)"/>
+                            <line x1="13" y1="26" x2="7" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                            <line x1="13" y1="27" x2="6" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                            <line x1="13" y1="28" x2="7" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                            <line x1="27" y1="26" x2="33" y2="25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                            <line x1="27" y1="27" x2="34" y2="27" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                            <line x1="27" y1="28" x2="33" y2="29" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+                            <ellipse cx="16" cy="19" rx="3.5" ry="5.5" fill="white"/>
+                            <ellipse cx="24" cy="19" rx="3.5" ry="5.5" fill="white"/>
+                            <circle cx="17" cy="20" r="1.5" fill="var(--accent)"/>
+                            <circle cx="23" cy="20" r="1.5" fill="var(--accent)"/>
+                            <ellipse cx="20" cy="25.5" rx="2" ry="1.5" fill="white"/>
+                            <path d="M20 27V29 M20 29C18 31 16 30 16 30 M20 29C22 31 24 30 24 30" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <span class="footer-brand">Role<span class="accent">naut</span></span>
+                    </div>
+                    <p class="footer-mission">
+                        Direct-to-ATS tech job discovery and open scraper hub. Continuously indexing verified requisitions from Greenhouse, Lever, Ashby, and Workday with zero recruiter spam.
+                    </p>
+                    <div class="footer-status-pill">
+                        <span class="status-indicator-dot"></span>
+                        <span>All ATS Feeds Active &middot; Updated Daily</span>
+                    </div>
                 </div>
-                <p class="footer-mission">
-                    Direct-to-ATS tech job discovery and open scraper hub. Continuously indexing verified requisitions from Greenhouse, Lever, Ashby, and Workday with zero recruiter spam.
-                </p>
-                <div class="footer-status-pill">
-                    <span class="status-indicator-dot"></span>
-                    <span>All ATS Feeds Active &middot; Updated Daily</span>
+
+                <div class="footer-col">
+                    <h4 class="footer-heading">Platform</h4>
+                    <ul class="footer-nav-list">
+                        <li><a href="/jobs">Live Job Feed</a></li>
+                        <li><a href="/">Home Overview</a></li>
+                        <li><a href="/about">About Rolenaut</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4 class="footer-heading">Career Resources</h4>
+                    <ul class="footer-nav-list">
+                        <li><a href="/interview-prep">Interview Blueprint</a></li>
+                        <li><a href="/resume-guide">ATS Resume Guide</a></li>
+                        <li><a href="/scraper-guide">Scraper Setup Guide</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4 class="footer-heading">Open Source &amp; Legal</h4>
+                    <ul class="footer-nav-list">
+                        <li><a href="https://github.com/ashwanth-1729/scrapperbuddy" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
+                        <li><a href="https://github.com/ashwanth-1729/scrapperbuddy/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
                 </div>
             </div>
 
-            <div class="footer-col">
-                <h4 class="footer-heading">Platform</h4>
-                <ul class="footer-nav-list">
-                    <li><a href="/jobs">Live Job Feed</a></li>
-                    <li><a href="/">Home Overview</a></li>
-                    <li><a href="/about">About Rolenaut</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4 class="footer-heading">Career Resources</h4>
-                <ul class="footer-nav-list">
-                    <li><a href="/interview-prep">Interview Blueprint</a></li>
-                    <li><a href="/resume-guide">ATS Resume Guide</a></li>
-                    <li><a href="/scraper-guide">Scraper Setup Guide</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4 class="footer-heading">Open Source &amp; Legal</h4>
-                <ul class="footer-nav-list">
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
-                    <li><a href="/privacy">Privacy Policy</a></li>
-                    <li><a href="/terms">Terms of Service</a></li>
-                </ul>
+            <div class="footer-bottom-bar">
+                <div class="footer-bottom-left">
+                    <div class="footer-copy">&copy; 2026 Rolenaut. Autonomous career navigation for early-career tech professionals.</div>
+                    <p class="footer-disclaimer">
+                        Rolenaut is an independent aggregator indexing publicly accessible corporate requisitions and official career portals. All company names, logos, and trademarks belong to their respective owners.
+                    </p>
+                </div>
+                <div class="footer-privacy-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>GDPR Compliant &bull; Zero Tracking Pixels</span>
+                </div>
             </div>
         </div>
-
-        <div class="footer-bottom-bar">
-            <div class="footer-bottom-left">
-                <div class="footer-copy">&copy; 2026 Rolenaut. Autonomous career navigation for early-career tech professionals.</div>
-                <p class="footer-disclaimer">
-                    Rolenaut is an independent aggregator indexing publicly accessible corporate requisitions and official career portals. All company names, logos, and trademarks belong to their respective owners.
-                </p>
-            </div>
-            <div class="footer-privacy-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span>GDPR Compliant &bull; Zero Tracking Pixels</span>
-            </div>
-        </div>
-    </div>
-</footer>
+    </footer>
 </body>
 </html>
-

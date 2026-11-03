@@ -359,8 +359,15 @@
             <!-- Custom URI input (shown only when custom is chosen) -->
             <div id="custom-uri-wrapper" style="display: none; margin-top: 14px;">
                 <label class="form-label" for="custom-mongo-input">MongoDB Atlas Connection String (Read-Only)</label>
-                <input type="password" id="custom-mongo-input" class="input-text" placeholder="mongodb+srv://<username>:<password>@cluster0.mongodb.net/job_aggregator">
+                <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <input type="password" id="custom-mongo-input" class="input-text" style="padding-right: 42px;" placeholder="mongodb+srv://<username>:<password>@cluster0.mongodb.net/job_aggregator">
+                    <button type="button" id="btn-onboarding-vis" onclick="toggleOnboardingPasswordVisibility()" aria-label="Show connection URI" aria-pressed="false" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.95rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
+                </div>
                 <div class="error-hint" id="uri-error-hint">Please enter a valid mongodb+srv:// Atlas connection string.</div>
+                <div id="onboarding-uri-feedback" class="inline-feedback"></div>
+                <div style="margin-top: 8px;">
+                    <button type="button" class="btn-small" id="btn-onboarding-test" onclick="testOnboardingUriConnection()" style="padding: 6px 14px; font-size: 0.80rem; border-radius: 6px; cursor: pointer; background: var(--surface); border: 1px solid var(--border2); color: var(--text2);">🔍 Test Connection</button>
+                </div>
                 <div class="helper-callout">
                     🔒 <strong>Secure Storage:</strong> Your URI is stored safely in Netlify Database and queried only server-side. It is never exposed in browser code or returned to other users.
                 </div>
@@ -371,8 +378,9 @@
             <button class="btn-launch" id="btn-submit" onclick="submitOnboarding()">
                 🚀 Launch Job Feed
             </button>
+            <div id="onboarding-submit-error" class="inline-feedback error" style="display: none; text-align: center; margin-top: 6px;"></div>
             <div class="skip-note">
-                You can edit your preferences or switch data sources anytime in your profile.
+                <a href="/jobs" style="color: var(--muted); text-decoration: underline;">Skip setup for now &amp; browse curated freshers feed &rarr;</a>
             </div>
         </div>
     </main>
@@ -400,16 +408,84 @@
             }
         }
 
+        function toggleOnboardingPasswordVisibility() {
+            const input = document.getElementById('custom-mongo-input');
+            const btn = document.getElementById('btn-onboarding-vis');
+            if (input) {
+                const isMasked = input.type === 'password';
+                input.type = isMasked ? 'text' : 'password';
+                if (btn) {
+                    btn.setAttribute('aria-pressed', isMasked ? 'true' : 'false');
+                    btn.setAttribute('aria-label', isMasked ? 'Hide connection URI' : 'Show connection URI');
+                    btn.textContent = isMasked ? '🙈' : '👁️';
+                }
+            }
+        }
+
+        async function testOnboardingUriConnection() {
+            const input = document.getElementById('custom-mongo-input');
+            const fb = document.getElementById('onboarding-uri-feedback');
+            const btn = document.getElementById('btn-onboarding-test');
+            const rawUri = input ? input.value.trim() : '';
+
+            if (!rawUri || !rawUri.startsWith('mongodb+srv://') || !rawUri.includes('.mongodb.net')) {
+                if (fb) {
+                    fb.textContent = 'Please enter a valid MongoDB Atlas SRV URI.';
+                    fb.className = 'inline-feedback error';
+                }
+                return;
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Testing...';
+            }
+            if (fb) {
+                fb.textContent = 'Testing connection to cluster...';
+                fb.className = 'inline-feedback';
+            }
+
+            try {
+                const res = await fetch(`/.netlify/functions/getJobs?page=1&limit=1`, {
+                    headers: { 'x-mongo-uri': rawUri }
+                });
+                const data = await res.json();
+                if (res.ok && data.meta && data.meta.isCustomDb) {
+                    if (fb) {
+                        fb.textContent = `✓ Connected successfully! Found ${data.total || 0} requisitions in cluster.`;
+                        fb.className = 'inline-feedback success';
+                    }
+                } else {
+                    if (fb) {
+                        fb.textContent = `Connection failed: ${data.details || data.error || 'Cluster unreachable'}. Ensure IP whitelist allows 0.0.0.0/0.`;
+                        fb.className = 'inline-feedback error';
+                    }
+                }
+            } catch (err) {
+                if (fb) {
+                    fb.textContent = `Connection error: ${err.message}.`;
+                    fb.className = 'inline-feedback error';
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🔍 Test Connection';
+                }
+            }
+        }
+
         async function submitOnboarding() {
             const btn = document.getElementById('btn-submit');
             const err = document.getElementById('uri-error-hint');
-            err.style.display = 'none';
+            const submitErr = document.getElementById('onboarding-submit-error');
+            if (err) err.style.display = 'none';
+            if (submitErr) submitErr.style.display = 'none';
 
             let customUri = '';
             if (selectedSource === 'custom') {
                 customUri = document.getElementById('custom-mongo-input').value.trim();
                 if (!customUri || !customUri.startsWith('mongodb+srv://') || !customUri.includes('.mongodb.net')) {
-                    err.style.display = 'block';
+                    if (err) err.style.display = 'block';
                     return;
                 }
             }
@@ -420,7 +496,6 @@
             const auth = window.RolenautAuth || window.JobBuddyAuth;
             const token = auth ? await auth.getToken() : null;
             if (!token) {
-                // If not signed in for any reason, redirect to landing
                 window.location.href = '/';
                 return;
             }
@@ -438,22 +513,37 @@
                         display_name: displayName,
                         db_mode: selectedSource,
                         custom_mongo_uri: customUri,
+                        active_stream: selectedSource === 'custom' ? 'custom' : 'curated',
                         onboarding_done: true
                     })
                 });
 
                 if (!res.ok) {
-                    throw new Error('Save failed');
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || 'Failed to save onboarding settings');
                 }
 
                 if (displayName && window.RolenautAuth?.setDisplayName) {
-                    window.RolenautAuth.setDisplayName(displayName);
+                    await window.RolenautAuth.setDisplayName(displayName);
+                }
+
+                if (selectedSource === 'custom' && customUri) {
+                    localStorage.setItem('rolenaut_custom_mongo_uri', customUri);
+                    localStorage.setItem('jobbuddy_custom_mongo_uri', customUri);
+                    localStorage.setItem('rolenaut_active_stream', 'custom');
+                } else {
+                    localStorage.setItem('rolenaut_active_stream', 'curated');
                 }
 
                 window.location.href = '/jobs';
             } catch (e) {
                 console.error('Onboarding save error:', e);
-                window.location.href = '/jobs';
+                btn.disabled = false;
+                btn.textContent = '🚀 Launch Job Feed';
+                if (submitErr) {
+                    submitErr.textContent = 'Error saving setup: ' + e.message;
+                    submitErr.style.display = 'block';
+                }
             }
         }
 
@@ -539,8 +629,8 @@
             <div class="footer-col">
                 <h4 class="footer-heading">Open Source &amp; Legal</h4>
                 <ul class="footer-nav-list">
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanth-1729/scrapperbuddy" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanth-1729/scrapperbuddy/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
                     <li><a href="/privacy">Privacy Policy</a></li>
                     <li><a href="/terms">Terms of Service</a></li>
                 </ul>
