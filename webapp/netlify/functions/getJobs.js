@@ -1,6 +1,4 @@
 const { MongoClient } = require("mongodb");
-const fs = require("fs");
-const path = require("path");
 const { getDatabase } = require("@netlify/database");
 const { verifyToken } = require("./verifyToken");
 
@@ -134,98 +132,6 @@ function buildQueryFilter({ category, link_type, verdict, location, search }) {
     return { $and: clauses };
 }
 
-function getLocalJobsFallback({ category, link_type, verdict, location, search, page, limit }) {
-    let localJobs = [];
-    const possiblePaths = [
-        path.join(__dirname, '..', '..', 'data', 'jobs.json'),
-        path.join(__dirname, '..', 'data', 'jobs.json')
-    ];
-    for (const p of possiblePaths) {
-        if (fs.existsSync(p)) {
-            try {
-                localJobs = JSON.parse(fs.readFileSync(p, 'utf8'));
-                break;
-            } catch (e) {}
-        }
-    }
-
-    let filtered = localJobs;
-    if (link_type === 'direct_apply') {
-        filtered = filtered.filter(j => (j.link_type || 'direct_apply') === 'direct_apply');
-        if (verdict && verdict !== 'all') {
-            filtered = filtered.filter(j => j.experience_verdict === verdict);
-        } else {
-            filtered = filtered.filter(j => !['REJECTED', 'BLOCKED'].includes(j.experience_verdict));
-        }
-        if (category && category !== 'all') {
-            filtered = filtered.filter(j => j.category === category);
-        }
-        if (location && location !== 'all') {
-            const locKey = location.toLowerCase().trim();
-            filtered = filtered.filter(j => (j.location || '').toLowerCase().includes(locKey));
-        }
-    } else if (link_type === 'filtered_list') {
-        filtered = filtered.filter(j => ['filtered_list', 'career_homepage'].includes(j.link_type));
-    }
-
-    if (search && search.trim()) {
-        const q = search.trim().toLowerCase();
-        filtered = filtered.filter(j =>
-            (j.title && j.title.toLowerCase().includes(q)) ||
-            (j.company_name && j.company_name.toLowerCase().includes(q)) ||
-            (j.location && j.location.toLowerCase().includes(q)) ||
-            (j.core_requirements && j.core_requirements.toLowerCase().includes(q))
-        );
-    }
-
-    const total = filtered.length;
-    const skip = (page - 1) * limit;
-    const paginated = filtered.slice(skip, skip + limit);
-    const directCount = localJobs.filter(j => (j.link_type || 'direct_apply') === 'direct_apply').length;
-    const portalCount = localJobs.filter(j => j.link_type === 'filtered_list').length;
-    const distinctCats = [...new Set(localJobs.map(j => j.category).filter(Boolean))];
-
-    return {
-        jobs: paginated.map(j => ({
-            _id: j._id?.$oid || j._id || j.job_id,
-            title: j.title || 'Untitled',
-            company_name: j.company_name || '',
-            location: j.location || '',
-            category: j.category || 'other',
-            link: j.link || '#',
-            link_type: j.link_type || 'direct_apply',
-            experience_verdict: j.experience_verdict || 'SAFE',
-            core_requirements: j.core_requirements || '',
-            content: j.content || '',
-            ats_name: j.ats_name || 'Direct',
-            scraped_at: j.scraped_at || new Date().toISOString(),
-            first_seen: j.first_seen || j.scraped_at || new Date().toISOString()
-        })),
-        total,
-        page,
-        limit,
-        totalPages: Math.max(1, Math.ceil(total / limit)),
-        directCount,
-        portalCount,
-        meta: {
-            profile: {
-                role_title: "Fresher & Early Career",
-                target_level: "fresher",
-                allowed_cities: ["All India"]
-            },
-            categories: distinctCats,
-            locations: [
-                { id: "all", label: "All Locations" },
-                { id: "remote", label: "Remote" },
-                { id: "india", label: "India Tech Hubs" },
-                { id: "overseas", label: "Overseas / Visa" }
-            ],
-            isOfflineFallback: true,
-            isCustomDb: false
-        }
-    };
-}
-
 exports.handler = async (event, context) => {
     // Allows Netlify to freeze process and reuse DB connection
     context.callbackWaitsForEmptyEventLoop = false;
@@ -285,16 +191,20 @@ exports.handler = async (event, context) => {
     const activeUri = (customUri && customUri.trim()) || process.env.MONGODB_URI || "";
 
     if (!activeUri) {
-        // Seamless fallback to local curated jobs
-        const fallback = getLocalJobsFallback({ category, link_type, verdict, location, search, page, limit });
         return {
-            statusCode: 200,
+            statusCode: 503,
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-                "Cache-Control": "public, max-age=60"
             },
-            body: JSON.stringify(fallback)
+            body: JSON.stringify({
+                error: "MongoDB connection is not configured. Please ensure MONGODB_URI is set.",
+                jobs: [],
+                total: 0,
+                totalPages: 1,
+                directCount: 0,
+                portalCount: 0
+            })
         };
     }
 
@@ -459,16 +369,22 @@ exports.handler = async (event, context) => {
             }),
         };
     } catch (error) {
-        console.error("getJobs error, switching to fallback:", error.message);
-        // Fall back gracefully to local offline dataset so the UI remains 100% operational
-        const fallback = getLocalJobsFallback({ category, link_type, verdict, location, search, page, limit });
+        console.error("getJobs MongoDB query error:", error.message);
         return {
-            statusCode: 200,
+            statusCode: 503,
             headers: {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": ALLOWED_ORIGIN
             },
-            body: JSON.stringify(fallback)
+            body: JSON.stringify({
+                error: "MongoDB service is temporarily unavailable. Please retry shortly.",
+                jobs: [],
+                total: 0,
+                totalPages: 1,
+                directCount: 0,
+                portalCount: 0,
+                details: error.message
+            })
         };
     }
 };

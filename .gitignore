@@ -41,3 +41,5 @@ __pycache__/
 # Local Database Dumps
 mongodb_export/
 mongodb/
+data/
+webapp/data/

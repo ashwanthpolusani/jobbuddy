@@ -1,6 +1,4 @@
 const { MongoClient } = require("mongodb");
-const fs = require("fs");
-const path = require("path");
 
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
 const uri = process.env.MONGODB_URI;
@@ -29,36 +27,6 @@ async function connectToDatabase() {
     return client;
 }
 
-function getLocalStatsFallback() {
-    const p = path.join(__dirname, "..", "..", "data", "site_stats.json");
-    if (fs.existsSync(p)) {
-        try {
-            const raw = JSON.parse(fs.readFileSync(p, "utf8"));
-            const mapped = raw.map(s => ({
-                _id: s.url,
-                runs: 1,
-                successful_fetches: s.fetch_success ? 1 : 0,
-                total_quality_jobs: s.quality_jobs_saved || 0,
-                total_jobs_seen: s.jobs_seen || 0,
-                company_name: s.company_name || 'Company',
-                last_ats_name: s.ats_name || 'Direct',
-                last_run: s.run_date,
-                success_rate: s.fetch_success ? 1 : 0
-            }));
-            return {
-                summary: {
-                    total_sites_tracked: mapped.length,
-                    productive_sites: mapped.filter(s => s.total_quality_jobs > 0).length,
-                    always_failing: 0,
-                    always_no_jobs: 0
-                },
-                sites: mapped
-            };
-        } catch (e) {}
-    }
-    return { summary: { total_sites_tracked: 0, productive_sites: 0 }, sites: [] };
-}
-
 exports.handler = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false;
 
@@ -81,9 +49,12 @@ exports.handler = async (event, context) => {
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-                    "Cache-Control": "public, max-age=300"
+                    "Cache-Control": "public, max-age=60"
                 },
-                body: JSON.stringify(getLocalStatsFallback())
+                body: JSON.stringify({
+                    summary: { total_sites_tracked: 0, productive_sites: 0, always_failing: 0, always_no_jobs: 0 },
+                    sites: []
+                })
             };
         }
 
@@ -152,15 +123,18 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ summary, sites: stats }),
         };
     } catch (error) {
-        console.error("getSiteStats error, using fallback:", error.message);
+        console.error("getSiteStats MongoDB error:", error.message);
         return {
-            statusCode: 200,
+            statusCode: 500,
             headers: {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-                "Cache-Control": "public, max-age=60"
+                "Access-Control-Allow-Origin": ALLOWED_ORIGIN
             },
-            body: JSON.stringify(getLocalStatsFallback())
+            body: JSON.stringify({
+                summary: { total_sites_tracked: 0, productive_sites: 0, always_failing: 0, always_no_jobs: 0 },
+                sites: [],
+                error: error.message
+            })
         };
     }
 };

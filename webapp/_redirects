@@ -54,6 +54,7 @@
 /server.js              /404.html           404!
 /netlify/*              /404.html           404!
 /.env*                  /404.html           404!
+/data/*                 /404.html           404!
 
 # Programmatic SEO & SPA routes for job filters
 /jobs/*                 /jobs.html          200
