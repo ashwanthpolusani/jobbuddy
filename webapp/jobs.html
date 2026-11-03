@@ -175,9 +175,14 @@
             border: none;
             font-size: 1.5rem;
             line-height: 1;
-            color: #6b7280;
+            color: #4b5563;
             cursor: pointer;
             padding: 6px;
+            min-width: 44px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 6px;
             transition: color 0.15s;
         }
@@ -220,7 +225,7 @@
 
         .ws-status-badge.neutral {
             background: var(--surface2);
-            color: var(--muted);
+            color: #334155;
             border-color: var(--border2);
         }
 
@@ -502,6 +507,10 @@
 
         .cat-btn {
             padding: 6px 14px;
+            min-height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             background: transparent;
             border: none;
             border-radius: var(--radius);
@@ -625,10 +634,12 @@
         .filt-btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 5px;
-            padding: 5px 11px;
+            padding: 6px 12px;
+            min-height: 36px;
             border-radius: var(--radius);
-            font-size: 0.75rem;
+            font-size: 0.76rem;
             font-weight: 500;
             font-family: inherit;
             cursor: pointer;
@@ -692,6 +703,7 @@
             align-items: center;
             gap: 6px;
             padding: 6px 13px;
+            min-height: 38px;
             border-radius: 6px;
             border: none;
             background: transparent;
@@ -716,7 +728,7 @@
 
         .tab-badge {
             background: rgba(10, 102, 194, 0.12);
-            color: var(--accent);
+            color: #1d4ed8;
             font-size: 0.78rem;
             padding: 2px 7px;
             border-radius: 10px;
@@ -937,20 +949,24 @@
         .expand-btn {
             display: inline-flex;
             align-items: center;
-            gap: 3px;
-            margin-top: 3px;
-            font-size: 0.72rem;
-            color: #4b5563;
+            gap: 4px;
+            margin-top: 4px;
+            font-size: 0.74rem;
+            color: #374151;
             background: none;
-            border: none;
-            padding: 0;
+            border: 1px solid transparent;
+            padding: 6px 10px;
+            min-height: 36px;
+            border-radius: 4px;
             cursor: pointer;
             font-family: inherit;
-            transition: color 0.14s;
+            transition: all 0.14s ease;
         }
 
         .expand-btn:hover {
             color: var(--text);
+            background: var(--surface2);
+            border-color: var(--border);
         }
 
         .job-right {
@@ -1200,8 +1216,41 @@
             .filter-pill-wrap {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 5px;
+                gap: 6px;
                 flex: 1;
+            }
+
+            .filt-btn {
+                min-height: 38px;
+                padding: 7px 12px;
+                font-size: 0.78rem;
+            }
+
+            .cat-btn {
+                min-height: 40px;
+                padding: 8px 14px;
+                font-size: 0.82rem;
+            }
+
+            .view-tab {
+                min-height: 40px;
+                padding: 8px 14px;
+            }
+
+            .stream-toggle-btn {
+                min-height: 40px;
+                padding: 8px 16px;
+            }
+
+            .page-btn {
+                min-width: 38px;
+                height: 38px;
+                font-size: 0.82rem;
+            }
+
+            .apply-btn {
+                min-height: 38px;
+                padding: 8px 14px;
             }
         }
 
@@ -1324,8 +1373,8 @@
         }
         .stream-banner-badge.fresher {
             background: #ecfdf5;
-            color: #059669;
-            border: 1px solid #a7f3d0;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
         }
         .stream-banner-badge.custom {
             background: #f5f3ff;
@@ -1376,6 +1425,7 @@
             background: transparent;
             border: none;
             padding: 6px 14px;
+            min-height: 38px;
             border-radius: 999px;
             font-size: 0.78rem;
             font-weight: 600;
@@ -1384,6 +1434,7 @@
             transition: all 0.15s ease;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
         }
         .stream-toggle-btn:hover:not(.active) {
@@ -1695,7 +1746,7 @@
     </div>
 
     <!-- UNIFIED ACCOUNT & WORKSPACE MODAL -->
-    <div id="db-modal" class="db-modal-overlay" style="display: none;" onclick="if(event.target===this)closeDbModal()">
+    <div id="db-modal" class="db-modal-overlay" style="display: none;" onclick="if(event.target===this)closeDbModal()" role="dialog" aria-modal="true" aria-labelledby="db-modal-title" aria-describedby="db-modal-desc-sub">
         <div class="db-modal-card">
             <div class="db-modal-header">
                 <div class="db-modal-title-wrap">
@@ -1704,8 +1755,8 @@
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
                     <div>
-                        <h3>Account & Workspace</h3>
-                        <p class="modal-subtext">Manage cloud-synced MongoDB data sources via Netlify</p>
+                        <h3 id="db-modal-title">Account & Workspace</h3>
+                        <p class="modal-subtext" id="db-modal-desc-sub">Manage cloud-synced MongoDB data sources via Netlify</p>
                     </div>
                 </div>
                 <button class="db-modal-close" onclick="closeDbModal()" aria-label="Close modal">&times;</button>
@@ -1757,8 +1808,8 @@
                     <div class="db-input-group">
                         <label for="custom-mongo-input">MongoDB Read-Only URI</label>
                         <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                            <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" autocomplete="off" style="width: 100%; padding-right: 40px;" />
-                            <button type="button" id="btn-jobs-mongo-vis" onclick="toggleMongoPasswordVisibility()" aria-label="Show connection URI" aria-pressed="false" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
+                            <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" autocomplete="off" style="width: 100%; padding-right: 48px;" />
+                            <button type="button" id="btn-jobs-mongo-vis" onclick="toggleMongoPasswordVisibility()" aria-label="Show connection URI" aria-pressed="false" style="position: absolute; right: 2px; background: transparent; border: none; cursor: pointer; font-size: 1rem; line-height: 1; padding: 4px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px;" title="Show/Hide URI">👁️</button>
                         </div>
                         <div id="jobs-modal-feedback" class="inline-feedback"></div>
                         <span class="db-hint">&#128274; Replace &lt;db_user&gt; and &lt;db_password&gt; with your Atlas credentials. Saved securely to your Netlify cloud profile.</span>
@@ -1892,11 +1943,13 @@
             const tabPort = document.getElementById('tab-portals');
             if (tabDir) {
                 tabDir.classList.toggle('active', isDirect);
-                tabDir.setAttribute('aria-selected', isDirect);
+                tabDir.setAttribute('aria-selected', isDirect ? 'true' : 'false');
+                tabDir.tabIndex = isDirect ? 0 : -1;
             }
             if (tabPort) {
                 tabPort.classList.toggle('active', !isDirect);
-                tabPort.setAttribute('aria-selected', !isDirect);
+                tabPort.setAttribute('aria-selected', !isDirect ? 'true' : 'false');
+                tabPort.tabIndex = !isDirect ? 0 : -1;
             }
 
             // Category, Location, and Confidence filters apply to individual Job Openings
@@ -2231,8 +2284,8 @@
 
             const reasonLabel = isDirect ? 'Core Requirements:' : 'Overview:';
             const reasonHtml = reason
-                ? '<div class="job-reason" id="r' + id + '"><strong>' + reasonLabel + '</strong> ' + esc(reason) + '</div>'
-                + '<button class="expand-btn" id="b' + id + '" onclick="toggle(\'' + id + '\')">'
+                ? '<div class="job-reason" id="r' + id + '" role="region" aria-labelledby="b' + id + '"><strong>' + reasonLabel + '</strong> ' + esc(reason) + '</div>'
+                + '<button class="expand-btn" id="b' + id + '" onclick="toggle(\'' + id + '\')" aria-expanded="false" aria-controls="r' + id + '" aria-label="Toggle details for ' + jobTitleEsc + '">'
                 + '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view details</button>'
                 : '';
 
@@ -2272,8 +2325,9 @@
         function toggle(id) {
             const r = document.getElementById('r' + id);
             const b = document.getElementById('b' + id);
-            if (!r) return;
+            if (!r || !b) return;
             const ex = r.classList.toggle('expanded');
+            b.setAttribute('aria-expanded', ex ? 'true' : 'false');
             b.innerHTML = ex
                 ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg> less'
                 : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view details';
@@ -2595,7 +2649,30 @@
 
         let lastFocusedDbModalEl = null;
         function handleDbModalKeydown(e) {
-            if (e.key === 'Escape') closeDbModal();
+            if (e.key === 'Escape') {
+                closeDbModal();
+                return;
+            }
+            if (e.key === 'Tab') {
+                const modal = document.getElementById('db-modal');
+                if (!modal) return;
+                const focusables = modal.querySelectorAll('button:not([disabled]):not([style*="display: none"]), input:not([disabled]):not([style*="display: none"]), a:not([style*="display: none"]), [tabindex]:not([tabindex="-1"])');
+                const visibleFocusables = Array.from(focusables).filter(el => el.offsetParent !== null);
+                if (!visibleFocusables || visibleFocusables.length === 0) return;
+                const first = visibleFocusables[0];
+                const last = visibleFocusables[visibleFocusables.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            }
         }
 
         function openDbModal() {
@@ -2604,9 +2681,12 @@
             updateWorkspaceModalUI();
             if (modal) {
                 modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
                 document.addEventListener('keydown', handleDbModalKeydown);
-                const firstBtn = modal.querySelector('button, input');
-                if (firstBtn) firstBtn.focus();
+                setTimeout(() => {
+                    const firstBtn = modal.querySelector('input:not([disabled]):not([style*="display: none"]), button:not([disabled]):not([style*="display: none"])');
+                    if (firstBtn && typeof firstBtn.focus === 'function') firstBtn.focus();
+                }, 50);
             }
         }
 
@@ -2614,8 +2694,11 @@
             const modal = document.getElementById('db-modal');
             if (modal) {
                 modal.style.display = 'none';
+                document.body.style.overflow = '';
                 document.removeEventListener('keydown', handleDbModalKeydown);
-                if (lastFocusedDbModalEl) lastFocusedDbModalEl.focus();
+                if (lastFocusedDbModalEl && typeof lastFocusedDbModalEl.focus === 'function') {
+                    lastFocusedDbModalEl.focus();
+                }
             }
         }
 
@@ -2863,9 +2946,11 @@
             }
             if (btnCurated && btnCustom) {
                 btnCurated.classList.toggle('active', !isCustomActive);
-                btnCurated.setAttribute('aria-selected', !isCustomActive);
+                btnCurated.setAttribute('aria-selected', !isCustomActive ? 'true' : 'false');
+                btnCurated.tabIndex = !isCustomActive ? 0 : -1;
                 btnCustom.classList.toggle('active', isCustomActive);
-                btnCustom.setAttribute('aria-selected', isCustomActive);
+                btnCustom.setAttribute('aria-selected', isCustomActive ? 'true' : 'false');
+                btnCustom.tabIndex = isCustomActive ? 0 : -1;
             }
 
             if (isCustomActive) {
@@ -3060,8 +3145,8 @@
             const isDirect = activeViewType === 'direct_apply';
             const tabDir = document.getElementById('tab-direct');
             const tabPort = document.getElementById('tab-portals');
-            if (tabDir) { tabDir.classList.toggle('active', isDirect); tabDir.setAttribute('aria-selected', isDirect); }
-            if (tabPort) { tabPort.classList.toggle('active', !isDirect); tabPort.setAttribute('aria-selected', !isDirect); }
+            if (tabDir) { tabDir.classList.toggle('active', isDirect); tabDir.setAttribute('aria-selected', isDirect ? 'true' : 'false'); tabDir.tabIndex = isDirect ? 0 : -1; }
+            if (tabPort) { tabPort.classList.toggle('active', !isDirect); tabPort.setAttribute('aria-selected', !isDirect ? 'true' : 'false'); tabPort.tabIndex = !isDirect ? 0 : -1; }
 
             const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
             const filterRow = document.getElementById('filter-row');
@@ -3128,8 +3213,8 @@
             const isDirect = activeViewType === 'direct_apply';
             const tabDir = document.getElementById('tab-direct');
             const tabPort = document.getElementById('tab-portals');
-            if (tabDir) { tabDir.classList.toggle('active', isDirect); tabDir.setAttribute('aria-selected', isDirect); }
-            if (tabPort) { tabPort.classList.toggle('active', !isDirect); tabPort.setAttribute('aria-selected', !isDirect); }
+            if (tabDir) { tabDir.classList.toggle('active', isDirect); tabDir.setAttribute('aria-selected', isDirect ? 'true' : 'false'); tabDir.tabIndex = isDirect ? 0 : -1; }
+            if (tabPort) { tabPort.classList.toggle('active', !isDirect); tabPort.setAttribute('aria-selected', !isDirect ? 'true' : 'false'); tabPort.tabIndex = !isDirect ? 0 : -1; }
 
             const catContainer = document.getElementById('cat-scroll-container') || document.getElementById('cat-scroll-wrap');
             const filterRow = document.getElementById('filter-row');
@@ -3138,6 +3223,34 @@
 
             syncFilterUI();
             updatePageTitle();
+
+            // Keyboard Arrow navigation for View Switcher tabs
+            const viewTabs = document.querySelector('.view-tabs');
+            if (viewTabs) {
+                viewTabs.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        const nextView = activeViewType === 'direct_apply' ? 'filtered_list' : 'direct_apply';
+                        setViewType(nextView);
+                        const targetTab = document.getElementById(nextView === 'direct_apply' ? 'tab-direct' : 'tab-portals');
+                        if (targetTab) targetTab.focus();
+                    }
+                });
+            }
+
+            // Keyboard Arrow navigation for Stream Switcher pill tabs
+            const streamSwitcher = document.getElementById('stream-switcher-wrap');
+            if (streamSwitcher) {
+                streamSwitcher.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        const nextStream = activeStream === 'curated' ? 'custom' : 'curated';
+                        setStreamMode(nextStream);
+                        const targetBtn = document.getElementById(nextStream === 'curated' ? 'btn-stream-curated' : 'btn-stream-custom');
+                        if (targetBtn) targetBtn.focus();
+                    }
+                });
+            }
 
             // Category horizontal scroll fade indicator (RAF-batched)
             const cWrap = document.getElementById('cat-scroll-wrap');

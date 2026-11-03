@@ -157,6 +157,8 @@
             transition: all 0.15s ease;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
+            min-height: 38px;
             gap: 6px;
         }
         .btn-small:hover:not(:disabled) {
@@ -234,6 +236,7 @@
             border: 1px solid var(--red);
             color: var(--red);
             padding: 8px 16px;
+            min-height: 38px;
             border-radius: 6px;
             font-size: 0.82rem;
             font-weight: 700;
@@ -241,6 +244,7 @@
             transition: all 0.15s ease;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
         }
         .btn-danger:hover:not(:disabled) {
@@ -378,8 +382,8 @@
                 <div class="edit-source-box" id="edit-source-box" style="display: none;">
                     <label for="new-mongo-uri-input" class="field-label" style="display: block; margin-bottom: 6px;">MongoDB Atlas Connection URI (SRV)</label>
                     <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                        <input type="password" id="new-mongo-uri-input" class="input-inline" style="max-width: 100%; width: 100%; padding-right: 40px;" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" aria-describedby="mongo-uri-security-note">
-                        <button type="button" id="btn-toggle-profile-uri-vis" onclick="toggleProfileMongoPasswordVisibility()" aria-label="Show connection URI" aria-pressed="false" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
+                        <input type="password" id="new-mongo-uri-input" class="input-inline" style="max-width: 100%; width: 100%; padding-right: 48px;" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" aria-describedby="mongo-uri-security-note">
+                        <button type="button" id="btn-toggle-profile-uri-vis" onclick="toggleProfileMongoPasswordVisibility()" aria-label="Show connection URI" aria-pressed="false" style="position: absolute; right: 2px; background: transparent; border: none; cursor: pointer; font-size: 1rem; line-height: 1; padding: 4px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px;" title="Show/Hide URI">👁️</button>
                     </div>
                     <div id="source-feedback" class="inline-feedback"></div>
                     <div id="mongo-uri-security-note" style="font-size: 0.74rem; color: var(--muted); margin-top: 6px;">
@@ -431,7 +435,7 @@
                 <h3 id="del-modal-title" style="color: var(--danger); font-size: 1.1rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
                     ⚠️ Confirm Account Erasure
                 </h3>
-                <button type="button" onclick="closeDeleteModal()" aria-label="Cancel and close modal" style="background: transparent; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted);">&times;</button>
+                <button type="button" onclick="closeDeleteModal()" aria-label="Cancel and close modal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; line-height: 1;">&times;</button>
             </div>
             <p id="del-modal-desc" style="font-size: 0.85rem; color: var(--text2); margin: 14px 0 10px; line-height: 1.55;">
                 Under GDPR Article 17 (Right to Erasure), this action will permanently delete your user profile, custom database connection, and settings. This action cannot be undone.
@@ -918,6 +922,26 @@
         function handleDeleteModalKeydown(e) {
             if (e.key === 'Escape') {
                 closeDeleteModal();
+                return;
+            }
+            if (e.key === 'Tab') {
+                const modal = document.getElementById('delete-modal-backdrop');
+                if (!modal) return;
+                const focusables = modal.querySelectorAll('button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])');
+                if (!focusables || focusables.length === 0) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
             }
         }
 
@@ -932,6 +956,7 @@
             if (btn) btn.disabled = true;
             if (modal) {
                 modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
                 document.addEventListener('keydown', handleDeleteModalKeydown);
                 setTimeout(() => { if (input) input.focus(); }, 50);
             }
@@ -941,6 +966,7 @@
             const modal = document.getElementById('delete-modal-backdrop');
             if (modal) {
                 modal.style.display = 'none';
+                document.body.style.overflow = '';
                 document.removeEventListener('keydown', handleDeleteModalKeydown);
             }
             if (lastFocusedDeleteTrigger && typeof lastFocusedDeleteTrigger.focus === 'function') {
