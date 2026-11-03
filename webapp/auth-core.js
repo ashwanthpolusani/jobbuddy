@@ -147,7 +147,7 @@
                 persistUserCache(user);
             }
             renderAuthHeader();
-            dispatchAuthEvent(user);
+            // Crucial: Do NOT call dispatchAuthEvent here - setting display name is purely visual and must not re-trigger lifecycle auth loops!
         }
     }
 

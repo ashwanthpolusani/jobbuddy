@@ -499,9 +499,14 @@
                 if (data && data.profile) {
                     currentProfile = data.profile;
                     const resolvedName = currentProfile.display_name || savedLocalName || user.display_name || user.user_metadata?.display_name || user.user_metadata?.full_name || '';
-                    document.getElementById('profile-name-input').value = resolvedName;
+                    const nameInput = document.getElementById('profile-name-input');
+                    if (nameInput && document.activeElement !== nameInput) {
+                        nameInput.value = resolvedName;
+                    }
                     if (resolvedName && window.RolenautAuth?.setDisplayName) {
-                        window.RolenautAuth.setDisplayName(resolvedName);
+                        if (localStorage.getItem('rolenaut_display_name') !== resolvedName) {
+                            window.RolenautAuth.setDisplayName(resolvedName);
+                        }
                     }
 
                     if (currentProfile.custom_mongo_uri) {
@@ -514,7 +519,7 @@
                     }
 
                     if (!currentProfile.display_name && savedLocalName && token) {
-                        // Background self-heal database record with local display name
+                        // Background self-heal database record with local display name once
                         fetch('/api/user-profile', {
                             method: 'POST',
                             headers: {
@@ -529,12 +534,15 @@
                     if (currentProfile.db_mode === 'custom' || currentProfile.has_custom_db) {
                         pill.className = 'status-pill custom';
                         pill.textContent = '🟣 Custom Scraper MongoDB Active';
-                        document.getElementById('choice-custom').checked = true;
+                        const c = document.getElementById('choice-custom');
+                        if (c) c.checked = true;
                     } else {
                         pill.className = 'status-pill curated';
                         pill.textContent = '🟢 Inbuilt Curated Stream';
-                        document.getElementById('choice-inbuilt').checked = true;
+                        const c = document.getElementById('choice-inbuilt');
+                        if (c) c.checked = true;
                     }
+                    handleSourceChoiceChange();
 
                     if (currentProfile.created_at) {
                         const d = new Date(currentProfile.created_at);
@@ -548,8 +556,15 @@
 
         async function saveDisplayName() {
             const newName = document.getElementById('profile-name-input').value.trim();
+            if (!newName) {
+                showToast('Please enter a display name');
+                return;
+            }
             const token = await getAuthToken();
             if (!token) return;
+
+            const btn = document.querySelector('button[onclick="saveDisplayName()"]');
+            if (btn) btn.textContent = 'Saving...';
 
             try {
                 const res = await fetch('/api/user-profile', {
@@ -575,6 +590,8 @@
                 }
             } catch (e) {
                 showToast('Failed to update name');
+            } finally {
+                if (btn) btn.textContent = 'Save Name';
             }
         }
 
@@ -587,31 +604,41 @@
 
         function toggleSourceEdit(show) {
             const box = document.getElementById('edit-source-box');
+            if (!box) return;
             if (show !== undefined) {
                 box.style.display = show ? 'block' : 'none';
             } else {
                 box.style.display = box.style.display === 'block' ? 'none' : 'block';
             }
+            if (box.style.display === 'block') {
+                handleSourceChoiceChange();
+            }
         }
 
         function handleSourceChoiceChange() {
             const isCustom = document.getElementById('choice-custom').checked;
-            document.getElementById('custom-uri-input-box').style.display = isCustom ? 'block' : 'none';
+            const inputBox = document.getElementById('custom-uri-input-box');
+            if (inputBox) {
+                inputBox.style.display = isCustom ? 'block' : 'none';
+            }
         }
 
         async function saveSourceChanges() {
             const isCustom = document.getElementById('choice-custom').checked;
             const rawUri = document.getElementById('new-mongo-uri-input').value.trim();
             const newUri = normalizeClientMongoUri(rawUri);
-            const finalUri = newUri || (isCustom ? (currentProfile?.custom_mongo_uri || '') : '');
+            const finalUri = isCustom ? (newUri || currentProfile?.custom_mongo_uri || '') : '';
 
-            if (isCustom && !finalUri && !currentProfile?.has_custom_db) {
+            if (isCustom && !finalUri) {
                 alert('Please provide a valid MongoDB Atlas connection string.');
                 return;
             }
 
             const token = await getAuthToken();
             if (!token) return;
+
+            const saveBtn = document.querySelector('#edit-source-box .btn-primary-sm');
+            if (saveBtn) saveBtn.textContent = 'Saving...';
 
             try {
                 const payload = {
@@ -633,10 +660,14 @@
                     body: JSON.stringify(payload)
                 });
                 if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.profile) {
+                        currentProfile = data.profile;
+                    }
                     if (isCustom && finalUri) {
                         localStorage.setItem("rolenaut_custom_mongo_uri", finalUri);
                         localStorage.setItem("jobbuddy_custom_mongo_uri", finalUri);
-                    } else if (!isCustom) {
+                    } else {
                         localStorage.removeItem("rolenaut_custom_mongo_uri");
                         localStorage.removeItem("jobbuddy_custom_mongo_uri");
                     }
@@ -644,20 +675,32 @@
                     // Invalidate all stale job listing cache so switching streams takes effect immediately
                     for (let i = localStorage.length - 1; i >= 0; i--) {
                         const key = localStorage.key(i);
-                        if (key && (key.startsWith("rolenaut_cache_") || key.startsWith("jobbuddy_cache_"))) {
+                        if (key && (key.startsWith("rolenaut_cache_") || key.startsWith("jobbuddy_cache_") || key.startsWith("jb_cache_"))) {
                             localStorage.removeItem(key);
+                        }
+                    }
+
+                    const pill = document.getElementById('source-pill');
+                    if (pill) {
+                        if (isCustom) {
+                            pill.className = 'status-pill custom';
+                            pill.textContent = '🟣 Custom Scraper MongoDB Active';
+                        } else {
+                            pill.className = 'status-pill curated';
+                            pill.textContent = '🟢 Inbuilt Curated Stream';
                         }
                     }
 
                     showToast('Job data source updated!');
                     toggleSourceEdit(false);
-                    loadProfile();
                 } else {
                     const err = await res.json();
                     alert(err.error || 'Failed to update source');
                 }
             } catch (e) {
-                alert('Error updating source');
+                alert('Error updating source: ' + e.message);
+            } finally {
+                if (saveBtn) saveBtn.textContent = 'Save Data Source';
             }
         }
 
@@ -724,18 +767,26 @@
             }
         }
 
+        let profileLoaded = false;
         document.addEventListener('DOMContentLoaded', () => {
             const auth = window.RolenautAuth || window.JobBuddyAuth;
             const user = auth ? auth.getUser() : null;
 
             const handleProfileAuth = (e) => {
-                if (e.detail && e.detail.user) loadProfile();
-                else window.location.href = '/';
+                if (e.detail && e.detail.user) {
+                    if (!profileLoaded) {
+                        profileLoaded = true;
+                        loadProfile();
+                    }
+                } else {
+                    window.location.href = '/';
+                }
             };
             window.addEventListener('rolenaut_auth_change', handleProfileAuth);
             window.addEventListener('jb_auth_change', handleProfileAuth);
 
             if (user) {
+                profileLoaded = true;
                 loadProfile();
             } else {
                 setTimeout(() => {
