@@ -504,6 +504,27 @@
                         window.RolenautAuth.setDisplayName(resolvedName);
                     }
 
+                    if (currentProfile.custom_mongo_uri) {
+                        const uriInput = document.getElementById('new-mongo-uri-input');
+                        if (uriInput && !uriInput.value) uriInput.value = currentProfile.custom_mongo_uri;
+                        if (currentProfile.db_mode === 'custom') {
+                            localStorage.setItem("rolenaut_custom_mongo_uri", currentProfile.custom_mongo_uri);
+                            localStorage.setItem("jobbuddy_custom_mongo_uri", currentProfile.custom_mongo_uri);
+                        }
+                    }
+
+                    if (!currentProfile.display_name && savedLocalName && token) {
+                        // Background self-heal database record with local display name
+                        fetch('/api/user-profile', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ display_name: savedLocalName })
+                        }).catch(() => {});
+                    }
+
                     const pill = document.getElementById('source-pill');
                     if (currentProfile.db_mode === 'custom' || currentProfile.has_custom_db) {
                         pill.className = 'status-pill custom';
@@ -582,8 +603,9 @@
             const isCustom = document.getElementById('choice-custom').checked;
             const rawUri = document.getElementById('new-mongo-uri-input').value.trim();
             const newUri = normalizeClientMongoUri(rawUri);
+            const finalUri = newUri || (isCustom ? (currentProfile?.custom_mongo_uri || '') : '');
 
-            if (isCustom && !newUri && !currentProfile?.has_custom_db) {
+            if (isCustom && !finalUri && !currentProfile?.has_custom_db) {
                 alert('Please provide a valid MongoDB Atlas connection string.');
                 return;
             }
@@ -598,8 +620,8 @@
                 if (currentProfile && currentProfile.display_name) {
                     payload.display_name = currentProfile.display_name;
                 }
-                if (isCustom && newUri) {
-                    payload.custom_mongo_uri = newUri;
+                if (isCustom && finalUri) {
+                    payload.custom_mongo_uri = finalUri;
                 }
 
                 const res = await fetch('/api/user-profile', {
@@ -611,9 +633,9 @@
                     body: JSON.stringify(payload)
                 });
                 if (res.ok) {
-                    if (isCustom && newUri) {
-                        localStorage.setItem("rolenaut_custom_mongo_uri", newUri);
-                        localStorage.setItem("jobbuddy_custom_mongo_uri", newUri);
+                    if (isCustom && finalUri) {
+                        localStorage.setItem("rolenaut_custom_mongo_uri", finalUri);
+                        localStorage.setItem("jobbuddy_custom_mongo_uri", finalUri);
                     } else if (!isCustom) {
                         localStorage.removeItem("rolenaut_custom_mongo_uri");
                         localStorage.removeItem("jobbuddy_custom_mongo_uri");

@@ -47,13 +47,13 @@ async function ensureTable(db) {
 }
 
 function sanitizeProfile(row) {
-    // NEVER expose raw custom_mongo_uri to client
     const hasCustom = Boolean(row.custom_mongo_uri && row.custom_mongo_uri.trim());
     return {
         user_id: row.user_id,
         display_name: row.display_name || "",
         db_mode: row.db_mode || (hasCustom ? "custom" : "inbuilt"),
         has_custom_db: hasCustom,
+        custom_mongo_uri: row.custom_mongo_uri || "",
         saved_jobs: typeof row.saved_jobs === "string" ? JSON.parse(row.saved_jobs) : (row.saved_jobs || []),
         onboarding_done: Boolean(row.onboarding_done),
         created_at: row.created_at,

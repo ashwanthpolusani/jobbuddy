@@ -5,16 +5,26 @@ const { verifyToken } = require("./verifyToken");
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
 
 let netlifyDbInstance = null;
+function getNetlifyDb() {
+    if (netlifyDbInstance) return netlifyDbInstance;
+    try {
+        const connString = process.env.NETLIFY_DB_URL;
+        netlifyDbInstance = connString ? getDatabase({ connectionString: connString }) : getDatabase();
+        return netlifyDbInstance;
+    } catch (e) {
+        return null;
+    }
+}
+
 async function resolveUserCustomUri(event, context) {
     try {
         const authUser = await verifyToken(event, context);
         if (!authUser || !authUser.userId) return null;
-        if (!netlifyDbInstance) {
-            try { netlifyDbInstance = getDatabase(); } catch (e) { return null; }
-        }
-        const rows = await netlifyDbInstance.sql`
+        const db = getNetlifyDb();
+        if (!db) return null;
+        const rows = await db.sql`
             SELECT custom_mongo_uri, db_mode FROM user_profiles
-            WHERE user_id = ${authUser.userId} AND deleted_at IS NULL LIMIT 1
+            WHERE (user_id = ${authUser.userId} OR user_id = ${authUser.email}) AND deleted_at IS NULL LIMIT 1
         `;
         if (rows && rows.length > 0 && rows[0].db_mode === "custom") {
             return rows[0].custom_mongo_uri || null;
