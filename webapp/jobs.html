@@ -1482,7 +1482,7 @@
             </a>
             <div class="header-actions">
                 <nav class="header-nav-links" aria-label="Main Navigation">
-                    <a href="/jobs" class="header-nav-link active" id="nav-live-jobs" onclick="currentPage=1;fetchJobs(1);">Live Jobs</a>
+                    <a href="/jobs" class="header-nav-link active" id="nav-live-jobs" onclick="event.preventDefault();currentPage=1;fetchJobs(1);">Live Jobs</a>
                     <a href="/scraper-guide" class="header-nav-link ">Scraper Setup</a>
                     <a href="/interview-prep" class="header-nav-link ">Interview Prep</a>
                     <a href="/resume-guide" class="header-nav-link ">Resume Guide</a>
@@ -2261,7 +2261,9 @@
             const isDirect = ltOf(job) === 'direct_apply';
             const verdict = job.experience_verdict || null;
             const newTag = isNew(job.first_seen || job.scraped_at) ? '<span class="tag-new">New</span>' : '';
-            const rawReason = job.core_requirements || '';
+            const rawReason = typeof job.core_requirements === 'string'
+                ? job.core_requirements
+                : (Array.isArray(job.core_requirements) ? job.core_requirements.join(', ') : '');
             const portalFallback = 'Official corporate ATS career portal for verified tech opportunities.';
             
             // Filter out scraper artifacts / cookie blocker text if any slipped through
@@ -2575,17 +2577,21 @@
                 renderJobs();
             } catch (renderErr) {
                 console.error('Jobs rendering error:', renderErr);
-                countEl.innerHTML = `<span style="color:var(--red);">Display Formatting Error</span>`;
-                cnt.innerHTML = `
-                    <div class="empty-workspace-hero" style="border-color: rgba(239, 68, 68, 0.3);">
-                        <div class="empty-ws-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--red);">⚠️</div>
-                        <h3 style="color: var(--text);">UI Rendering Error</h3>
-                        <p style="color: var(--muted); margin-bottom: 12px;">The jobs were successfully retrieved, but an error occurred while formatting them on screen:</p>
-                        <div style="background: rgba(239, 68, 68, 0.07); color: var(--red); font-family: monospace; font-size: 0.8rem; padding: 10px 14px; border-radius: 8px; margin-bottom: 18px; word-break: break-all;">
-                            ${esc(renderErr.message || 'Display formatting error')}
+                const countEl = document.getElementById('result-count');
+                const cnt = document.getElementById('jobs-container');
+                if (countEl) countEl.innerHTML = `<span style="color:var(--red);">Display Formatting Error</span>`;
+                if (cnt) {
+                    cnt.innerHTML = `
+                        <div class="empty-workspace-hero" style="border-color: rgba(239, 68, 68, 0.3);">
+                            <div class="empty-ws-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--red);">⚠️</div>
+                            <h3 style="color: var(--text);">UI Rendering Error</h3>
+                            <p style="color: var(--muted); margin-bottom: 12px;">The jobs were successfully retrieved, but an error occurred while formatting them on screen:</p>
+                            <div style="background: rgba(239, 68, 68, 0.07); color: var(--red); font-family: monospace; font-size: 0.8rem; padding: 10px 14px; border-radius: 8px; margin-bottom: 18px; word-break: break-all;">
+                                ${esc(renderErr.message || 'Display formatting error')}
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
         }
 
@@ -2731,7 +2737,7 @@
                         headers['Authorization'] = 'Bearer ' + token;
                     }
                 }
-                const res = await fetch(`/.netlify/functions/userProfile?email=${encodeURIComponent(user.email)}`, {
+                const res = await fetch('/api/user-profile', {
                     headers: headers
                 });
                 if (res.ok) {

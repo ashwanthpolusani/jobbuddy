@@ -670,7 +670,10 @@
                 return;
             }
             const token = await getAuthToken();
-            if (!token) return;
+            if (!token) {
+                showNameFeedback('Session expired or not signed in. Please sign in again.', true);
+                return;
+            }
 
             const btn = document.getElementById('btn-save-name');
             if (btn) {
@@ -707,11 +710,17 @@
                     }
                 } else {
                     showNameFeedback('Failed to update name', true);
-                    if (btn) btn.disabled = false;
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = 'Save Name';
+                    }
                 }
             } catch (e) {
-                showNameFeedback('Network error updating name', true);
-                if (btn) btn.disabled = false;
+                showNameFeedback('Network error updating name: ' + e.message, true);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Save Name';
+                }
             } finally {
                 if (btn) btn.removeAttribute('aria-busy');
             }
@@ -787,7 +796,10 @@
             }
 
             const token = await getAuthToken();
-            if (!token) return;
+            if (!token) {
+                showSourceFeedback('Session expired or not signed in. Please sign in again.', true);
+                return;
+            }
 
             const saveBtn = document.getElementById('btn-save-source');
             if (saveBtn) {
@@ -846,7 +858,10 @@
 
         async function switchToInbuiltStream() {
             const token = await getAuthToken();
-            if (!token) return;
+            if (!token) {
+                showToast('Session expired or not signed in. Please sign in again.', 'error');
+                return;
+            }
             try {
                 const res = await fetch('/api/user-profile', {
                     method: 'POST',
