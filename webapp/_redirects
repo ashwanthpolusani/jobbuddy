@@ -48,5 +48,12 @@
 /.well-known/ai-catalog.json /.well-known/ai-catalog.json 200
 /google34b5a0ac26d85028.html /google34b5a0ac26d85028.html 200
 
+# Security & Privacy: Block internal development files from public HTTP access
+/package.json           /404.html           404!
+/package-lock.json      /404.html           404!
+/server.js              /404.html           404!
+/netlify/*              /404.html           404!
+/.env*                  /404.html           404!
+
 # Programmatic SEO & SPA routes for job filters
 /jobs/*                 /jobs.html          200
