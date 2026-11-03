@@ -27,13 +27,35 @@ function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// Automatically normalizes bare MongoDB Atlas URIs (e.g. mongodb+srv://...mongodb.net/ or ...mongodb.net)
+// to target job_aggregator with retryWrites=true&w=majority
+function normalizeMongoAtlasUri(rawUri) {
+    if (!rawUri || typeof rawUri !== "string") return "";
+    let uri = rawUri.trim();
+    if (uri.startsWith("mongodb+srv://")) {
+        const afterScheme = uri.slice("mongodb+srv://".length);
+        const slashIdx = afterScheme.indexOf("/");
+        if (slashIdx === -1) {
+            return uri + "/job_aggregator?retryWrites=true&w=majority";
+        }
+        const pathAndQuery = afterScheme.slice(slashIdx + 1);
+        const [dbName, queryString] = pathAndQuery.split("?");
+        if (!dbName || dbName === "test" || dbName === "admin") {
+            const query = queryString ? `?${queryString}` : "?retryWrites=true&w=majority";
+            return uri.slice(0, "mongodb+srv://".length + slashIdx) + "/job_aggregator" + query;
+        }
+    }
+    return uri;
+}
+
 // Bounded connection pool cache keyed by URI (Max 6 clients to prevent memory leaks)
 const MAX_CACHED_CLIENTS = 6;
 const cachedClients = new Map();
 
 async function connectToDatabase(customUri) {
-    const uri = (customUri && customUri.trim()) || process.env.MONGODB_URI;
+    let uri = (customUri && customUri.trim()) || process.env.MONGODB_URI;
     if (!uri) throw new Error("No MongoDB connection URI provided");
+    uri = normalizeMongoAtlasUri(uri);
 
     if (cachedClients.has(uri)) {
         return cachedClients.get(uri);
@@ -159,6 +181,9 @@ exports.handler = async (event, context) => {
     if (!customUri) {
         const userDbUri = await resolveUserCustomUri(event, context);
         if (userDbUri) customUri = userDbUri.trim();
+    }
+    if (customUri) {
+        customUri = normalizeMongoAtlasUri(customUri);
     }
 
     // SSRF / Host validation: validate customUri if provided

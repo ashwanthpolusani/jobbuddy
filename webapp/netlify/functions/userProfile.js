@@ -61,6 +61,27 @@ function sanitizeProfile(row) {
     };
 }
 
+// Automatically normalizes bare MongoDB Atlas URIs (e.g. mongodb+srv://...mongodb.net/ or ...mongodb.net)
+// to target job_aggregator with retryWrites=true&w=majority
+function normalizeMongoAtlasUri(rawUri) {
+    if (!rawUri || typeof rawUri !== "string") return "";
+    let uri = rawUri.trim();
+    if (uri.startsWith("mongodb+srv://")) {
+        const afterScheme = uri.slice("mongodb+srv://".length);
+        const slashIdx = afterScheme.indexOf("/");
+        if (slashIdx === -1) {
+            return uri + "/job_aggregator?retryWrites=true&w=majority";
+        }
+        const pathAndQuery = afterScheme.slice(slashIdx + 1);
+        const [dbName, queryString] = pathAndQuery.split("?");
+        if (!dbName || dbName === "test" || dbName === "admin") {
+            const query = queryString ? `?${queryString}` : "?retryWrites=true&w=majority";
+            return uri.slice(0, "mongodb+srv://".length + slashIdx) + "/job_aggregator" + query;
+        }
+    }
+    return uri;
+}
+
 exports.handler = async (event, context) => {
     // 1. CORS Preflight
     if (event.httpMethod === "OPTIONS") {
@@ -172,7 +193,7 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // ── POST: Create or Update Profile ────────────────────────────────
+        // ── POST: Create or Update Profile (Atomic Partial Update) ───────
         if (event.httpMethod === "POST") {
             let body = {};
             try {
@@ -185,33 +206,91 @@ exports.handler = async (event, context) => {
                 };
             }
 
-            const displayName = String(body.display_name !== undefined ? body.display_name : "").trim().slice(0, 255);
-            const dbMode = body.db_mode === "custom" ? "custom" : "inbuilt";
-            const onboardingDone = body.onboarding_done !== undefined ? Boolean(body.onboarding_done) : false;
-            const savedJobs = Array.isArray(body.saved_jobs) ? body.saved_jobs : undefined;
+            // 1. Fetch existing profile state first so partial POSTs never wipe other fields
+            let existing = null;
+            if (db) {
+                try {
+                    await ensureTable(db);
+                    const rows = await db.sql`
+                        SELECT * FROM user_profiles
+                        WHERE user_id = ${userId} AND deleted_at IS NULL
+                        LIMIT 1
+                    `;
+                    if (rows && rows.length > 0) existing = rows[0];
+                } catch (readErr) {
+                    console.warn("Netlify Database existing profile read error:", readErr.message);
+                }
+            }
+            if (!existing && localMemoryStore.has(userId)) {
+                existing = localMemoryStore.get(userId);
+            }
 
-            let customMongoUri = undefined;
-            if (dbMode === "custom" && body.custom_mongo_uri !== undefined) {
-                const uri = String(body.custom_mongo_uri || "").trim();
-                if (uri) {
-                    if (!uri.startsWith("mongodb://") && !uri.startsWith("mongodb+srv://")) {
+            // 2. Resolve field values with strict preservation of existing data
+            let finalDisplayName;
+            if (body.display_name !== undefined) {
+                finalDisplayName = String(body.display_name || "").trim().slice(0, 255);
+            } else if (existing && existing.display_name !== undefined) {
+                finalDisplayName = existing.display_name;
+            } else {
+                finalDisplayName = "";
+            }
+
+            let finalDbMode;
+            if (body.db_mode !== undefined) {
+                finalDbMode = body.db_mode === "custom" ? "custom" : "inbuilt";
+            } else if (existing && existing.db_mode) {
+                finalDbMode = existing.db_mode;
+            } else {
+                finalDbMode = "inbuilt";
+            }
+
+            let finalOnboardingDone;
+            if (body.onboarding_done !== undefined) {
+                finalOnboardingDone = Boolean(body.onboarding_done);
+            } else if (existing && existing.onboarding_done !== undefined) {
+                finalOnboardingDone = Boolean(existing.onboarding_done);
+            } else {
+                finalOnboardingDone = false;
+            }
+
+            let finalSavedJobs;
+            if (body.saved_jobs !== undefined && Array.isArray(body.saved_jobs)) {
+                finalSavedJobs = body.saved_jobs;
+            } else if (existing && existing.saved_jobs) {
+                finalSavedJobs = typeof existing.saved_jobs === "string" ? JSON.parse(existing.saved_jobs) : existing.saved_jobs;
+            } else {
+                finalSavedJobs = [];
+            }
+
+            let finalCustomMongoUri;
+            if (finalDbMode === "inbuilt" && body.db_mode === "inbuilt") {
+                // Explicit revert to inbuilt stream cleans stored URI
+                finalCustomMongoUri = "";
+            } else if (body.custom_mongo_uri !== undefined) {
+                let rawUri = String(body.custom_mongo_uri || "").trim();
+                if (rawUri) {
+                    if (!rawUri.startsWith("mongodb://") && !rawUri.startsWith("mongodb+srv://")) {
                         return {
                             statusCode: 400,
                             headers: CORS,
                             body: JSON.stringify({ error: "Invalid MongoDB connection string. Must start with mongodb:// or mongodb+srv://" })
                         };
                     }
-                    if (uri.startsWith("mongodb+srv://") && !/mongodb\+srv:\/\/[^@]+@[^/]+\.mongodb\.net/i.test(uri)) {
+                    if (rawUri.startsWith("mongodb+srv://") && !/mongodb\+srv:\/\/[^@]+@[^/]+\.mongodb\.net/i.test(rawUri)) {
                         return {
                             statusCode: 400,
                             headers: CORS,
                             body: JSON.stringify({ error: "Only secure MongoDB Atlas (*.mongodb.net) clusters are allowed." })
                         };
                     }
+                    finalCustomMongoUri = normalizeMongoAtlasUri(rawUri);
+                } else {
+                    finalCustomMongoUri = "";
                 }
-                customMongoUri = uri;
-            } else if (dbMode === "inbuilt") {
-                customMongoUri = "";
+            } else if (existing && existing.custom_mongo_uri) {
+                finalCustomMongoUri = existing.custom_mongo_uri;
+            } else {
+                finalCustomMongoUri = "";
             }
 
             const now = new Date().toISOString();
@@ -220,57 +299,20 @@ exports.handler = async (event, context) => {
             if (db) {
                 try {
                     await ensureTable(db);
-                    const jobsParam = savedJobs !== undefined ? JSON.stringify(savedJobs) : null;
+                    const jobsParam = JSON.stringify(finalSavedJobs);
 
-                    if (customMongoUri !== undefined && jobsParam !== null) {
-                        await db.sql`
-                            INSERT INTO user_profiles (user_id, display_name, custom_mongo_uri, db_mode, saved_jobs, onboarding_done, updated_at)
-                            VALUES (${userId}, ${displayName}, ${customMongoUri}, ${dbMode}, ${jobsParam}::jsonb, ${onboardingDone}, NOW())
-                            ON CONFLICT (user_id) DO UPDATE SET
-                                display_name = EXCLUDED.display_name,
-                                custom_mongo_uri = EXCLUDED.custom_mongo_uri,
-                                db_mode = EXCLUDED.db_mode,
-                                saved_jobs = EXCLUDED.saved_jobs,
-                                onboarding_done = EXCLUDED.onboarding_done,
-                                deleted_at = NULL,
-                                updated_at = NOW()
-                        `;
-                    } else if (customMongoUri !== undefined) {
-                        await db.sql`
-                            INSERT INTO user_profiles (user_id, display_name, custom_mongo_uri, db_mode, onboarding_done, updated_at)
-                            VALUES (${userId}, ${displayName}, ${customMongoUri}, ${dbMode}, ${onboardingDone}, NOW())
-                            ON CONFLICT (user_id) DO UPDATE SET
-                                display_name = EXCLUDED.display_name,
-                                custom_mongo_uri = EXCLUDED.custom_mongo_uri,
-                                db_mode = EXCLUDED.db_mode,
-                                onboarding_done = EXCLUDED.onboarding_done,
-                                deleted_at = NULL,
-                                updated_at = NOW()
-                        `;
-                    } else if (jobsParam !== null) {
-                        await db.sql`
-                            INSERT INTO user_profiles (user_id, display_name, db_mode, saved_jobs, onboarding_done, updated_at)
-                            VALUES (${userId}, ${displayName}, ${dbMode}, ${jobsParam}::jsonb, ${onboardingDone}, NOW())
-                            ON CONFLICT (user_id) DO UPDATE SET
-                                display_name = EXCLUDED.display_name,
-                                db_mode = EXCLUDED.db_mode,
-                                saved_jobs = EXCLUDED.saved_jobs,
-                                onboarding_done = EXCLUDED.onboarding_done,
-                                deleted_at = NULL,
-                                updated_at = NOW()
-                        `;
-                    } else {
-                        await db.sql`
-                            INSERT INTO user_profiles (user_id, display_name, db_mode, onboarding_done, updated_at)
-                            VALUES (${userId}, ${displayName}, ${dbMode}, ${onboardingDone}, NOW())
-                            ON CONFLICT (user_id) DO UPDATE SET
-                                display_name = EXCLUDED.display_name,
-                                db_mode = EXCLUDED.db_mode,
-                                onboarding_done = EXCLUDED.onboarding_done,
-                                deleted_at = NULL,
-                                updated_at = NOW()
-                        `;
-                    }
+                    await db.sql`
+                        INSERT INTO user_profiles (user_id, display_name, custom_mongo_uri, db_mode, saved_jobs, onboarding_done, updated_at)
+                        VALUES (${userId}, ${finalDisplayName}, ${finalCustomMongoUri}, ${finalDbMode}, ${jobsParam}::jsonb, ${finalOnboardingDone}, NOW())
+                        ON CONFLICT (user_id) DO UPDATE SET
+                            display_name = EXCLUDED.display_name,
+                            custom_mongo_uri = EXCLUDED.custom_mongo_uri,
+                            db_mode = EXCLUDED.db_mode,
+                            saved_jobs = EXCLUDED.saved_jobs,
+                            onboarding_done = EXCLUDED.onboarding_done,
+                            deleted_at = NULL,
+                            updated_at = NOW()
+                    `;
                     savedToDb = true;
                 } catch (dbErr) {
                     console.warn("Netlify Database write fallback:", dbErr.message);
@@ -278,19 +320,17 @@ exports.handler = async (event, context) => {
             }
 
             // Sync in-memory fallback
-            const existing = localMemoryStore.get(userId) || {};
             const record = {
-                ...existing,
                 user_id: userId,
-                display_name: displayName || existing.display_name || "",
-                db_mode: dbMode,
-                onboarding_done: onboardingDone !== undefined ? onboardingDone : (existing.onboarding_done || false),
-                saved_jobs: savedJobs !== undefined ? savedJobs : (existing.saved_jobs || []),
-                custom_mongo_uri: customMongoUri !== undefined ? customMongoUri : (existing.custom_mongo_uri || ""),
+                display_name: finalDisplayName,
+                custom_mongo_uri: finalCustomMongoUri,
+                db_mode: finalDbMode,
+                saved_jobs: finalSavedJobs,
+                onboarding_done: finalOnboardingDone,
                 deleted_at: null,
+                created_at: (existing && existing.created_at) || now,
                 updated_at: now
             };
-            if (!record.created_at) record.created_at = now;
             localMemoryStore.set(userId, record);
 
             return {

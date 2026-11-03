@@ -2264,6 +2264,25 @@
         }
 
         // Fetch jobs from API
+        function normalizeClientMongoUri(rawUri) {
+            if (!rawUri || typeof rawUri !== "string") return "";
+            let uri = rawUri.trim();
+            if (uri.startsWith("mongodb+srv://")) {
+                const afterScheme = uri.slice("mongodb+srv://".length);
+                const slashIdx = afterScheme.indexOf("/");
+                if (slashIdx === -1) {
+                    return uri + "/job_aggregator?retryWrites=true&w=majority";
+                }
+                const pathAndQuery = afterScheme.slice(slashIdx + 1);
+                const [dbName, queryString] = pathAndQuery.split("?");
+                if (!dbName || dbName === "test" || dbName === "admin") {
+                    const query = queryString ? `?${queryString}` : "?retryWrites=true&w=majority";
+                    return uri.slice(0, "mongodb+srv://".length + slashIdx) + "/job_aggregator" + query;
+                }
+            }
+            return uri;
+        }
+
         async function fetchJobs(page) {
             page = Math.max(1, parseInt(page || 1, 10));
             currentPage = page;
@@ -2273,7 +2292,10 @@
             const catParam = activeViewType === 'direct_apply' ? (activeCat === 'all' ? '' : activeCat) : '';
             const locParam = activeViewType === 'direct_apply' ? activeLoc : 'all';
             const confParam = activeViewType === 'direct_apply' ? activeConf : 'all';
-            const customDbUri = localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri");
+            let customDbUri = localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri");
+            if (customDbUri) {
+                customDbUri = normalizeClientMongoUri(customDbUri);
+            }
             const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}`;
             CURRENT_CACHE_KEY = "rolenaut_cache_v1_" + (customDbUri ? "c_" : "d_") + encodeURIComponent(url);
 
@@ -2297,6 +2319,11 @@
 
             try {
                 const headers = {};
+                const auth = window.RolenautAuth || window.JobBuddyAuth;
+                if (auth && typeof auth.getToken === 'function') {
+                    const token = await auth.getToken();
+                    if (token) headers['Authorization'] = 'Bearer ' + token;
+                }
                 if (customDbUri) {
                     headers['x-mongo-uri'] = customDbUri;
                 }
@@ -2320,6 +2347,9 @@
                     latestMeta = data.meta || null;
                     if (data.meta) {
                         updateDynamicFilters(data.meta);
+                        if (data.meta.isCustomDb !== undefined) {
+                            updateWorkspaceIndicator(data.meta.isCustomDb);
+                        }
                     }
                 } else {
                     throw new Error(data.error || 'Bad response from server');
@@ -2444,14 +2474,11 @@
                     if (userProfile && userProfile.display_name && window.RolenautAuth?.setDisplayName) {
                         window.RolenautAuth.setDisplayName(userProfile.display_name);
                     }
-                    if (userProfile && userProfile.custom_mongo_uri) {
-                        localStorage.setItem("rolenaut_custom_mongo_uri", userProfile.custom_mongo_uri);
-                        localStorage.setItem("jobbuddy_custom_mongo_uri", userProfile.custom_mongo_uri);
-                        clearAllCache();
-                        updateWorkspaceIndicator();
-                        currentPage = 1;
-                        fetchJobs(1);
+                    if (userProfile && userProfile.db_mode === 'inbuilt') {
+                        localStorage.removeItem("rolenaut_custom_mongo_uri");
+                        localStorage.removeItem("jobbuddy_custom_mongo_uri");
                     }
+                    updateWorkspaceIndicator();
                 }
             } catch (e) {
                 // Silently handle offline/guest states
@@ -2473,15 +2500,16 @@
             }
 
             const input = document.getElementById('custom-mongo-input');
-            const uri = input ? input.value.trim() : "";
-            if (!uri) {
+            const rawUri = input ? input.value.trim() : "";
+            if (!rawUri) {
                 disconnectDatabase();
                 return;
             }
-            if (!uri.startsWith("mongodb://") && !uri.startsWith("mongodb+srv://")) {
+            if (!rawUri.startsWith("mongodb://") && !rawUri.startsWith("mongodb+srv://")) {
                 alert("Please enter a valid MongoDB connection string (starts with mongodb:// or mongodb+srv://)");
                 return;
             }
+            const uri = normalizeClientMongoUri(rawUri);
 
             const btn = document.querySelector('.btn-db-save');
             if (btn) btn.textContent = 'Saving to Netlify DB...';
@@ -2514,7 +2542,7 @@
                 localStorage.setItem("rolenaut_custom_mongo_uri", uri);
                 localStorage.setItem("jobbuddy_custom_mongo_uri", uri);
                 clearAllCache();
-                updateWorkspaceIndicator();
+                updateWorkspaceIndicator(true);
                 closeDbModal();
                 activeCat = "all";
                 activeLoc = "all";
@@ -2555,7 +2583,7 @@
             const input = document.getElementById('custom-mongo-input');
             if (input) input.value = "";
             clearAllCache();
-            updateWorkspaceIndicator();
+            updateWorkspaceIndicator(false);
             closeDbModal();
             activeCat = "all";
             activeLoc = "all";
@@ -2564,7 +2592,7 @@
         }
         window.resetDefaultDb = disconnectDatabase;
 
-        function updateWorkspaceIndicator() {
+        function updateWorkspaceIndicator(forceCustomState) {
             const userPill = document.getElementById('user-header-pill');
             const signInBtn = document.getElementById('btn-header-signin');
             const headerEmail = document.getElementById('header-user-email');
@@ -2573,7 +2601,10 @@
             const bannerBadge = document.getElementById('stream-banner-badge');
             const bannerText = document.getElementById('stream-banner-text');
             const bannerActions = document.getElementById('stream-banner-actions');
-            const isCustom = Boolean(localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri"));
+            
+            const hasLocalCustom = Boolean(localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri"));
+            const hasProfileCustom = Boolean(userProfile && (userProfile.db_mode === 'custom' || userProfile.has_custom_db));
+            const isCustom = forceCustomState !== undefined ? Boolean(forceCustomState) : (hasLocalCustom || hasProfileCustom);
 
             if (isCustom) {
                 // Connected custom database: remove the freshers text completely!

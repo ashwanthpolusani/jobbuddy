@@ -118,7 +118,7 @@
             localStorage.removeItem('rolenaut_display_name');
             return;
         }
-        const savedDisplayName = user.display_name || (user.user_metadata && user.user_metadata.display_name) || localStorage.getItem('rolenaut_display_name') || '';
+        const savedDisplayName = localStorage.getItem('rolenaut_display_name') || user.display_name || (user.user_metadata && (user.user_metadata.display_name || user.user_metadata.full_name)) || '';
         const cache = {
             id: user.id || ('usr_' + btoa(user.email).replace(/=/g, '').slice(0, 16)),
             email: user.email,
@@ -262,7 +262,7 @@
         }
 
         const email = user.email || 'Candidate';
-        const savedDisplayName = user.display_name || (user.user_metadata && user.user_metadata.display_name) || localStorage.getItem('rolenaut_display_name') || '';
+        const savedDisplayName = localStorage.getItem('rolenaut_display_name') || user.display_name || (user.user_metadata && user.user_metadata.display_name) || '';
         const fullName = (user.user_metadata && user.user_metadata.full_name) || '';
         const displayName = savedDisplayName || fullName || email.split('@')[0] || 'Candidate';
         const initial = displayName.charAt(0).toUpperCase();
@@ -294,19 +294,21 @@
                             </div>
                         </div>
                         <div class="mini-nav-links">
+                            ${typeof window.openDbModal === 'function' ? `
                             <button type="button" class="mini-menu-item" onclick="window.RolenautAuth.openDataSourceModal()">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                                <span>${isCustomDb ? 'Edit Custom Mongo URL' : 'Connect Custom Mongo URL'}</span>
+                                <span>${isCustomDb ? 'Quick Database Modal' : 'Quick Connect Modal'}</span>
                             </button>
+                            ` : ''}
                             ${isCustomDb ? `
                             <button type="button" class="mini-menu-item" onclick="window.RolenautAuth.resetToDefaultStream()" style="color: var(--muted);">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-                                <span>Reset to Freshers Stream</span>
+                                <span>Switch to Curated Freshers Stream</span>
                             </button>
                             ` : ''}
                             <a href="/profile" class="mini-menu-item">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <span>Profile</span>
+                                <span>Candidate Profile &amp; Data Source</span>
                             </a>
                             <a href="/scraper-guide" class="mini-menu-item">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>

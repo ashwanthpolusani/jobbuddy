@@ -450,6 +450,25 @@
             return await user.jwt();
         }
 
+        function normalizeClientMongoUri(rawUri) {
+            if (!rawUri || typeof rawUri !== "string") return "";
+            let uri = rawUri.trim();
+            if (uri.startsWith("mongodb+srv://")) {
+                const afterScheme = uri.slice("mongodb+srv://".length);
+                const slashIdx = afterScheme.indexOf("/");
+                if (slashIdx === -1) {
+                    return uri + "/job_aggregator?retryWrites=true&w=majority";
+                }
+                const pathAndQuery = afterScheme.slice(slashIdx + 1);
+                const [dbName, queryString] = pathAndQuery.split("?");
+                if (!dbName || dbName === "test" || dbName === "admin") {
+                    const query = queryString ? `?${queryString}` : "?retryWrites=true&w=majority";
+                    return uri.slice(0, "mongodb+srv://".length + slashIdx) + "/job_aggregator" + query;
+                }
+            }
+            return uri;
+        }
+
         async function loadProfile() {
             const auth = window.RolenautAuth || window.JobBuddyAuth;
             const user = auth ? auth.getUser() : (window.netlifyIdentity && window.netlifyIdentity.currentUser());
@@ -464,6 +483,13 @@
 
             document.getElementById('profile-email').textContent = user.email || '—';
 
+            // Initial immediate display name hydration from local cache
+            const savedLocalName = localStorage.getItem('rolenaut_display_name') || '';
+            const initialResolved = savedLocalName || user.display_name || user.user_metadata?.display_name || user.user_metadata?.full_name || '';
+            if (initialResolved) {
+                document.getElementById('profile-name-input').value = initialResolved;
+            }
+
             try {
                 const token = await getAuthToken();
                 const res = await fetch('/api/user-profile', {
@@ -472,10 +498,10 @@
                 const data = await res.json();
                 if (data && data.profile) {
                     currentProfile = data.profile;
-                    const resolvedName = currentProfile.display_name || user.user_metadata?.full_name || '';
+                    const resolvedName = currentProfile.display_name || savedLocalName || user.display_name || user.user_metadata?.display_name || user.user_metadata?.full_name || '';
                     document.getElementById('profile-name-input').value = resolvedName;
-                    if (currentProfile.display_name && window.RolenautAuth?.setDisplayName) {
-                        window.RolenautAuth.setDisplayName(currentProfile.display_name);
+                    if (resolvedName && window.RolenautAuth?.setDisplayName) {
+                        window.RolenautAuth.setDisplayName(resolvedName);
                     }
 
                     const pill = document.getElementById('source-pill');
@@ -514,10 +540,17 @@
                     body: JSON.stringify({ display_name: newName })
                 });
                 if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.profile) {
+                        currentProfile = data.profile;
+                    }
+                    localStorage.setItem('rolenaut_display_name', newName);
                     showToast('Display name updated!');
                     if (window.RolenautAuth?.setDisplayName) {
                         window.RolenautAuth.setDisplayName(newName);
                     }
+                } else {
+                    showToast('Failed to update name');
                 }
             } catch (e) {
                 showToast('Failed to update name');
@@ -547,7 +580,8 @@
 
         async function saveSourceChanges() {
             const isCustom = document.getElementById('choice-custom').checked;
-            const newUri = document.getElementById('new-mongo-uri-input').value.trim();
+            const rawUri = document.getElementById('new-mongo-uri-input').value.trim();
+            const newUri = normalizeClientMongoUri(rawUri);
 
             if (isCustom && !newUri && !currentProfile?.has_custom_db) {
                 alert('Please provide a valid MongoDB Atlas connection string.');
@@ -561,6 +595,9 @@
                 const payload = {
                     db_mode: isCustom ? 'custom' : 'inbuilt'
                 };
+                if (currentProfile && currentProfile.display_name) {
+                    payload.display_name = currentProfile.display_name;
+                }
                 if (isCustom && newUri) {
                     payload.custom_mongo_uri = newUri;
                 }
@@ -574,6 +611,22 @@
                     body: JSON.stringify(payload)
                 });
                 if (res.ok) {
+                    if (isCustom && newUri) {
+                        localStorage.setItem("rolenaut_custom_mongo_uri", newUri);
+                        localStorage.setItem("jobbuddy_custom_mongo_uri", newUri);
+                    } else if (!isCustom) {
+                        localStorage.removeItem("rolenaut_custom_mongo_uri");
+                        localStorage.removeItem("jobbuddy_custom_mongo_uri");
+                    }
+
+                    // Invalidate all stale job listing cache so switching streams takes effect immediately
+                    for (let i = localStorage.length - 1; i >= 0; i--) {
+                        const key = localStorage.key(i);
+                        if (key && (key.startsWith("rolenaut_cache_") || key.startsWith("jobbuddy_cache_"))) {
+                            localStorage.removeItem(key);
+                        }
+                    }
+
                     showToast('Job data source updated!');
                     toggleSourceEdit(false);
                     loadProfile();
