@@ -18,7 +18,12 @@
             const rolenautCached = localStorage.getItem('rolenaut_cached_user');
             if (rolenautCached) {
                 const parsed = JSON.parse(rolenautCached);
-                if (parsed && (parsed.email || parsed.id)) return parsed;
+                if (parsed && (parsed.email || parsed.id)) {
+                    if (!parsed.display_name && localStorage.getItem('rolenaut_display_name')) {
+                        parsed.display_name = localStorage.getItem('rolenaut_display_name');
+                    }
+                    return parsed;
+                }
             }
         } catch (e) {}
 
@@ -110,20 +115,40 @@
             localStorage.removeItem('jobbuddy_user_session');
             localStorage.removeItem('rolenaut_custom_mongo_uri');
             localStorage.removeItem('jobbuddy_custom_mongo_uri');
+            localStorage.removeItem('rolenaut_display_name');
             return;
         }
+        const savedDisplayName = user.display_name || (user.user_metadata && user.user_metadata.display_name) || localStorage.getItem('rolenaut_display_name') || '';
         const cache = {
             id: user.id || ('usr_' + btoa(user.email).replace(/=/g, '').slice(0, 16)),
             email: user.email,
+            display_name: savedDisplayName,
             user_metadata: user.user_metadata || {},
             token: user.token || {}
         };
         try {
+            if (savedDisplayName) localStorage.setItem('rolenaut_display_name', savedDisplayName);
             localStorage.setItem('rolenaut_cached_user', JSON.stringify(cache));
             localStorage.setItem('jb_cached_user', JSON.stringify(cache));
-            localStorage.setItem('rolenaut_user_session', JSON.stringify({ id: cache.id, email: user.email }));
-            localStorage.setItem('jobbuddy_user_session', JSON.stringify({ id: cache.id, email: user.email }));
+            localStorage.setItem('rolenaut_user_session', JSON.stringify({ id: cache.id, email: user.email, display_name: savedDisplayName }));
+            localStorage.setItem('jobbuddy_user_session', JSON.stringify({ id: cache.id, email: user.email, display_name: savedDisplayName }));
         } catch (e) {}
+    }
+
+    function setDisplayName(name) {
+        const cleanName = String(name || '').trim();
+        if (cleanName) {
+            localStorage.setItem('rolenaut_display_name', cleanName);
+            const user = getStoredUser();
+            if (user) {
+                user.display_name = cleanName;
+                if (!user.user_metadata) user.user_metadata = {};
+                user.user_metadata.display_name = cleanName;
+                persistUserCache(user);
+            }
+            renderAuthHeader();
+            dispatchAuthEvent(user);
+        }
     }
 
     // Helper: notify auth state changes across all listeners (both modern and legacy events)
@@ -237,8 +262,9 @@
         }
 
         const email = user.email || 'Candidate';
+        const savedDisplayName = user.display_name || (user.user_metadata && user.user_metadata.display_name) || localStorage.getItem('rolenaut_display_name') || '';
         const fullName = (user.user_metadata && user.user_metadata.full_name) || '';
-        const displayName = fullName || email.split('@')[0] || 'Candidate';
+        const displayName = savedDisplayName || fullName || email.split('@')[0] || 'Candidate';
         const initial = displayName.charAt(0).toUpperCase();
         const isCustomDb = !!localStorage.getItem('rolenaut_custom_mongo_uri') ||
                            !!localStorage.getItem('jobbuddy_custom_mongo_uri') || 
@@ -280,7 +306,7 @@
                             ` : ''}
                             <a href="/profile" class="mini-menu-item">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <span>Profile & Privacy Rights</span>
+                                <span>Profile</span>
                             </a>
                             <a href="/scraper-guide" class="mini-menu-item">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -408,6 +434,7 @@
         getUser: getStoredUser,
         getToken: getAuthToken,
         persistUser: persistUserCache,
+        setDisplayName: setDisplayName,
         openModal: openAuthModal,
         logout: logoutUser,
         toggleProfileMenu: toggleProfileMenu,

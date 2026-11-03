@@ -153,9 +153,9 @@ exports.handler = async (event, context) => {
     const headers = event.headers || {};
     
     // Resolve custom MongoDB URI:
-    // 1. First check header 'x-mongo-uri'
+    // 1. First check header 'x-mongo-uri' or query param 'custom_mongo_uri'
     // 2. Otherwise if user is logged in with JWT, check user's profile in Netlify DB
-    let customUri = (headers['x-mongo-uri'] || headers['X-Mongo-Uri'] || "").trim();
+    let customUri = (headers['x-mongo-uri'] || headers['X-Mongo-Uri'] || params.custom_mongo_uri || "").trim();
     if (!customUri) {
         const userDbUri = await resolveUserCustomUri(event, context);
         if (userDbUri) customUri = userDbUri.trim();

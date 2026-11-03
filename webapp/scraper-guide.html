@@ -374,17 +374,53 @@ python main.py</code></pre>
         <div class="step-card">
             <div class="step-header">
                 <span class="step-number">2</span>
-                <span class="step-title">Configure MongoDB Atlas &amp; Read-Only User</span>
+                <span class="step-title">Configure MongoDB Atlas &amp; Read-Only Connection (Step-by-Step)</span>
             </div>
-            <p>Create a free cluster on <a href="https://www.mongodb.com/cloud/atlas" target="_blank" rel="noopener noreferrer" style="color:var(--accent);font-weight:600;">MongoDB Atlas</a> (M0 tier is 100% free forever):</p>
-            <ol>
-                <li>In MongoDB Atlas, navigate to <strong>Database Access &rarr; Add New Database User</strong>.</li>
-                <li>Set authentication method to <strong>Password</strong> and enter a username, such as <code>webapp_reader</code>.</li>
-                <li>Under <strong>Database User Privileges</strong>, assign the <strong>Built-in Role: readAnyDatabase</strong> (or grant <code>read</code> access specifically on the <code>job_aggregator</code> database).</li>
-                <li>In <strong>Network Access</strong>, ensure your cluster allows connections from serverless functions by adding IP <code>0.0.0.0/0</code> (Allow Access from Anywhere).</li>
-                <li>Click <strong>Connect &rarr; Drivers (Node.js)</strong> to copy your connection string:</li>
-            </ol>
-            <pre><code>mongodb+srv://webapp_reader:&lt;PASSWORD&gt;@your-cluster.xxxxx.mongodb.net/job_aggregator?retryWrites=true&w=majority</code></pre>
+            <p>Set up a free cloud database on <a href="https://www.mongodb.com/cloud/atlas" target="_blank" rel="noopener noreferrer" style="color:var(--accent);font-weight:600;">MongoDB Atlas</a> (M0 Free Tier is 100% free forever with no credit card required):</p>
+            
+            <div style="margin: 16px 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px;">
+                <h4 style="margin: 0 0 10px; color: var(--text); font-size: 0.95rem;">2A. Create Project &amp; Free M0 Cluster</h4>
+                <ol style="margin-left: 20px; font-size: 0.88rem; color: var(--text2); line-height: 1.6;">
+                    <li>Log into MongoDB Atlas, open the <strong>Projects</strong> dropdown on the top-left, and click <strong>New Project</strong> (name it <code>Rolenaut Workspace</code>).</li>
+                    <li>Click <strong>Create Deployment</strong> (or <strong>Build a Database</strong>).</li>
+                    <li>Under tier options, select <strong>M0 (Free)</strong>.</li>
+                    <li>Choose your preferred Cloud Provider (<strong>AWS</strong> recommended, or GCP/Azure) and choose a Region geographically close to your location (e.g., <code>ap-south-1</code> Mumbai or <code>us-east-1</code> Virginia).</li>
+                    <li>Keep the default cluster name (<code>Cluster0</code>) and click <strong>Create Deployment</strong>.</li>
+                </ol>
+
+                <h4 style="margin: 18px 0 10px; color: var(--text); font-size: 0.95rem;">2B. Configure Network Access (Allow Serverless Connection)</h4>
+                <ol style="margin-left: 20px; font-size: 0.88rem; color: var(--text2); line-height: 1.6;">
+                    <li>In the left sidebar under <strong>Security</strong>, click <strong>Network Access</strong>.</li>
+                    <li>Click <strong>Add IP Address</strong>.</li>
+                    <li>Click the <strong>Allow Access from Anywhere</strong> button (this automatically fills <code>0.0.0.0/0</code>).</li>
+                    <li>Click <strong>Confirm</strong>. <em>(Required so Netlify serverless functions and scraper cloud runners can connect without IP restrictions).</em></li>
+                </ol>
+
+                <h4 style="margin: 18px 0 10px; color: var(--text); font-size: 0.95rem;">2C. Create Database Users (Roles &amp; Security)</h4>
+                <ol style="margin-left: 20px; font-size: 0.88rem; color: var(--text2); line-height: 1.6;">
+                    <li>In the left sidebar under <strong>Security</strong>, click <strong>Database Access</strong> &rarr; <strong>Add New Database User</strong>.</li>
+                    <li>Select <strong>Password</strong> authentication.</li>
+                    <li>Create your frontend reader user (e.g. username <code>rebel</code> or <code>webapp_reader</code>) and enter a secure password.</li>
+                    <li>Under <strong>Database User Privileges</strong>, assign <strong>Built-in Role: <code>readAnyDatabase</code></strong> (or grant <code>read</code> specifically on <code>job_aggregator</code>). This ensures the frontend cannot delete or alter your jobs.</li>
+                    <li>Click <strong>Add User</strong>. <em>(Tip: For your scraper runner, create a separate user with <code>readWriteAnyDatabase</code>).</em></li>
+                </ol>
+
+                <h4 style="margin: 18px 0 10px; color: var(--text); font-size: 0.95rem;">2D. Retrieve and Format Your Connection String</h4>
+                <ol style="margin-left: 20px; font-size: 0.88rem; color: var(--text2); line-height: 1.6;">
+                    <li>In the left sidebar, click <strong>Database</strong> to return to your clusters view.</li>
+                    <li>Click the <strong>Connect</strong> button next to <code>Cluster0</code>.</li>
+                    <li>Under connection methods, select <strong>Drivers</strong> &rarr; <strong>Node.js</strong>.</li>
+                    <li>Atlas displays your base connection template:
+                        <code style="display:block;margin:6px 0;padding:6px 10px;background:var(--surface3);border-radius:4px;word-break:break-all;">mongodb+srv://&lt;db_username&gt;:&lt;db_password&gt;@cluster0.xxxxx.mongodb.net/</code>
+                    </li>
+                    <li>Replace <code>&lt;db_username&gt;</code> with your reader username (e.g., <code>rebel</code>).</li>
+                    <li>Replace <code>&lt;db_password&gt;</code> with your user password (e.g., <code>10K6DkG0aRjdCrKX</code>).</li>
+                    <li>Append <code>job_aggregator?retryWrites=true&amp;w=majority</code> right after the trailing slash.</li>
+                </ol>
+            </div>
+
+            <p style="font-weight:600;margin-bottom:6px;">Your Final Production Connection String will look like this:</p>
+            <pre><code>mongodb+srv://rebel:10K6DkG0aRjdCrKX@cluster0.xjmqg0f.mongodb.net/job_aggregator?retryWrites=true&w=majority</code></pre>
         </div>
 
         <!-- STEP 3 -->

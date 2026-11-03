@@ -1711,8 +1711,11 @@
                     </p>
                     <div class="db-input-group">
                         <label for="custom-mongo-input">MongoDB Read-Only URI</label>
-                        <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://webapp_reader:password@cluster.mongodb.net/job_aggregator" autocomplete="off" />
-                        <span class="db-hint">&#128274; Saved to your Netlify cloud database profile. Read-only role prevents any data modification.</span>
+                        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                            <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" autocomplete="off" style="width: 100%; padding-right: 40px;" />
+                            <button type="button" onclick="toggleMongoPasswordVisibility()" aria-label="Toggle URI visibility" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
+                        </div>
+                        <span class="db-hint">&#128274; Replace &lt;db_user&gt; and &lt;db_password&gt; with your Atlas credentials. Saved securely to your Netlify cloud profile.</span>
                     </div>
                     <div class="ws-btn-row">
                         <button class="btn-db-save" onclick="saveCustomDb()">Save to Netlify Profile</button>
@@ -2438,6 +2441,9 @@
                 if (res.ok) {
                     const data = await res.json();
                     userProfile = data.profile || null;
+                    if (userProfile && userProfile.display_name && window.RolenautAuth?.setDisplayName) {
+                        window.RolenautAuth.setDisplayName(userProfile.display_name);
+                    }
                     if (userProfile && userProfile.custom_mongo_uri) {
                         localStorage.setItem("rolenaut_custom_mongo_uri", userProfile.custom_mongo_uri);
                         localStorage.setItem("jobbuddy_custom_mongo_uri", userProfile.custom_mongo_uri);
@@ -2449,6 +2455,13 @@
                 }
             } catch (e) {
                 // Silently handle offline/guest states
+            }
+        }
+
+        function toggleMongoPasswordVisibility() {
+            const input = document.getElementById('custom-mongo-input');
+            if (input) {
+                input.type = input.type === 'password' ? 'text' : 'password';
             }
         }
 

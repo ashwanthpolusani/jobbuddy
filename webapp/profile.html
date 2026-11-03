@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candidate Profile & Data Rights — Rolenaut</title>
+    <title>Profile — Rolenaut</title>
     <meta name="robots" content="noindex, nofollow">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -319,8 +319,8 @@
     </header>
 
     <main class="profile-container" id="main-profile">
-        <h1 class="page-title">Candidate Profile &amp; Privacy</h1>
-        <p class="page-sub">Manage your preferences, data connection, and GDPR compliance rights.</p>
+        <h1 class="page-title">Profile</h1>
+        <p class="page-sub">Manage your display name, connected scraper database, and account data.</p>
 
         <!-- CARD 1: Identity & Profile -->
         <section class="settings-card">
@@ -382,9 +382,12 @@
 
                 <div id="custom-uri-input-box" style="display: none; margin-bottom: 14px;">
                     <label for="new-mongo-uri-input" class="field-label" style="display: block; margin-bottom: 6px;">New MongoDB Atlas Connection URI</label>
-                    <input type="password" id="new-mongo-uri-input" class="input-inline" style="max-width: 100%;" placeholder="mongodb+srv://<user>:<password>@cluster.mongodb.net/job_aggregator" aria-describedby="mongo-uri-security-note">
+                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                        <input type="password" id="new-mongo-uri-input" class="input-inline" style="max-width: 100%; width: 100%; padding-right: 40px;" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" aria-describedby="mongo-uri-security-note">
+                        <button type="button" onclick="toggleProfileMongoPasswordVisibility()" aria-label="Toggle URI visibility" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
+                    </div>
                     <div id="mongo-uri-security-note" style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">
-                        🔒 Never revealed publicly. Verified server-side and stored securely in Netlify Database.
+                        🔒 Replace &lt;db_user&gt; and &lt;db_password&gt; with your Atlas credentials. Verified server-side and stored securely in Netlify Database.
                     </div>
                 </div>
 
@@ -469,7 +472,11 @@
                 const data = await res.json();
                 if (data && data.profile) {
                     currentProfile = data.profile;
-                    document.getElementById('profile-name-input').value = currentProfile.display_name || '';
+                    const resolvedName = currentProfile.display_name || user.user_metadata?.full_name || '';
+                    document.getElementById('profile-name-input').value = resolvedName;
+                    if (currentProfile.display_name && window.RolenautAuth?.setDisplayName) {
+                        window.RolenautAuth.setDisplayName(currentProfile.display_name);
+                    }
 
                     const pill = document.getElementById('source-pill');
                     if (currentProfile.db_mode === 'custom' || currentProfile.has_custom_db) {
@@ -508,9 +515,19 @@
                 });
                 if (res.ok) {
                     showToast('Display name updated!');
+                    if (window.RolenautAuth?.setDisplayName) {
+                        window.RolenautAuth.setDisplayName(newName);
+                    }
                 }
             } catch (e) {
                 showToast('Failed to update name');
+            }
+        }
+
+        function toggleProfileMongoPasswordVisibility() {
+            const input = document.getElementById('new-mongo-uri-input');
+            if (input) {
+                input.type = input.type === 'password' ? 'text' : 'password';
             }
         }
 

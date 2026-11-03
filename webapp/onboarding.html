@@ -324,8 +324,9 @@
 
         <!-- Display Name -->
         <div class="form-group">
-            <label class="form-label" for="display-name-input">Your Display Name</label>
+            <label class="form-label" for="display-name-input">Preferred Display Name</label>
             <input type="text" id="display-name-input" class="input-text" placeholder="e.g. Ashwanth" maxlength="60">
+            <div style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">Used in greetings and top-right profile pill. Defaults to your signup name.</div>
         </div>
 
         <!-- Stream Selection -->
@@ -446,6 +447,10 @@
                     throw new Error('Save failed');
                 }
 
+                if (displayName && window.RolenautAuth?.setDisplayName) {
+                    window.RolenautAuth.setDisplayName(displayName);
+                }
+
                 window.location.href = '/jobs';
             } catch (e) {
                 console.error('Onboarding save error:', e);
@@ -465,7 +470,7 @@
             }
             const nameField = document.getElementById('display-name-input');
             if (nameField && !nameField.value) {
-                const name = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : '');
+                const name = (user.display_name) || localStorage.getItem('rolenaut_display_name') || user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : '');
                 nameField.value = name;
             }
         }

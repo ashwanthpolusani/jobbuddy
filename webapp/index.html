@@ -533,7 +533,8 @@
             const isCustom = Boolean(localStorage.getItem('rolenaut_custom_mongo_uri') || localStorage.getItem('jobbuddy_custom_mongo_uri'));
 
             if (user) {
-                const name = user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'Candidate');
+                const savedName = (user && user.display_name) || localStorage.getItem('rolenaut_display_name') || '';
+                const name = savedName || user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : 'Candidate');
                 if (zone) {
                     zone.innerHTML = `<a href="/jobs" class="btn-nav btn-nav-primary">Jobs Feed (${escapeHtml(name)}) &#8594;</a>`;
                 }

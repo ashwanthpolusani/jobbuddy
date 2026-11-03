@@ -106,17 +106,42 @@ exports.handler = async (event, context) => {
                 profileRow = localMemoryStore.get(userId);
             }
 
-            // GDPR Right to Data Portability / Export
+            // GDPR Right to Data Portability / Comprehensive Profile Export
             if (query.export === "true") {
-                const exportData = profileRow ? {
-                    ...sanitizeProfile(profileRow),
-                    custom_mongo_uri: profileRow.custom_mongo_uri ? "[ENCRYPTED - stored securely]" : "",
-                    exported_at: new Date().toISOString(),
-                    data_controller: "Rolenaut",
-                    compliance: "GDPR / User Privacy Standard"
-                } : {
-                    user_id: userId,
-                    note: "No profile data stored."
+                const sanitized = profileRow ? sanitizeProfile(profileRow) : null;
+                const userEmail = authResult.email || userId;
+                const exportData = {
+                    metadata: {
+                        data_controller: "Rolenaut",
+                        compliance_standard: "GDPR Article 15 (Right of Access) & Article 20 (Data Portability)",
+                        export_generated_at: new Date().toISOString(),
+                        account_status: "Active",
+                        platform_version: "2.0.0"
+                    },
+                    candidate_profile: {
+                        user_id: userId,
+                        email: userEmail,
+                        display_name: (sanitized && sanitized.display_name) || "Candidate",
+                        onboarding_completed: Boolean(sanitized && sanitized.onboarding_done),
+                        registered_at: sanitized ? sanitized.created_at : new Date().toISOString(),
+                        last_updated_at: sanitized ? sanitized.updated_at : new Date().toISOString()
+                    },
+                    workspace_configuration: {
+                        active_data_stream: (sanitized && sanitized.db_mode === "custom") ? "Custom MongoDB Scraper Cluster" : "Verified Rolenaut Freshers Stream",
+                        db_mode: (sanitized && sanitized.db_mode) || "inbuilt",
+                        has_custom_db: Boolean(sanitized && sanitized.has_custom_db),
+                        custom_mongo_uri_status: (profileRow && profileRow.custom_mongo_uri) ? "[CONFIGURED - Encrypted in Netlify Cloud DB]" : "[NOT CONFIGURED]"
+                    },
+                    saved_items: {
+                        total_saved_jobs: (sanitized && sanitized.saved_jobs && sanitized.saved_jobs.length) || 0,
+                        saved_jobs: (sanitized && sanitized.saved_jobs) || []
+                    },
+                    privacy_manifest: {
+                        tracking_pixels: 0,
+                        cookies_tracking: "Strictly essential session only",
+                        third_party_data_brokers: false,
+                        right_to_erasure: "Available via permanent Delete Account button in Profile"
+                    }
                 };
 
                 return {
