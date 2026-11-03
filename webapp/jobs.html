@@ -2834,9 +2834,12 @@
                 if (currentUser) {
                     fetchUserProfile(currentUser);
                 } else {
+                    userProfile = null;
                     localStorage.removeItem("rolenaut_custom_mongo_uri");
                     localStorage.removeItem("jobbuddy_custom_mongo_uri");
                     clearAllCache();
+                    updateWorkspaceIndicator(false);
+                    updateAuthView();
                 }
                 currentPage = 1;
                 fetchJobs(1);

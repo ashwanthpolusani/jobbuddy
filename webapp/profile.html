@@ -7,6 +7,19 @@
     <title>Profile — Rolenaut</title>
     <meta name="robots" content="noindex, nofollow">
     
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('gotrue.user') || localStorage.getItem('rolenaut_cached_user') || localStorage.getItem('rolenaut_user_session');
+                var hash = window.location.hash || '';
+                var search = window.location.search || '';
+                var isInviteOrRecovery = hash.includes('recovery_token') || hash.includes('invite_token') || search.includes('token=');
+                if (!raw && !isInviteOrRecovery) {
+                    window.location.replace('/');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -473,11 +486,7 @@
             const auth = window.RolenautAuth || window.JobBuddyAuth;
             const user = auth ? auth.getUser() : (window.netlifyIdentity && window.netlifyIdentity.currentUser());
             if (!user) {
-                // Wait briefly before redirecting
-                setTimeout(() => {
-                    const retry = (window.RolenautAuth || window.JobBuddyAuth) ? (window.RolenautAuth || window.JobBuddyAuth).getUser() : null;
-                    if (!retry) window.location.href = '/';
-                }, 800);
+                window.location.replace('/');
                 return;
             }
 
@@ -779,7 +788,7 @@
                         loadProfile();
                     }
                 } else {
-                    window.location.href = '/';
+                    window.location.replace('/');
                 }
             };
             window.addEventListener('rolenaut_auth_change', handleProfileAuth);
@@ -789,12 +798,7 @@
                 profileLoaded = true;
                 loadProfile();
             } else {
-                setTimeout(() => {
-                    const currentAuth = window.RolenautAuth || window.JobBuddyAuth;
-                    if (!currentAuth?.getUser()) {
-                        window.location.href = '/';
-                    }
-                }, 1000);
+                window.location.replace('/');
             }
         });
     </script>

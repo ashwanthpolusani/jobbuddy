@@ -400,7 +400,7 @@ python main.py</code></pre>
                 <ol style="margin-left: 20px; font-size: 0.88rem; color: var(--text2); line-height: 1.6;">
                     <li>In the left sidebar under <strong>Security</strong>, click <strong>Database Access</strong> &rarr; <strong>Add New Database User</strong>.</li>
                     <li>Select <strong>Password</strong> authentication.</li>
-                    <li>Create your frontend reader user (e.g. username <code>rebel</code> or <code>webapp_reader</code>) and enter a secure password.</li>
+                    <li>Create your frontend reader user (e.g. username <code>webapp_reader</code>) and enter a secure password.</li>
                     <li>Under <strong>Database User Privileges</strong>, assign <strong>Built-in Role: <code>readAnyDatabase</code></strong> (or grant <code>read</code> specifically on <code>job_aggregator</code>). This ensures the frontend cannot delete or alter your jobs.</li>
                     <li>Click <strong>Add User</strong>. <em>(Tip: For your scraper runner, create a separate user with <code>readWriteAnyDatabase</code>).</em></li>
                 </ol>
@@ -413,14 +413,14 @@ python main.py</code></pre>
                     <li>Atlas displays your base connection template:
                         <code style="display:block;margin:6px 0;padding:6px 10px;background:var(--surface3);border-radius:4px;word-break:break-all;">mongodb+srv://&lt;db_username&gt;:&lt;db_password&gt;@cluster0.xxxxx.mongodb.net/</code>
                     </li>
-                    <li>Replace <code>&lt;db_username&gt;</code> with your reader username (e.g., <code>rebel</code>).</li>
-                    <li>Replace <code>&lt;db_password&gt;</code> with your user password (e.g., <code>10K6DkG0aRjdCrKX</code>).</li>
-                    <li>Append <code>job_aggregator?retryWrites=true&amp;w=majority</code> right after the trailing slash.</li>
+                    <li>Replace <code>&lt;db_username&gt;</code> with your reader username (e.g., <code>webapp_reader</code>).</li>
+                    <li>Replace <code>&lt;db_password&gt;</code> with your database user password (e.g., <code>YourSecurePassword123</code>).</li>
+                    <li><em>(Optional)</em> You can paste the raw connection string directly into Rolenaut — the platform automatically targets the <code>job_aggregator</code> database for you.</li>
                 </ol>
             </div>
 
-            <p style="font-weight:600;margin-bottom:6px;">Your Final Production Connection String will look like this:</p>
-            <pre><code>mongodb+srv://rebel:10K6DkG0aRjdCrKX@cluster0.xjmqg0f.mongodb.net/job_aggregator?retryWrites=true&w=majority</code></pre>
+            <p style="font-weight:600;margin-bottom:6px;">Your Final Connection String will look like this:</p>
+            <pre><code>mongodb+srv://webapp_reader:&lt;db_password&gt;@cluster0.xxxxx.mongodb.net/job_aggregator?retryWrites=true&w=majority</code></pre>
         </div>
 
         <!-- STEP 3 -->

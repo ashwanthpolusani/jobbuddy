@@ -7,6 +7,19 @@
     <title>Choose Your Job Stream — Rolenaut</title>
     <meta name="robots" content="noindex, nofollow">
     
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('gotrue.user') || localStorage.getItem('rolenaut_cached_user') || localStorage.getItem('rolenaut_user_session');
+                var hash = window.location.hash || '';
+                var search = window.location.search || '';
+                var isInviteOrRecovery = hash.includes('recovery_token') || hash.includes('invite_token') || search.includes('token=');
+                if (!raw && !isInviteOrRecovery) {
+                    window.location.replace('/');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">

@@ -182,11 +182,30 @@
         persistUserCache(null);
         localStorage.removeItem('rolenaut_custom_mongo_uri');
         localStorage.removeItem('jobbuddy_custom_mongo_uri');
+        localStorage.removeItem('rolenaut_display_name');
+        try {
+            Object.keys(localStorage).forEach(k => {
+                if (k.startsWith("rolenaut_cache_") || k.startsWith("jobbuddy_cache_") || k.startsWith("jb_cache_")) {
+                    localStorage.removeItem(k);
+                }
+            });
+        } catch (e) {}
+
         if (window.netlifyIdentity && typeof window.netlifyIdentity.logout === 'function') {
             try { window.netlifyIdentity.logout(); } catch (e) {}
         }
         dispatchAuthEvent(null);
         renderAuthHeader();
+
+        // Immediate clean exit: if logged out while on /profile or /onboarding, redirect to home immediately
+        if (window.location.pathname.startsWith('/profile') || window.location.pathname.startsWith('/onboarding')) {
+            window.location.replace('/');
+            return;
+        }
+        // If on /jobs, reload feed cleanly as guest
+        if (window.location.pathname.startsWith('/jobs')) {
+            window.location.reload();
+        }
     }
 
     // 6. Toggle Mini-Profile Menu
@@ -294,25 +313,9 @@
                             </div>
                         </div>
                         <div class="mini-nav-links">
-                            ${typeof window.openDbModal === 'function' ? `
-                            <button type="button" class="mini-menu-item" onclick="window.RolenautAuth.openDataSourceModal()">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                                <span>${isCustomDb ? 'Quick Database Modal' : 'Quick Connect Modal'}</span>
-                            </button>
-                            ` : ''}
-                            ${isCustomDb ? `
-                            <button type="button" class="mini-menu-item" onclick="window.RolenautAuth.resetToDefaultStream()" style="color: var(--muted);">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-                                <span>Switch to Curated Freshers Stream</span>
-                            </button>
-                            ` : ''}
                             <a href="/profile" class="mini-menu-item">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <span>Candidate Profile &amp; Data Source</span>
-                            </a>
-                            <a href="/scraper-guide" class="mini-menu-item">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                <span>Scraper Setup Guide</span>
+                                <span>Profile &amp; Settings</span>
                             </a>
                         </div>
                     </div>
