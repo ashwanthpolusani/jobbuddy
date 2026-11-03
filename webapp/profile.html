@@ -952,8 +952,16 @@
             const err = document.getElementById('delete-modal-feedback');
             const btn = document.getElementById('btn-execute-delete');
             if (input) input.value = '';
-            if (err) err.style.display = 'none';
-            if (btn) btn.disabled = true;
+            if (err) {
+                err.className = 'inline-feedback';
+                err.textContent = '';
+                err.style.display = '';
+            }
+            if (btn) {
+                btn.disabled = true;
+                btn.removeAttribute('aria-busy');
+                btn.innerHTML = 'Permanently Delete Everything';
+            }
             if (modal) {
                 modal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
@@ -982,18 +990,36 @@
         async function executePermanentDeletion() {
             const errBox = document.getElementById('delete-modal-feedback');
             const btn = document.getElementById('btn-execute-delete');
+            const input = document.getElementById('delete-confirmation-input');
+
+            if (errBox) {
+                errBox.className = 'inline-feedback';
+                errBox.textContent = '';
+                errBox.style.display = '';
+            }
+
             if (btn) {
                 btn.disabled = true;
                 btn.setAttribute('aria-busy', 'true');
                 btn.innerHTML = '<span class="btn-spinner"></span> Purging records...';
             }
 
+            const resetButton = () => {
+                if (btn) {
+                    btn.disabled = (input ? input.value.trim() !== 'DELETE' : false);
+                    btn.removeAttribute('aria-busy');
+                    btn.innerHTML = 'Permanently Delete Everything';
+                }
+            };
+
             let token = await getAuthToken();
             if (!token) {
                 if (errBox) {
                     errBox.className = 'inline-feedback error';
-                    errBox.textContent = 'Session expired. Please sign in again.';
+                    errBox.textContent = 'Session expired or not authenticated. Please sign in again.';
+                    errBox.style.display = 'block';
                 }
+                resetButton();
                 return;
             }
 
@@ -1004,28 +1030,34 @@
                 });
                 if (res.ok) {
                     showToast('Profile and database records erased. Logging out...', 'success');
+                    try {
+                        localStorage.clear();
+                        sessionStorage.clear();
+                    } catch (e) {}
+
                     const auth = window.RolenautAuth || window.JobBuddyAuth;
-                    if (auth) {
+                    if (auth && typeof auth.logout === 'function') {
                         auth.logout();
                     } else if (window.netlifyIdentity) {
                         try { window.netlifyIdentity.logout(); } catch (e) {}
                     }
-                    localStorage.clear();
-                    setTimeout(() => { window.location.href = '/'; }, 800);
+                    setTimeout(() => { window.location.href = '/'; }, 600);
                 } else {
                     const data = await res.json().catch(() => ({}));
                     if (errBox) {
                         errBox.className = 'inline-feedback error';
-                        errBox.textContent = 'Failed to delete account: ' + (data.error || 'Server error');
+                        errBox.textContent = 'Failed to delete account: ' + (data.error || 'Server error (HTTP ' + res.status + ')');
+                        errBox.style.display = 'block';
                     }
-                    if (btn) btn.disabled = false;
+                    resetButton();
                 }
             } catch (e) {
                 if (errBox) {
                     errBox.className = 'inline-feedback error';
-                    errBox.textContent = 'Failed to delete account: ' + e.message;
+                    errBox.textContent = 'Network error during deletion: ' + e.message;
+                    errBox.style.display = 'block';
                 }
-                if (btn) btn.disabled = false;
+                resetButton();
             } finally {
                 if (btn) btn.removeAttribute('aria-busy');
             }
