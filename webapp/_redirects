@@ -1,24 +1,17 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# Rolenaut Netlify URL Routing & Rewrites (Architecture A)
+# Rolenaut Netlify URL Routing & Rewrites
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Canonical redirects for old marketing & static pages
-/landing                /                   301!
-/landing.html           /                   301!
-/jobs.html              /jobs               301!
-/about.html             /about              301!
-/onboarding.html        /onboarding         301!
-/profile.html           /profile            301!
-/privacy.html           /privacy            301!
-/terms.html             /terms              301!
-/interview-prep.html    /interview-prep     301!
-/resume-guide.html      /resume-guide       301!
-/scraper-guide.html     /scraper-guide      301!
+# Security: Block sensitive and internal development files from public HTTP access
+/package.json           /404.html           404!
+/package-lock.json      /404.html           404!
+/server.js              /404.html           404!
+/netlify/*              /404.html           404!
+/.env*                  /404.html           404!
+/data/*                 /404.html           404!
 
-# Live Interactive Jobs Feed & App View
+# Clean static application routes
 /jobs                   /jobs.html          200
-
-# Clean static routes
 /about                  /about.html         200
 /onboarding             /onboarding.html    200
 /profile                /profile.html       200
@@ -34,27 +27,8 @@
 /api/user-profile       /.netlify/functions/userProfile       200
 /api/schema-discover    /.netlify/functions/schemaDiscover    200
 
-# Legacy shortcuts to Live Jobs App
-/portals                /jobs               301!
-/custom-scraper         /jobs               301!
-/tracker                /jobs               301!
+# Canonical redirects for .html extensions
+/*.html                 /:splat             301!
 
-# SEO & AI files
-/robots.txt             /robots.txt         200
-/sitemap.xml            /sitemap.xml        200
-/ads.txt                /ads.txt            200
-/llms.txt               /llms.txt           200
-/ai-catalog.json        /ai-catalog.json    200
-/.well-known/ai-catalog.json /.well-known/ai-catalog.json 200
-/google34b5a0ac26d85028.html /google34b5a0ac26d85028.html 200
-
-# Security & Privacy: Block internal development files from public HTTP access
-/package.json           /404.html           404!
-/package-lock.json      /404.html           404!
-/server.js              /404.html           404!
-/netlify/*              /404.html           404!
-/.env*                  /404.html           404!
-/data/*                 /404.html           404!
-
-# Programmatic SEO & SPA routes for job filters
+# Dynamic programmatic routes & filter paths for Job Feed
 /jobs/*                 /jobs.html          200

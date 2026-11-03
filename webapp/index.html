@@ -489,7 +489,7 @@
             <div class="footer-col">
                 <h4 class="footer-heading">Open Source &amp; Legal</h4>
                 <ul class="footer-nav-list">
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">GitHub Repository &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
                     <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
                     <li><a href="/privacy">Privacy Policy</a></li>
                     <li><a href="/terms">Terms of Service</a></li>
@@ -514,8 +514,9 @@
 
     <script>
         function triggerAuth() {
-            if (window.JobBuddyAuth) {
-                window.JobBuddyAuth.openModal();
+            const auth = window.RolenautAuth || window.JobBuddyAuth;
+            if (auth) {
+                auth.openModal();
             } else if (window.netlifyIdentity) {
                 window.netlifyIdentity.open();
             }
@@ -590,12 +591,15 @@
 
         // Instant synchronous state hydration
         document.addEventListener('DOMContentLoaded', () => {
-            const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+            const auth = window.RolenautAuth || window.JobBuddyAuth;
+            const user = auth ? auth.getUser() : null;
             updateLandingAuthUI(user);
 
-            window.addEventListener('jb_auth_change', (e) => {
-                updateLandingAuthUI(e.detail.user);
-            });
+            const handleLandingAuth = (e) => {
+                updateLandingAuthUI(e.detail ? e.detail.user : null);
+            };
+            window.addEventListener('rolenaut_auth_change', handleLandingAuth);
+            window.addEventListener('jb_auth_change', handleLandingAuth);
         });
     </script>
 </body>

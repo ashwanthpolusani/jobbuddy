@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | Rolenaut</title>
+    <meta name="description" content="The page you are looking for does not exist or has moved. Explore direct-to-ATS technical openings on Rolenaut.">
+    <meta name="robots" content="noindex, follow">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/shared.css">
+    <style>
+        .error-page-container {
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .error-card {
+            max-width: 580px;
+            width: 100%;
+            text-align: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 48px 32px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+        }
+        .error-code {
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent) 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .error-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 14px;
+        }
+        .error-desc {
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+        .error-actions {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .btn-404-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-404-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .btn-404-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 12px 22px;
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-404-secondary:hover {
+            border-color: var(--text);
+            background: rgba(255, 255, 255, 0.04);
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+        <div class="nav-container">
+            <a href="/" class="brand-link" aria-label="Rolenaut Home">
+                <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect width="40" height="40" rx="10" fill="#13141f"/>
+                    <path d="M12 28V12L20 8L28 12V28L20 32L12 28Z" stroke="#6366f1" stroke-width="2.5" stroke-linejoin="round"/>
+                    <circle cx="20" cy="20" r="4" fill="#a855f7"/>
+                    <path d="M20 8V16M28 28L20 24M12 28L20 24" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span class="brand-name">Rolenaut</span>
+            </a>
+            <div class="nav-right">
+                <a href="/jobs" class="nav-item">Browse Jobs</a>
+                <a href="/about" class="nav-item">About</a>
+                <div id="auth-header-wrapper"></div>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" class="error-page-container">
+        <div class="error-card">
+            <div class="error-code">404</div>
+            <h1 class="error-title">Page Not Found</h1>
+            <p class="error-desc">
+                The role requisition, guide, or page you were looking for doesn't exist, was filled, or has moved to a new destination.
+            </p>
+            <div class="error-actions">
+                <a href="/jobs" class="btn-404-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                    <span>Browse Live Jobs</span>
+                </a>
+                <a href="/" class="btn-404-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>Back to Home</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-col-brand">
+                    <div class="footer-logo-row">
+                        <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect width="40" height="40" rx="10" fill="#13141f"/>
+                            <path d="M12 28V12L20 8L28 12V28L20 32L12 28Z" stroke="#6366f1" stroke-width="2.5" stroke-linejoin="round"/>
+                            <circle cx="20" cy="20" r="4" fill="#a855f7"/>
+                            <path d="M20 8V16M28 28L20 24M12 28L20 24" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span class="footer-brand-name">Rolenaut</span>
+                    </div>
+                    <p class="footer-tagline">
+                        Direct-to-ATS tech job discovery platform. Autonomous indexing of official enterprise career portals with zero recruiter spam.
+                    </p>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">Platform</h4>
+                    <ul class="footer-nav-list">
+                        <li><a href="/jobs">Live Job Feed</a></li>
+                        <li><a href="/about">About Rolenaut</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">Guides</h4>
+                    <ul class="footer-nav-list">
+                        <li><a href="/scraper-guide">Custom Scraper Setup</a></li>
+                        <li><a href="/interview-prep">Interview Preparation</a></li>
+                        <li><a href="/resume-guide">Resume &amp; ATS Guide</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">Open Source &amp; Legal</h4>
+                    <ul class="footer-nav-list">
+                        <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
+                        <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                        <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom-bar">
+                <div class="footer-bottom-left">
+                    <div class="footer-copy">&copy; 2026 Rolenaut. Autonomous career navigation for early-career tech professionals.</div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/auth-core.js"></script>
+</body>
+</html>

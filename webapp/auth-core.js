@@ -15,6 +15,14 @@
         } catch (e) {}
 
         try {
+            const rolenautCached = localStorage.getItem('rolenaut_cached_user');
+            if (rolenautCached) {
+                const parsed = JSON.parse(rolenautCached);
+                if (parsed && (parsed.email || parsed.id)) return parsed;
+            }
+        } catch (e) {}
+
+        try {
             const cached = localStorage.getItem('jb_cached_user');
             if (cached) {
                 const parsed = JSON.parse(cached);
@@ -24,10 +32,14 @@
 
         try {
             const rolenautSession = localStorage.getItem('rolenaut_user_session');
-        if (rolenautSession) {
-            try { const p = JSON.parse(rolenautSession); if (p && (p.email || p.id)) return p; } catch (e) {}
-        }
-        const legacy = localStorage.getItem('jobbuddy_user_session');
+            if (rolenautSession) {
+                const p = JSON.parse(rolenautSession);
+                if (p && (p.email || p.id)) return p;
+            }
+        } catch (e) {}
+
+        try {
+            const legacy = localStorage.getItem('jobbuddy_user_session');
             if (legacy) {
                 const parsed = JSON.parse(legacy);
                 if (parsed && (parsed.email || parsed.id)) return parsed;
@@ -62,6 +74,15 @@
             }
         } catch (e) {}
         try {
+            const rolenautCached = localStorage.getItem('rolenaut_cached_user');
+            if (rolenautCached) {
+                const parsed = JSON.parse(rolenautCached);
+                if (parsed && parsed.token && parsed.token.access_token) {
+                    return parsed.token.access_token;
+                }
+            }
+        } catch (e) {}
+        try {
             const cached = localStorage.getItem('jb_cached_user');
             if (cached) {
                 const parsed = JSON.parse(cached);
@@ -79,9 +100,10 @@
         return null;
     }
 
-    // 3. Persist user session to cache
+    // 3. Persist user session to cache (synchronous write with backward-compatible mirrors)
     function persistUserCache(user) {
         if (!user) {
+            localStorage.removeItem('rolenaut_cached_user');
             localStorage.removeItem('jb_cached_user');
             localStorage.removeItem('gotrue.user');
             localStorage.removeItem('rolenaut_user_session');
@@ -97,10 +119,18 @@
             token: user.token || {}
         };
         try {
+            localStorage.setItem('rolenaut_cached_user', JSON.stringify(cache));
             localStorage.setItem('jb_cached_user', JSON.stringify(cache));
             localStorage.setItem('rolenaut_user_session', JSON.stringify({ id: cache.id, email: user.email }));
             localStorage.setItem('jobbuddy_user_session', JSON.stringify({ id: cache.id, email: user.email }));
         } catch (e) {}
+    }
+
+    // Helper: notify auth state changes across all listeners (both modern and legacy events)
+    function dispatchAuthEvent(user) {
+        const detail = { user };
+        window.dispatchEvent(new CustomEvent('rolenaut_auth_change', { detail }));
+        window.dispatchEvent(new CustomEvent('jb_auth_change', { detail }));
     }
 
     // 4. Open Auth Modal reliably
@@ -116,7 +146,6 @@
                     window.netlifyIdentity.open(action || 'login');
                 } else if (tries > 40) {
                     clearInterval(timer);
-                    // If modal cannot be opened, advise user
                     console.info("Netlify Identity widget initializing or offline.");
                 }
             }, 50);
@@ -126,12 +155,12 @@
     // 5. Logout reliably
     function logoutUser() {
         persistUserCache(null);
-        localStorage.removeItem('jobbuddy_custom_mongo_uri');
         localStorage.removeItem('rolenaut_custom_mongo_uri');
+        localStorage.removeItem('jobbuddy_custom_mongo_uri');
         if (window.netlifyIdentity && typeof window.netlifyIdentity.logout === 'function') {
             try { window.netlifyIdentity.logout(); } catch (e) {}
         }
-        window.dispatchEvent(new CustomEvent('jb_auth_change', { detail: { user: null } }));
+        dispatchAuthEvent(null);
         renderAuthHeader();
     }
 
@@ -169,8 +198,8 @@
         if (typeof window.disconnectDatabase === 'function') {
             window.disconnectDatabase();
         } else {
-            localStorage.removeItem('jobbuddy_custom_mongo_uri');
             localStorage.removeItem('rolenaut_custom_mongo_uri');
+            localStorage.removeItem('jobbuddy_custom_mongo_uri');
             window.location.reload();
         }
     }
@@ -196,7 +225,7 @@
         const user = getStoredUser();
         if (!user) {
             wrapper.innerHTML = `
-                <button class="btn-header-auth" id="btn-header-signin" onclick="window.JobBuddyAuth.openModal()" aria-label="Sign In or Register">
+                <button class="btn-header-auth" id="btn-header-signin" onclick="window.RolenautAuth.openModal()" aria-label="Sign In or Register">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
@@ -217,7 +246,7 @@
 
         wrapper.innerHTML = `
             <div class="user-profile-menu-container">
-                <button class="user-profile-pill" id="user-profile-trigger" onclick="window.JobBuddyAuth.toggleProfileMenu(event)" aria-expanded="false" aria-label="User Account Menu">
+                <button class="user-profile-pill" id="user-profile-trigger" onclick="window.RolenautAuth.toggleProfileMenu(event)" aria-expanded="false" aria-label="User Account Menu">
                     <span class="user-avatar-circle">${initial}</span>
                     <span class="user-pill-name">${escapeHtml(displayName)}</span>
                     <svg class="chevron-down" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
@@ -239,12 +268,12 @@
                             </div>
                         </div>
                         <div class="mini-nav-links">
-                            <button type="button" class="mini-menu-item" onclick="window.JobBuddyAuth.openDataSourceModal()">
+                            <button type="button" class="mini-menu-item" onclick="window.RolenautAuth.openDataSourceModal()">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
                                 <span>${isCustomDb ? 'Edit Custom Mongo URL' : 'Connect Custom Mongo URL'}</span>
                             </button>
                             ${isCustomDb ? `
-                            <button type="button" class="mini-menu-item" onclick="window.JobBuddyAuth.resetToDefaultStream()" style="color: var(--muted);">
+                            <button type="button" class="mini-menu-item" onclick="window.RolenautAuth.resetToDefaultStream()" style="color: var(--muted);">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                                 <span>Reset to Freshers Stream</span>
                             </button>
@@ -260,7 +289,7 @@
                         </div>
                     </div>
                     <div class="mini-profile-footer">
-                        <button class="btn-signout" onclick="window.JobBuddyAuth.logout()">
+                        <button class="btn-signout" onclick="window.RolenautAuth.logout()">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                             <span>Sign Out</span>
                         </button>
@@ -293,22 +322,22 @@
         window.netlifyIdentity.on('init', (user) => {
             const finalUser = user || getStoredUser();
             persistUserCache(finalUser);
-            window.dispatchEvent(new CustomEvent('jb_auth_change', { detail: { user: finalUser } }));
+            dispatchAuthEvent(finalUser);
             renderAuthHeader();
         });
 
         window.netlifyIdentity.on('login', (user) => {
             if (window.netlifyIdentity) window.netlifyIdentity.close();
             persistUserCache(user);
-            window.dispatchEvent(new CustomEvent('jb_auth_change', { detail: { user } }));
+            dispatchAuthEvent(user);
             renderAuthHeader();
         });
 
         window.netlifyIdentity.on('logout', () => {
             persistUserCache(null);
-            localStorage.removeItem('jobbuddy_custom_mongo_uri');
             localStorage.removeItem('rolenaut_custom_mongo_uri');
-            window.dispatchEvent(new CustomEvent('jb_auth_change', { detail: { user: null } }));
+            localStorage.removeItem('jobbuddy_custom_mongo_uri');
+            dispatchAuthEvent(null);
             renderAuthHeader();
         });
 
@@ -316,7 +345,7 @@
         const current = window.netlifyIdentity.currentUser();
         if (current) {
             persistUserCache(current);
-            window.dispatchEvent(new CustomEvent('jb_auth_change', { detail: { user: current } }));
+            dispatchAuthEvent(current);
             renderAuthHeader();
         }
     }
@@ -373,8 +402,8 @@
         }
     }
 
-    // Export globally
-    window.JobBuddyAuth = {
+    // Export globally: Modern RolenautAuth with JobBuddyAuth backward-compatibility alias
+    window.RolenautAuth = {
         getUser: getStoredUser,
         getToken: getAuthToken,
         persistUser: persistUserCache,
@@ -385,5 +414,5 @@
         resetToDefaultStream: resetToDefaultStream,
         renderHeader: renderAuthHeader
     };
-    window.RolenautAuth = window.JobBuddyAuth;
+    window.JobBuddyAuth = window.RolenautAuth;
 })();

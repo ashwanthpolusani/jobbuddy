@@ -21,13 +21,32 @@ app.use((req, res, next) => {
     next();
 });
 
+// Security: Block sensitive internal files from HTTP access (matches Netlify _redirects)
+app.use((req, res, next) => {
+    const sensitiveFiles = [
+        '/package.json',
+        '/package-lock.json',
+        '/server.js',
+        '/_redirects',
+        '/netlify.toml'
+    ];
+    if (
+        sensitiveFiles.includes(req.path) ||
+        req.path.startsWith('/.env') ||
+        req.path.startsWith('/netlify/') ||
+        req.path.startsWith('/data/')
+    ) {
+        return res.status(404).sendFile(path.join(__dirname, '404.html'));
+    }
+    next();
+});
+
 app.use(express.json());
 app.use(express.static(__dirname, { extensions: ['html'], dotfiles: 'allow' }));
 
 // Explicit static publisher routes (matching Netlify _redirects)
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.use('/jobs', (req, res) => res.sendFile(path.join(__dirname, 'jobs.html')));
-app.get('/landing', (req, res) => res.redirect(301, '/'));
 app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'about.html')));
 app.get('/onboarding', (req, res) => res.sendFile(path.join(__dirname, 'onboarding.html')));
 app.get('/profile', (req, res) => res.sendFile(path.join(__dirname, 'profile.html')));
@@ -36,9 +55,6 @@ app.get('/interview-prep', (req, res) => res.sendFile(path.join(__dirname, 'inte
 app.get('/resume-guide', (req, res) => res.sendFile(path.join(__dirname, 'resume-guide.html')));
 app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'privacy.html')));
 app.get('/terms', (req, res) => res.sendFile(path.join(__dirname, 'terms.html')));
-app.get('/portals', (req, res) => res.redirect(301, '/jobs'));
-app.get('/custom-scraper', (req, res) => res.redirect(301, '/jobs'));
-app.get('/tracker', (req, res) => res.redirect(301, '/jobs'));
 
 const callNetlifyHandler = (handler) => async (req, res) => {
     try {
@@ -69,12 +85,12 @@ app.all('/api/user-profile', callNetlifyHandler(userProfileHandler));
 app.all('/.netlify/functions/schemaDiscover', callNetlifyHandler(schemaDiscoverHandler));
 app.all('/api/schema-discover', callNetlifyHandler(schemaDiscoverHandler));
 
-// 404 Fallback: Any route under /jobs serves the live jobs feed; any unknown external route redirects cleanly to /
+// 404 Fallback: Any route under /jobs serves the live jobs feed; any unknown external route serves 404.html
 app.use((req, res) => {
     if (req.path && req.path.startsWith('/jobs')) {
         res.sendFile(path.join(__dirname, 'jobs.html'));
     } else {
-        res.redirect(302, '/');
+        res.status(404).sendFile(path.join(__dirname, '404.html'));
     }
 });
 

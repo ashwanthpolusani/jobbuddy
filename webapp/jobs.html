@@ -1624,7 +1624,7 @@
             <div class="footer-col">
                 <h4 class="footer-heading">Open Source &amp; Legal</h4>
                 <ul class="footer-nav-list">
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">GitHub Repository &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
                     <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
                     <li><a href="/privacy">Privacy Policy</a></li>
                     <li><a href="/terms">Terms of Service</a></li>
@@ -1743,10 +1743,11 @@
         let cardIdx = 0;
         let isLoading = true;
 
-        let currentUser = (window.JobBuddyAuth && window.JobBuddyAuth.getUser()) || null;
+        let authCore = window.RolenautAuth || window.JobBuddyAuth;
+        let currentUser = (authCore && authCore.getUser()) || null;
         let userProfile = null;
 
-        let CURRENT_CACHE_KEY = 'jb_v6_cache';
+        let CURRENT_CACHE_KEY = 'rolenaut_cache_v1';
         const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
         // View Switcher (Job Openings vs Company Career Pages)
@@ -1977,7 +1978,7 @@
             if (badgePort) badgePort.textContent = portalTotal;
 
             const viewLabel = activeViewType === 'direct_apply' ? 'Direct Job Links' : 'Company Career Portals';
-            const isCustom = Boolean(localStorage.getItem("jobbuddy_custom_mongo_uri"));
+            const isCustom = Boolean(localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri"));
 
             if (!allJobs.length) {
                 if (latestMeta && latestMeta.dbError) {
@@ -2207,10 +2208,10 @@
         // Bounded Cache Management
         function saveCache(data) {
             try {
-                // Prune old jb_v6_ cache entries if exceeding 25 to prevent QuotaExceededError
-                const jbKeys = Object.keys(localStorage).filter(k => k.startsWith('jb_v6_'));
-                if (jbKeys.length >= 25) {
-                    jbKeys.slice(0, 10).forEach(k => localStorage.removeItem(k));
+                // Prune old rolenaut_cache_ and legacy jb_ entries if exceeding 25 to prevent QuotaExceededError
+                const cacheKeys = Object.keys(localStorage).filter(k => k.startsWith('rolenaut_cache_') || k.startsWith('jb_v6_') || k.startsWith('jb_v7_'));
+                if (cacheKeys.length >= 25) {
+                    cacheKeys.slice(0, 10).forEach(k => localStorage.removeItem(k));
                 }
                 localStorage.setItem(CURRENT_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
             } catch (e) { }
@@ -2229,7 +2230,7 @@
         function clearAllCache() {
             try {
                 Object.keys(localStorage).forEach(k => {
-                    if (k.startsWith("jb_")) localStorage.removeItem(k);
+                    if (k.startsWith("rolenaut_cache_") || k.startsWith("jb_")) localStorage.removeItem(k);
                 });
             } catch (e) {}
         }
@@ -2269,9 +2270,9 @@
             const catParam = activeViewType === 'direct_apply' ? (activeCat === 'all' ? '' : activeCat) : '';
             const locParam = activeViewType === 'direct_apply' ? activeLoc : 'all';
             const confParam = activeViewType === 'direct_apply' ? activeConf : 'all';
-            const customDbUri = localStorage.getItem("jobbuddy_custom_mongo_uri");
+            const customDbUri = localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri");
             const url = `/.netlify/functions/getJobs?page=${page}&limit=${PAGE_SIZE}&link_type=${activeViewType}&category=${catParam}&location=${locParam}&verdict=${confParam}&search=${encodeURIComponent(searchVal)}`;
-            CURRENT_CACHE_KEY = "jb_v7_" + (customDbUri ? "c_" : "d_") + encodeURIComponent(url);
+            CURRENT_CACHE_KEY = "rolenaut_cache_v1_" + (customDbUri ? "c_" : "d_") + encodeURIComponent(url);
 
             const cached = loadCache();
             if (cached && cached.jobs) {
@@ -2423,8 +2424,9 @@
                     'x-user-id': user.id || '',
                     'x-user-email': user.email || ''
                 };
-                if (window.JobBuddyAuth && typeof window.JobBuddyAuth.getToken === 'function') {
-                    const token = await window.JobBuddyAuth.getToken();
+                const auth = window.RolenautAuth || window.JobBuddyAuth;
+                if (auth && typeof auth.getToken === 'function') {
+                    const token = await auth.getToken();
                     if (token) {
                         headers['Authorization'] = 'Bearer ' + token;
                     }
@@ -2436,6 +2438,7 @@
                     const data = await res.json();
                     userProfile = data.profile || null;
                     if (userProfile && userProfile.custom_mongo_uri) {
+                        localStorage.setItem("rolenaut_custom_mongo_uri", userProfile.custom_mongo_uri);
                         localStorage.setItem("jobbuddy_custom_mongo_uri", userProfile.custom_mongo_uri);
                         clearAllCache();
                         updateWorkspaceIndicator();
@@ -2470,7 +2473,8 @@
             if (btn) btn.textContent = 'Saving to Netlify DB...';
 
             try {
-                let token = window.JobBuddyAuth ? await window.JobBuddyAuth.getToken() : null;
+                const auth = window.RolenautAuth || window.JobBuddyAuth;
+                let token = auth ? await auth.getToken() : null;
                 let headers = {
                     'Content-Type': 'application/json',
                     'x-user-id': currentUser.id || '',
@@ -2512,7 +2516,8 @@
         async function disconnectDatabase() {
             if (currentUser) {
                 try {
-                    let token = window.JobBuddyAuth ? await window.JobBuddyAuth.getToken() : null;
+                    const auth = window.RolenautAuth || window.JobBuddyAuth;
+                    let token = auth ? await auth.getToken() : null;
                     let headers = {
                         'Content-Type': 'application/json',
                         'x-user-id': currentUser.id || '',
@@ -2621,7 +2626,7 @@
             const modalEmail = document.getElementById('modal-account-email');
             const modalDbBadge = document.getElementById('modal-db-badge');
             const input = document.getElementById('custom-mongo-input');
-            const currentUri = localStorage.getItem("jobbuddy_custom_mongo_uri") || "";
+            const currentUri = localStorage.getItem("rolenaut_custom_mongo_uri") || localStorage.getItem("jobbuddy_custom_mongo_uri") || "";
             const isCustom = Boolean(currentUri);
 
             if (input) input.value = currentUri;
@@ -2665,10 +2670,11 @@
 
         // Netlify Identity Authentication
         function openIdentityModal() {
+            const auth = window.RolenautAuth || window.JobBuddyAuth;
             if (window.netlifyIdentity && typeof window.netlifyIdentity.open === 'function') {
                 window.netlifyIdentity.open('login');
-            } else if (window.JobBuddyAuth && typeof window.JobBuddyAuth.openModal === 'function') {
-                window.JobBuddyAuth.openModal('login');
+            } else if (auth && typeof auth.openModal === 'function') {
+                auth.openModal('login');
             } else {
                 // Professional inline notice without raw prompt
                 const guestSection = document.getElementById('modal-guest-section');
@@ -2701,11 +2707,14 @@
             currentUser = user;
             if (user) {
                 try {
+                    localStorage.setItem("rolenaut_user_session", JSON.stringify({ email: user.email, id: user.id }));
                     localStorage.setItem("jobbuddy_user_session", JSON.stringify({ email: user.email, id: user.id }));
                 } catch (e) {}
             } else {
                 try {
+                    localStorage.removeItem("rolenaut_user_session");
                     localStorage.removeItem("jobbuddy_user_session");
+                    localStorage.removeItem("rolenaut_custom_mongo_uri");
                     localStorage.removeItem("jobbuddy_custom_mongo_uri");
                 } catch (e) {}
                 userProfile = null;
@@ -2748,19 +2757,23 @@
 
         // Initialize Everything on Load
         document.addEventListener('DOMContentLoaded', () => {
-            // Synchronously restore user from JobBuddyAuth
-            currentUser = (window.JobBuddyAuth && window.JobBuddyAuth.getUser()) || null;
-            window.addEventListener("jb_auth_change", (e) => {
+            // Synchronously restore user from RolenautAuth / JobBuddyAuth
+            const auth = window.RolenautAuth || window.JobBuddyAuth;
+            currentUser = (auth && auth.getUser()) || null;
+            const handleAuthUpdate = (e) => {
                 currentUser = e.detail ? e.detail.user : null;
                 if (currentUser) {
                     fetchUserProfile(currentUser);
                 } else {
+                    localStorage.removeItem("rolenaut_custom_mongo_uri");
                     localStorage.removeItem("jobbuddy_custom_mongo_uri");
                     clearAllCache();
                 }
                 currentPage = 1;
                 fetchJobs(1);
-            });
+            };
+            window.addEventListener("rolenaut_auth_change", handleAuthUpdate);
+            window.addEventListener("jb_auth_change", handleAuthUpdate);
 
             // Clean up legacy localStorage cache keys
             clearAllCache();

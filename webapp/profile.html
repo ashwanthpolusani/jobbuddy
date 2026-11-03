@@ -437,8 +437,9 @@
         }
 
         async function getAuthToken() {
-            if (window.JobBuddyAuth) {
-                return await window.JobBuddyAuth.getToken();
+            const auth = window.RolenautAuth || window.JobBuddyAuth;
+            if (auth) {
+                return await auth.getToken();
             }
             const user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
             if (!user) return null;
@@ -446,11 +447,12 @@
         }
 
         async function loadProfile() {
-            const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : (window.netlifyIdentity && window.netlifyIdentity.currentUser());
+            const auth = window.RolenautAuth || window.JobBuddyAuth;
+            const user = auth ? auth.getUser() : (window.netlifyIdentity && window.netlifyIdentity.currentUser());
             if (!user) {
                 // Wait briefly before redirecting
                 setTimeout(() => {
-                    const retry = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+                    const retry = (window.RolenautAuth || window.JobBuddyAuth) ? (window.RolenautAuth || window.JobBuddyAuth).getUser() : null;
                     if (!retry) window.location.href = '/';
                 }, 800);
                 return;
@@ -569,7 +571,8 @@
         async function exportUserData() {
             let token = await getAuthToken();
             if (!token) {
-                const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+                const auth = window.RolenautAuth || window.JobBuddyAuth;
+                const user = auth ? auth.getUser() : null;
                 if (user && user.email) {
                     token = "dev_token_" + btoa(user.email);
                 }
@@ -587,7 +590,8 @@
 
             let token = await getAuthToken();
             if (!token) {
-                const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+                const auth = window.RolenautAuth || window.JobBuddyAuth;
+                const user = auth ? auth.getUser() : null;
                 if (user && user.email) {
                     token = "dev_token_" + btoa(user.email);
                 }
@@ -604,15 +608,17 @@
                 });
                 if (res.ok) {
                     alert('Your profile and database records have been permanently erased. Logging out...');
-                    if (window.JobBuddyAuth) {
-                        window.JobBuddyAuth.logout();
+                    const auth = window.RolenautAuth || window.JobBuddyAuth;
+                    if (auth) {
+                        auth.logout();
                     } else if (window.netlifyIdentity) {
                         try { window.netlifyIdentity.logout(); } catch (e) {}
                     }
-                    localStorage.removeItem('jobbuddy_user_session');
                     localStorage.removeItem('rolenaut_user_session');
-                    localStorage.removeItem('jobbuddy_custom_mongo_uri');
+                    localStorage.removeItem('jobbuddy_user_session');
                     localStorage.removeItem('rolenaut_custom_mongo_uri');
+                    localStorage.removeItem('jobbuddy_custom_mongo_uri');
+                    localStorage.removeItem('rolenaut_cached_user');
                     localStorage.removeItem('jb_cached_user');
                     localStorage.removeItem('gotrue.user');
                     window.location.href = '/';
@@ -626,16 +632,20 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+            const auth = window.RolenautAuth || window.JobBuddyAuth;
+            const user = auth ? auth.getUser() : null;
             if (user) {
                 loadProfile();
             } else {
-                window.addEventListener('jb_auth_change', (e) => {
-                    if (e.detail.user) loadProfile();
+                const handleProfileAuth = (e) => {
+                    if (e.detail && e.detail.user) loadProfile();
                     else window.location.href = '/';
-                });
+                };
+                window.addEventListener('rolenaut_auth_change', handleProfileAuth);
+                window.addEventListener('jb_auth_change', handleProfileAuth);
                 setTimeout(() => {
-                    if (!window.JobBuddyAuth?.getUser()) {
+                    const currentAuth = window.RolenautAuth || window.JobBuddyAuth;
+                    if (!currentAuth?.getUser()) {
                         window.location.href = '/';
                     }
                 }, 1000);
@@ -695,7 +705,7 @@
             <div class="footer-col">
                 <h4 class="footer-heading">Open Source &amp; Legal</h4>
                 <ul class="footer-nav-list">
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">GitHub Repository &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
                     <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
                     <li><a href="/privacy">Privacy Policy</a></li>
                     <li><a href="/terms">Terms of Service</a></li>

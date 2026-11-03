@@ -416,7 +416,8 @@
             btn.disabled = true;
             btn.textContent = 'Setting up workspace...';
 
-            const token = window.JobBuddyAuth ? await window.JobBuddyAuth.getToken() : null;
+            const auth = window.RolenautAuth || window.JobBuddyAuth;
+            const token = auth ? await auth.getToken() : null;
             if (!token) {
                 // If not signed in for any reason, redirect to landing
                 window.location.href = '/';
@@ -455,7 +456,8 @@
             if (!user) {
                 // Wait briefly before deciding user is not signed in
                 setTimeout(() => {
-                    const retryUser = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+                    const retryAuth = window.RolenautAuth || window.JobBuddyAuth;
+                    const retryUser = retryAuth ? retryAuth.getUser() : null;
                     if (!retryUser) window.location.href = '/';
                 }, 800);
                 return;
@@ -468,12 +470,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const user = window.JobBuddyAuth ? window.JobBuddyAuth.getUser() : null;
+            const auth = window.RolenautAuth || window.JobBuddyAuth;
+            const user = auth ? auth.getUser() : null;
             hydrateOnboardingUser(user);
 
-            window.addEventListener('jb_auth_change', (e) => {
-                hydrateOnboardingUser(e.detail.user);
-            });
+            const handleOnboardingAuth = (e) => {
+                hydrateOnboardingUser(e.detail ? e.detail.user : null);
+            };
+            window.addEventListener('rolenaut_auth_change', handleOnboardingAuth);
+            window.addEventListener('jb_auth_change', handleOnboardingAuth);
         });
     </script>
 <footer class="site-footer">
@@ -529,7 +534,7 @@
             <div class="footer-col">
                 <h4 class="footer-heading">Open Source &amp; Legal</h4>
                 <ul class="footer-nav-list">
-                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">GitHub Repository &#8599;</a></li>
+                    <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper" target="_blank" rel="noopener noreferrer">Rolenaut Engine (GitHub) &#8599;</a></li>
                     <li><a href="https://github.com/ashwanthpolusani/jobbuddy-scraper/issues" target="_blank" rel="noopener noreferrer">Issue &amp; Takedown Tracker &#8599;</a></li>
                     <li><a href="/privacy">Privacy Policy</a></li>
                     <li><a href="/terms">Terms of Service</a></li>
