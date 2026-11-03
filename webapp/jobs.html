@@ -2255,6 +2255,9 @@
         // Build a job card with clickable title and relative posting age
         function buildCard(job) {
             const id = 'c' + (cardIdx++);
+            const jobTitleEsc = esc(job.title || 'Role');
+            const compEsc = esc(job.company_name || 'Company');
+            const jobUrl = sanitizeUrl(job.link);
             const isDirect = ltOf(job) === 'direct_apply';
             const verdict = job.experience_verdict || null;
             const newTag = isNew(job.first_seen || job.scraped_at) ? '<span class="tag-new">New</span>' : '';
@@ -2289,9 +2292,6 @@
                 + '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg> view details</button>'
                 : '';
 
-            const jobTitleEsc = esc(job.title || 'Role');
-            const compEsc = esc(job.company_name || 'Company');
-            const jobUrl = sanitizeUrl(job.link);
             const applyBtn = isDirect
                 ? '<a href="' + jobUrl + '" class="apply-btn direct-btn" target="_blank" rel="noopener noreferrer" aria-label="Apply to ' + jobTitleEsc + ' at ' + compEsc + '">Apply &#8594;</a>'
                 : '<a href="' + jobUrl + '" class="apply-btn browse-btn" target="_blank" rel="noopener noreferrer" aria-label="Explore early-career opportunities at ' + compEsc + '">Explore Portal &#8594;</a>';
@@ -2563,14 +2563,29 @@
                 isLoading = false;
                 saveCache({ jobs: allJobs, total: totalJobs, totalPages, directCount: directTotal, portalCount: portalTotal });
                 setSyncing(false);
-                renderJobs();
             } catch (e) {
                 setSyncing(false);
                 isLoading = false;
                 const msg = e.message || 'Unknown network error';
                 latestMeta = { dbError: true, errorMessage: msg };
                 allJobs = [];
+            }
+
+            try {
                 renderJobs();
+            } catch (renderErr) {
+                console.error('Jobs rendering error:', renderErr);
+                countEl.innerHTML = `<span style="color:var(--red);">Display Formatting Error</span>`;
+                cnt.innerHTML = `
+                    <div class="empty-workspace-hero" style="border-color: rgba(239, 68, 68, 0.3);">
+                        <div class="empty-ws-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--red);">⚠️</div>
+                        <h3 style="color: var(--text);">UI Rendering Error</h3>
+                        <p style="color: var(--muted); margin-bottom: 12px;">The jobs were successfully retrieved, but an error occurred while formatting them on screen:</p>
+                        <div style="background: rgba(239, 68, 68, 0.07); color: var(--red); font-family: monospace; font-size: 0.8rem; padding: 10px 14px; border-radius: 8px; margin-bottom: 18px; word-break: break-all;">
+                            ${esc(renderErr.message || 'Display formatting error')}
+                        </div>
+                    </div>
+                `;
             }
         }
 
