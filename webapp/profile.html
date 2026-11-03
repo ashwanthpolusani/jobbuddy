@@ -425,15 +425,15 @@
     </main>
 
     <!-- Accessible GDPR Account Erasure Modal -->
-    <div id="delete-modal-backdrop" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(3px); z-index: 100000; align-items: center; justify-content: center; padding: 16px;" role="dialog" aria-modal="true" aria-labelledby="del-modal-title">
+    <div id="delete-modal-backdrop" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(3px); z-index: 100000; align-items: center; justify-content: center; padding: 16px;" role="dialog" aria-modal="true" aria-labelledby="del-modal-title" aria-describedby="del-modal-desc" onclick="if(event.target===this)closeDeleteModal();">
         <div class="settings-card danger-card" style="max-width: 500px; width: 100%; margin: 0; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
             <div class="card-header" style="border-bottom: 1px solid rgba(220, 38, 38, 0.2); padding-bottom: 12px;">
                 <h3 id="del-modal-title" style="color: var(--danger); font-size: 1.1rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
                     ⚠️ Confirm Account Erasure
                 </h3>
-                <button type="button" onclick="closeDeleteModal()" aria-label="Cancel" style="background: transparent; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted);">&times;</button>
+                <button type="button" onclick="closeDeleteModal()" aria-label="Cancel and close modal" style="background: transparent; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted);">&times;</button>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text2); margin: 14px 0 10px; line-height: 1.55;">
+            <p id="del-modal-desc" style="font-size: 0.85rem; color: var(--text2); margin: 14px 0 10px; line-height: 1.55;">
                 Under GDPR Article 17 (Right to Erasure), this action will permanently delete your user profile, custom database connection, and settings. This action cannot be undone.
             </p>
             <p style="font-size: 0.82rem; font-weight: 700; color: var(--danger); margin-bottom: 8px;">
@@ -468,6 +468,14 @@
                     }
                 });
             }
+
+            // Cross-tab display name synchronization with input dirty/editing latch
+            window.addEventListener('rolenaut_display_name_change', (e) => {
+                const input = document.getElementById('profile-name-input');
+                if (input && !isNameInputDirty && !isNameEditing && document.activeElement !== input && e.detail?.displayName) {
+                    input.value = e.detail.displayName;
+                }
+            });
         });
 
         function checkNameDirty() {
@@ -598,6 +606,21 @@
             }
         }
 
+        function getMaskedClusterDisplay() {
+            const localUri = (localStorage.getItem('rolenaut_custom_mongo_uri') || localStorage.getItem('jobbuddy_custom_mongo_uri') || '').trim();
+            if (localUri && localUri !== '[CONFIGURED]') {
+                const hostMatch = localUri.match(/@([^/?#]+)/);
+                if (hostMatch && hostMatch[1]) {
+                    const safeHost = hostMatch[1].split(':')[0];
+                    return 'Cluster Host: ' + safeHost + ' / job_aggregator';
+                }
+            }
+            if (currentProfile && (currentProfile.has_custom_db || currentProfile.db_mode === 'custom')) {
+                return 'Cluster Host: MongoDB Atlas (Secured in Netlify DB) / job_aggregator';
+            }
+            return 'Cluster Host: cluster0.mongodb.net / job_aggregator';
+        }
+
         function renderDataSourceState() {
             const isCustom = Boolean(currentProfile && (currentProfile.db_mode === 'custom' || currentProfile.has_custom_db));
             const pill = document.getElementById('source-pill');
@@ -612,10 +635,7 @@
                 pill.className = 'status-pill custom';
                 pill.textContent = '🟣 Custom Scraper MongoDB Active';
                 desc.textContent = 'Extracting direct requisitions from your personal MongoDB Atlas database.';
-                const localUri = localStorage.getItem('rolenaut_custom_mongo_uri') || '';
-                const hostMatch = localUri.match(/@([^/?#]+)/);
-                const host = hostMatch ? hostMatch[1] : 'cluster0.mongodb.net';
-                clusterHost.textContent = 'Cluster Host: ' + host + ' / job_aggregator';
+                clusterHost.textContent = getMaskedClusterDisplay();
                 clusterWrap.style.display = 'block';
                 btnRevert.style.display = 'inline-flex';
                 btnConnect.textContent = '✏️ Update Connection URI';
@@ -894,7 +914,15 @@
             }
         }
 
+        let lastFocusedDeleteTrigger = null;
+        function handleDeleteModalKeydown(e) {
+            if (e.key === 'Escape') {
+                closeDeleteModal();
+            }
+        }
+
         function openDeleteModal() {
+            lastFocusedDeleteTrigger = document.activeElement;
             const modal = document.getElementById('delete-modal-backdrop');
             const input = document.getElementById('delete-confirmation-input');
             const err = document.getElementById('delete-modal-feedback');
@@ -902,12 +930,22 @@
             if (input) input.value = '';
             if (err) err.style.display = 'none';
             if (btn) btn.disabled = true;
-            if (modal) modal.style.display = 'flex';
+            if (modal) {
+                modal.style.display = 'flex';
+                document.addEventListener('keydown', handleDeleteModalKeydown);
+                setTimeout(() => { if (input) input.focus(); }, 50);
+            }
         }
 
         function closeDeleteModal() {
             const modal = document.getElementById('delete-modal-backdrop');
-            if (modal) modal.style.display = 'none';
+            if (modal) {
+                modal.style.display = 'none';
+                document.removeEventListener('keydown', handleDeleteModalKeydown);
+            }
+            if (lastFocusedDeleteTrigger && typeof lastFocusedDeleteTrigger.focus === 'function') {
+                lastFocusedDeleteTrigger.focus();
+            }
         }
 
         function handleDeleteInputChange(val) {
