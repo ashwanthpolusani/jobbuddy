@@ -9,12 +9,35 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+
+        /* ── UNIVERSAL NETLIFY BADGE ELIMINATION ── */
+        a[href*="netlify.com"][style*="fixed"],
+        a[href*="netlify.app"][style*="fixed"],
+        a[href*="netlify.com"][target="_blank"],
+        [data-netlify-deploy-id],
+        #nl-badge-frame,
+        .netlify-badge,
+        iframe[src*="netlify"],
+        img[alt*="Deploys by Netlify"],
+        img[alt*="Powered by Netlify"],
+        img[alt*="Netlify"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            clip: rect(0, 0, 0, 0) !important;
+            width: 0 !important;
+            height: 0 !important;
         }
 
         :root {
@@ -27,7 +50,6 @@
             --muted: #64748b;
             --accent: #0a66c2;
             --accent-hover: #08519c;
-            --accent-dim: rgba(10, 102, 194, 0.08);
             --radius: 12px;
         }
 
@@ -220,5 +242,29 @@
             </a>
         </div>
     </main>
+
+    <script>
+        (function () {
+            function killBadges() {
+                try {
+                    document.querySelectorAll('a[href*="netlify.com"], a[href*="netlify.app"], [data-netlify-deploy-id], #nl-badge-frame, .netlify-badge, iframe[src*="netlify"], img[alt*="Netlify"]').forEach(function (el) {
+                        if (el && el.parentNode) el.remove();
+                    });
+                } catch (e) {}
+            }
+            killBadges();
+            document.addEventListener('DOMContentLoaded', killBadges);
+            window.addEventListener('load', function () {
+                killBadges();
+                setTimeout(killBadges, 400);
+                setTimeout(killBadges, 1200);
+            });
+            if (typeof MutationObserver !== 'undefined' && document.documentElement) {
+                var obs = new MutationObserver(killBadges);
+                obs.observe(document.documentElement, { childList: true, subtree: true });
+                setTimeout(function () { obs.disconnect(); }, 5000);
+            }
+        })();
+    </script>
 </body>
 </html>

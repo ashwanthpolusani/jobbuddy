@@ -2338,10 +2338,11 @@
 
         // Suppress Netlify badge
         function hideNBadge() {
-            document.querySelectorAll('a[href*="netlify.com"], [data-netlify-deploy-id], #nl-badge-frame, .netlify-badge').forEach(el => {
-                el.style.setProperty('display', 'none', 'important');
-                el.style.setProperty('visibility', 'hidden', 'important');
-            });
+            try {
+                document.querySelectorAll('a[href*="netlify.com"], a[href*="netlify.app"], [data-netlify-deploy-id], #nl-badge-frame, .netlify-badge, iframe[src*="netlify"], img[alt*="Netlify"]').forEach(el => {
+                    if (el && el.parentNode) el.remove();
+                });
+            } catch (e) {}
         }
 
         // Dynamic Filter Adaptation
@@ -2824,29 +2825,17 @@
             currentPage = 1;
             fetchJobs(1);
 
-            if (window.netlifyIdentity) {
-                window.netlifyIdentity.on('init', user => {
-                    if (user) updateAuthState(user);
-                });
-                window.netlifyIdentity.on('login', user => {
-                    updateAuthState(user);
-                    if (window.netlifyIdentity.close) window.netlifyIdentity.close();
-                });
-                window.netlifyIdentity.on('logout', () => updateAuthState(null));
-            }
-
+            // Clean badge suppression with automatic observer disposal (avoids memory leaks)
+            hideNBadge();
             setTimeout(hideNBadge, 500);
             setTimeout(hideNBadge, 2000);
             setTimeout(hideNBadge, 5000);
 
-            // Continuous Netlify Badge Annihilator
-            const killBadgeObserver = new MutationObserver(() => {
-                document.querySelectorAll('a[href*="netlify.com"], [data-netlify-deploy-id], #nl-badge-frame, .netlify-badge').forEach(el => {
-                    el.style.setProperty('display', 'none', 'important');
-                    el.style.setProperty('visibility', 'hidden', 'important');
-                });
-            });
-            killBadgeObserver.observe(document.body, { childList: true, subtree: true });
+            if (typeof MutationObserver !== 'undefined') {
+                const killBadgeObserver = new MutationObserver(hideNBadge);
+                killBadgeObserver.observe(document.body, { childList: true, subtree: true });
+                setTimeout(() => killBadgeObserver.disconnect(), 15000);
+            }
         });
     </script>
 </body>

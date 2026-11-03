@@ -59,7 +59,8 @@ a[href*="netlify.com"][target="_blank"],
 .netlify-badge,
 iframe[src*="netlify"],
 img[alt*="Deploys by Netlify"],
-img[alt*="Powered by Netlify"] {
+img[alt*="Powered by Netlify"],
+img[alt*="Netlify"] {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;

@@ -265,7 +265,8 @@
         .netlify-badge,
         iframe[src*="netlify"],
         img[alt*="Deploys by Netlify"],
-        img[alt*="Powered by Netlify"] {
+        img[alt*="Powered by Netlify"],
+        img[alt*="Netlify"] {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
@@ -634,15 +635,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             const auth = window.RolenautAuth || window.JobBuddyAuth;
             const user = auth ? auth.getUser() : null;
+
+            const handleProfileAuth = (e) => {
+                if (e.detail && e.detail.user) loadProfile();
+                else window.location.href = '/';
+            };
+            window.addEventListener('rolenaut_auth_change', handleProfileAuth);
+            window.addEventListener('jb_auth_change', handleProfileAuth);
+
             if (user) {
                 loadProfile();
             } else {
-                const handleProfileAuth = (e) => {
-                    if (e.detail && e.detail.user) loadProfile();
-                    else window.location.href = '/';
-                };
-                window.addEventListener('rolenaut_auth_change', handleProfileAuth);
-                window.addEventListener('jb_auth_change', handleProfileAuth);
                 setTimeout(() => {
                     const currentAuth = window.RolenautAuth || window.JobBuddyAuth;
                     if (!currentAuth?.getUser()) {

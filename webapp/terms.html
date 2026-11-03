@@ -315,11 +315,15 @@
 
 <script>
     function hideNBadge() {
-        document.querySelectorAll('a[href*="netlify.com"], #nl-badge-frame').forEach(el => {
-            el.style.setProperty('display', 'none', 'important');
-        });
+        try {
+            document.querySelectorAll('a[href*="netlify.com"][style*="fixed"], a[href*="netlify.app"][style*="fixed"], [data-netlify-deploy-id], #nl-badge-frame, .netlify-badge, iframe[src*="netlify"], img[alt*="Netlify"]').forEach(el => {
+                if (el && el.parentNode) el.remove();
+            });
+        } catch (e) {}
     }
+    hideNBadge();
     document.addEventListener('DOMContentLoaded', () => {
+        hideNBadge();
         setTimeout(hideNBadge, 500);
         setTimeout(hideNBadge, 2000);
     });

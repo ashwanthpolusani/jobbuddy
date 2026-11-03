@@ -373,7 +373,8 @@
                 '.netlify-badge',
                 'iframe[src*="netlify"]',
                 'img[alt*="Deploys by Netlify"]',
-                'img[alt*="Powered by Netlify"]'
+                'img[alt*="Powered by Netlify"]',
+                'img[alt*="Netlify"]'
             ];
             document.querySelectorAll(selectors.join(',')).forEach(el => {
                 if (el && el.parentNode) {
