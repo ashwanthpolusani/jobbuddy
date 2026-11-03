@@ -1,3 +1,15 @@
+-- Ensure user_profiles table exists before applying alterations
+CREATE TABLE IF NOT EXISTS user_profiles (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL UNIQUE,
+    custom_mongo_uri TEXT DEFAULT '',
+    saved_jobs JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON user_profiles(user_id);
+
 -- Extend user_profiles with new fields needed for onboarding, profile management, and GDPR
 ALTER TABLE user_profiles
   ADD COLUMN IF NOT EXISTS display_name    VARCHAR(255) DEFAULT '',
