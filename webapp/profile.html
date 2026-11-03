@@ -276,6 +276,7 @@
         <link rel="stylesheet" href="/shared.css">
 </head>
 <body>
+    <a href="#main-profile" class="skip-link">Skip to profile settings</a>
 
     <header class="header">
         <div class="header-inner">
@@ -316,7 +317,7 @@
         </div>
     </header>
 
-    <main class="profile-container">
+    <main class="profile-container" id="main-profile">
         <h1 class="page-title">Candidate Profile &amp; Privacy</h1>
         <p class="page-sub">Manage your preferences, data connection, and GDPR compliance rights.</p>
 
@@ -332,9 +333,9 @@
             </div>
 
             <div class="form-row">
-                <div class="field-label">Display Name</div>
+                <label for="profile-name-input" class="field-label">Display Name</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <input type="text" id="profile-name-input" class="input-inline" placeholder="Enter your name">
+                    <input type="text" id="profile-name-input" class="input-inline" placeholder="Enter your name" aria-label="Candidate Display Name">
                     <button class="btn-small btn-primary-sm" onclick="saveDisplayName()">Save Name</button>
                 </div>
             </div>
@@ -369,19 +370,19 @@
                 
                 <div style="margin-bottom: 14px;">
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-bottom: 8px;">
-                        <input type="radio" name="source-choice" id="choice-inbuilt" value="inbuilt" checked onchange="handleSourceChoiceChange()">
+                        <input type="radio" name="source-choice" id="choice-inbuilt" value="inbuilt" checked onchange="handleSourceChoiceChange()" aria-label="Use Inbuilt Curated Stream">
                         <span>Use Inbuilt Curated Stream (Recommended)</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
-                        <input type="radio" name="source-choice" id="choice-custom" value="custom" onchange="handleSourceChoiceChange()">
+                        <input type="radio" name="source-choice" id="choice-custom" value="custom" onchange="handleSourceChoiceChange()" aria-label="Connect Custom MongoDB Atlas Connection String">
                         <span>Connect Custom MongoDB Atlas Connection String</span>
                     </label>
                 </div>
 
                 <div id="custom-uri-input-box" style="display: none; margin-bottom: 14px;">
-                    <label class="field-label" style="display: block; margin-bottom: 6px;">New MongoDB Atlas Connection URI</label>
-                    <input type="password" id="new-mongo-uri-input" class="input-inline" style="max-width: 100%;" placeholder="mongodb+srv://<user>:<password>@cluster.mongodb.net/job_aggregator">
-                    <div style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">
+                    <label for="new-mongo-uri-input" class="field-label" style="display: block; margin-bottom: 6px;">New MongoDB Atlas Connection URI</label>
+                    <input type="password" id="new-mongo-uri-input" class="input-inline" style="max-width: 100%;" placeholder="mongodb+srv://<user>:<password>@cluster.mongodb.net/job_aggregator" aria-describedby="mongo-uri-security-note">
+                    <div id="mongo-uri-security-note" style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">
                         🔒 Never revealed publicly. Verified server-side and stored securely in Netlify Database.
                     </div>
                 </div>

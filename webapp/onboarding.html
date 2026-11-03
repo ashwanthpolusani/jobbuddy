@@ -257,7 +257,8 @@
         <link rel="stylesheet" href="/shared.css">
 </head>
 <body>
-<header class="header">
+    <a href="#main-onboarding" class="skip-link">Skip to onboarding setup</a>
+    <header class="header">
         <div class="header-inner">
             <a class="brand-block" href="/" aria-label="Rolenaut home">
                 <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -296,7 +297,7 @@
         </div>
     </header>
 
-    <div class="onboarding-card">
+    <main class="onboarding-card" id="main-onboarding">
         <div class="brand-header">
             <svg class="brand-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M14 12V8C14 6.9 14.9 6 16 6H24C25.1 6 26 6.9 26 8V12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
@@ -374,7 +375,7 @@
                 You can edit your preferences or switch data sources anytime in your profile.
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         let selectedSource = 'inbuilt';

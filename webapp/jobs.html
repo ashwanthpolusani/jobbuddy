@@ -809,6 +809,8 @@
 
         /* ── JOB CARD ─────────────────────────────────────────────── */
         .job-card {
+            content-visibility: auto;
+            contain-intrinsic-size: auto 170px;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
@@ -1364,6 +1366,7 @@
 </head>
 
 <body>
+    <a href="#panel-jobs" class="skip-link">Skip to job requisitions</a>
     <div class="page-wrap">
 
         <!-- HEADER -->
@@ -1416,6 +1419,9 @@
                 
                     
                     <div class="panel-main">
+                        <h1 class="page-main-heading" id="jobs-main-title" style="font-size: 1.25rem; font-weight: 800; color: var(--text); margin: 0 0 12px; letter-spacing: -0.02em; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                            <span>Direct Tech Requisitions <span style="font-size: 0.82rem; font-weight: 500; color: var(--text3); font-family: inherit;">· Official ATS Job Stream</span></span>
+                        </h1>
 
                         <!-- Stream Context Banner: Dynamic between Freshers (Guest) and Connected Workspace -->
                         <div class="stream-banner" id="stream-context-banner">
