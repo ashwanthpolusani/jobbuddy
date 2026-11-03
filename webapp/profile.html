@@ -397,7 +397,7 @@
                     <label for="new-mongo-uri-input" class="field-label" style="display: block; margin-bottom: 6px;">New MongoDB Atlas Connection URI</label>
                     <div style="position: relative; display: flex; align-items: center; width: 100%;">
                         <input type="password" id="new-mongo-uri-input" class="input-inline" style="max-width: 100%; width: 100%; padding-right: 40px;" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" aria-describedby="mongo-uri-security-note">
-                        <button type="button" onclick="toggleProfileMongoPasswordVisibility()" aria-label="Toggle URI visibility" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
+                        <button type="button" id="btn-toggle-profile-uri-vis" onclick="toggleProfileMongoPasswordVisibility()" aria-label="Show connection URI" aria-pressed="false" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
                     </div>
                     <div id="mongo-uri-security-note" style="font-size: 0.74rem; color: var(--muted); margin-top: 4px;">
                         🔒 Replace &lt;db_user&gt; and &lt;db_password&gt; with your Atlas credentials. Verified server-side and stored securely in Netlify Database.
@@ -445,6 +445,22 @@
 
     <script>
         let currentProfile = null;
+        let isNameInputDirty = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameInput = document.getElementById('profile-name-input');
+            if (nameInput) {
+                nameInput.addEventListener('input', () => {
+                    isNameInputDirty = true;
+                });
+                nameInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveDisplayName();
+                    }
+                });
+            }
+        });
 
         function showToast(msg) {
             const t = document.getElementById('toast');
@@ -495,8 +511,9 @@
             // Initial immediate display name hydration from local cache
             const savedLocalName = localStorage.getItem('rolenaut_display_name') || '';
             const initialResolved = savedLocalName || user.display_name || user.user_metadata?.display_name || user.user_metadata?.full_name || '';
-            if (initialResolved) {
-                document.getElementById('profile-name-input').value = initialResolved;
+            const nameInput = document.getElementById('profile-name-input');
+            if (initialResolved && nameInput && !isNameInputDirty && !nameInput.value) {
+                nameInput.value = initialResolved;
             }
 
             try {
@@ -508,8 +525,7 @@
                 if (data && data.profile) {
                     currentProfile = data.profile;
                     const resolvedName = currentProfile.display_name || savedLocalName || user.display_name || user.user_metadata?.display_name || user.user_metadata?.full_name || '';
-                    const nameInput = document.getElementById('profile-name-input');
-                    if (nameInput && document.activeElement !== nameInput) {
+                    if (nameInput && !isNameInputDirty && document.activeElement !== nameInput) {
                         nameInput.value = resolvedName;
                     }
                     if (resolvedName && window.RolenautAuth?.setDisplayName) {
@@ -518,25 +534,9 @@
                         }
                     }
 
-                    if (currentProfile.custom_mongo_uri) {
+                    if (currentProfile.custom_mongo_uri && currentProfile.custom_mongo_uri !== "[CONFIGURED]") {
                         const uriInput = document.getElementById('new-mongo-uri-input');
                         if (uriInput && !uriInput.value) uriInput.value = currentProfile.custom_mongo_uri;
-                        if (currentProfile.db_mode === 'custom') {
-                            localStorage.setItem("rolenaut_custom_mongo_uri", currentProfile.custom_mongo_uri);
-                            localStorage.setItem("jobbuddy_custom_mongo_uri", currentProfile.custom_mongo_uri);
-                        }
-                    }
-
-                    if (!currentProfile.display_name && savedLocalName && token) {
-                        // Background self-heal database record with local display name once
-                        fetch('/api/user-profile', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ display_name: savedLocalName })
-                        }).catch(() => {});
                     }
 
                     const pill = document.getElementById('source-pill');
@@ -589,6 +589,7 @@
                     if (data && data.profile) {
                         currentProfile = data.profile;
                     }
+                    isNameInputDirty = false;
                     localStorage.setItem('rolenaut_display_name', newName);
                     showToast('Display name updated!');
                     if (window.RolenautAuth?.setDisplayName) {
@@ -606,8 +607,15 @@
 
         function toggleProfileMongoPasswordVisibility() {
             const input = document.getElementById('new-mongo-uri-input');
+            const btn = document.getElementById('btn-toggle-profile-uri-vis');
             if (input) {
-                input.type = input.type === 'password' ? 'text' : 'password';
+                const isMasked = input.type === 'password';
+                input.type = isMasked ? 'text' : 'password';
+                if (btn) {
+                    btn.setAttribute('aria-pressed', isMasked ? 'true' : 'false');
+                    btn.setAttribute('aria-label', isMasked ? 'Hide connection URI' : 'Show connection URI');
+                    btn.textContent = isMasked ? '🙈' : '👁️';
+                }
             }
         }
 
@@ -714,19 +722,32 @@
         }
 
         async function exportUserData() {
-            let token = await getAuthToken();
-            if (!token) {
-                const auth = window.RolenautAuth || window.JobBuddyAuth;
-                const user = auth ? auth.getUser() : null;
-                if (user && user.email) {
-                    token = "dev_token_" + btoa(user.email);
-                }
-            }
+            const token = await getAuthToken();
             if (!token) {
                 alert('Please sign in first to export your user profile data.');
                 return;
             }
-            window.location.href = '/api/user-profile?export=true&auth=' + encodeURIComponent(token);
+            try {
+                const res = await fetch('/api/user-profile?export=true', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'rolenaut-profile-export.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                    showToast('Profile data exported successfully');
+                } else {
+                    alert('Failed to generate profile export. Please retry.');
+                }
+            } catch (e) {
+                alert('Export error: ' + e.message);
+            }
         }
 
         async function deleteAccountPermanently() {

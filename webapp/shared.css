@@ -57,7 +57,7 @@ a[href*="netlify.com"][target="_blank"],
 [data-netlify-deploy-id],
 #nl-badge-frame,
 .netlify-badge,
-iframe[src*="netlify"],
+iframe[src*="netlify"]:not(#netlify-identity-widget),
 img[alt*="Deploys by Netlify"],
 img[alt*="Powered by Netlify"],
 img[alt*="Netlify"] {
@@ -205,6 +205,25 @@ body {
     background: var(--accent-light) !important;
 }
 
+.btn-mobile-nav-toggle {
+    display: none !important;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--text2);
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.btn-mobile-nav-toggle:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+    border-color: var(--border-hover);
+}
+
 @media (max-width: 860px) {
     .header-sub {
         display: none !important;
@@ -212,8 +231,30 @@ body {
 }
 
 @media (max-width: 680px) {
+    .btn-mobile-nav-toggle {
+        display: inline-flex !important;
+    }
     .header-nav-links {
         display: none !important;
+    }
+    .header-nav-links.mobile-open {
+        display: flex !important;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        flex-direction: column;
+        align-items: stretch;
+        padding: 12px 16px;
+        gap: 6px;
+        z-index: 999;
+    }
+    .header-nav-links.mobile-open .header-nav-link {
+        padding: 10px 14px !important;
+        font-size: 0.92rem !important;
     }
 }
 

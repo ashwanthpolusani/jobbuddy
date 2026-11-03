@@ -97,9 +97,10 @@
             }
         } catch (e) {}
 
-        // Fallback for local session validation
+        // Fallback for local session validation only
+        const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const stored = getStoredUser();
-        if (stored && stored.email) {
+        if (isLocalHost && stored && stored.email) {
             return "dev_token_" + btoa(stored.email);
         }
         return null;
@@ -248,7 +249,7 @@
         }
     }
 
-    // Close menu when clicking outside
+    // Close menus when clicking outside or pressing Escape
     document.addEventListener('click', function (e) {
         const container = document.querySelector('.user-profile-menu-container');
         const card = document.getElementById('mini-profile-card');
@@ -259,7 +260,63 @@
                 if (trigger) trigger.setAttribute('aria-expanded', 'false');
             }
         }
+        const navLinks = document.querySelector('.header-nav-links');
+        const mobileBtn = document.getElementById('btn-mobile-nav');
+        if (navLinks && navLinks.classList.contains('mobile-open')) {
+            if (!navLinks.contains(e.target) && (!mobileBtn || !mobileBtn.contains(e.target))) {
+                navLinks.classList.remove('mobile-open');
+                if (mobileBtn) mobileBtn.setAttribute('aria-expanded', 'false');
+            }
+        }
     });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const card = document.getElementById('mini-profile-card');
+            const trigger = document.getElementById('user-profile-trigger');
+            if (card && card.style.display !== 'none') {
+                card.style.display = 'none';
+                if (trigger) {
+                    trigger.setAttribute('aria-expanded', 'false');
+                    trigger.focus();
+                }
+            }
+            const navLinks = document.querySelector('.header-nav-links');
+            if (navLinks && navLinks.classList.contains('mobile-open')) {
+                navLinks.classList.remove('mobile-open');
+                const mobileBtn = document.getElementById('btn-mobile-nav');
+                if (mobileBtn) {
+                    mobileBtn.setAttribute('aria-expanded', 'false');
+                    mobileBtn.focus();
+                }
+            }
+        }
+    });
+
+    function setupMobileNav() {
+        const headerActions = document.querySelector('.header-actions');
+        const navLinks = document.querySelector('.header-nav-links');
+        if (!headerActions || !navLinks || document.getElementById('btn-mobile-nav')) return;
+
+        const btn = document.createElement('button');
+        btn.id = 'btn-mobile-nav';
+        btn.className = 'btn-mobile-nav-toggle';
+        btn.setAttribute('aria-label', 'Toggle Navigation Menu');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
+        btn.onclick = function (e) {
+            e.stopPropagation();
+            const isOpen = navLinks.classList.toggle('mobile-open');
+            btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        };
+
+        const authWrapper = document.getElementById('auth-header-wrapper');
+        if (authWrapper) {
+            headerActions.insertBefore(btn, authWrapper);
+        } else {
+            headerActions.appendChild(btn);
+        }
+    }
 
     // 9. Render Auth Header synchronously
     function renderAuthHeader() {
@@ -385,10 +442,12 @@
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             renderAuthHeader();
+            setupMobileNav();
             setupIdentityListeners();
         });
     } else {
         renderAuthHeader();
+        setupMobileNav();
         setupIdentityListeners();
     }
 
@@ -408,7 +467,7 @@
                 'img[alt*="Netlify"]'
             ];
             document.querySelectorAll(selectors.join(',')).forEach(el => {
-                if (el && el.parentNode) {
+                if (el && el.id !== 'netlify-identity-widget' && el.parentNode) {
                     el.remove();
                 }
             });

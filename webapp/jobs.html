@@ -1713,7 +1713,7 @@
                         <label for="custom-mongo-input">MongoDB Read-Only URI</label>
                         <div style="position: relative; display: flex; align-items: center; width: 100%;">
                             <input type="password" id="custom-mongo-input" placeholder="mongodb+srv://<db_user>:<db_password>@cluster0.xxxxx.mongodb.net/job_aggregator" autocomplete="off" style="width: 100%; padding-right: 40px;" />
-                            <button type="button" onclick="toggleMongoPasswordVisibility()" aria-label="Toggle URI visibility" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
+                            <button type="button" id="btn-jobs-mongo-vis" onclick="toggleMongoPasswordVisibility()" aria-label="Show connection URI" aria-pressed="false" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 4px;" title="Show/Hide URI">👁️</button>
                         </div>
                         <span class="db-hint">&#128274; Replace &lt;db_user&gt; and &lt;db_password&gt; with your Atlas credentials. Saved securely to your Netlify cloud profile.</span>
                     </div>
@@ -1962,7 +1962,15 @@
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function sanitizeUrl(url) {
+            if (!url || typeof url !== 'string') return '#';
+            const trimmed = url.trim();
+            if (/^(?:https?:\/\/)/i.test(trimmed)) return esc(trimmed);
+            return '#';
         }
 
         function ltOf(j) { return j.link_type || 'direct_apply'; }
@@ -2098,16 +2106,17 @@
 
             const jobTitleEsc = esc(job.title || 'Role');
             const compEsc = esc(job.company_name || 'Company');
+            const jobUrl = sanitizeUrl(job.link);
             const applyBtn = isDirect
-                ? '<a href="' + esc(job.link || '#') + '" class="apply-btn direct-btn" target="_blank" rel="noopener noreferrer" aria-label="Apply to ' + jobTitleEsc + ' at ' + compEsc + '">Apply &#8594;</a>'
-                : '<a href="' + esc(job.link || '#') + '" class="apply-btn browse-btn" target="_blank" rel="noopener noreferrer" aria-label="Explore early-career opportunities at ' + compEsc + '">Explore Portal &#8594;</a>';
+                ? '<a href="' + jobUrl + '" class="apply-btn direct-btn" target="_blank" rel="noopener noreferrer" aria-label="Apply to ' + jobTitleEsc + ' at ' + compEsc + '">Apply &#8594;</a>'
+                : '<a href="' + jobUrl + '" class="apply-btn browse-btn" target="_blank" rel="noopener noreferrer" aria-label="Explore early-career opportunities at ' + compEsc + '">Explore Portal &#8594;</a>';
 
             // Relative date formatting
             const relDate = formatRelativeDate(job.first_seen || job.scraped_at);
             const dateHtml = relDate ? '<span class="meta-sep">&middot;</span><span class="job-date" title="Discovered ' + esc(job.first_seen || job.scraped_at) + '">' + esc(relDate) + '</span>' : '';
 
             // Clickable job title
-            const titleLink = '<a href="' + esc(job.link || '#') + '" class="job-title-link" target="_blank" rel="noopener noreferrer">' + jobTitleEsc + '</a>';
+            const titleLink = '<a href="' + jobUrl + '" class="job-title-link" target="_blank" rel="noopener noreferrer">' + jobTitleEsc + '</a>';
 
             return '<div class="job-card">'
                 + '<div class="job-left">'
@@ -2442,15 +2451,30 @@
             }
         }
 
+        let lastFocusedDbModalEl = null;
+        function handleDbModalKeydown(e) {
+            if (e.key === 'Escape') closeDbModal();
+        }
+
         function openDbModal() {
+            lastFocusedDbModalEl = document.activeElement;
             const modal = document.getElementById('db-modal');
             updateWorkspaceModalUI();
-            if (modal) modal.style.display = 'flex';
+            if (modal) {
+                modal.style.display = 'flex';
+                document.addEventListener('keydown', handleDbModalKeydown);
+                const firstBtn = modal.querySelector('button, input');
+                if (firstBtn) firstBtn.focus();
+            }
         }
 
         function closeDbModal() {
             const modal = document.getElementById('db-modal');
-            if (modal) modal.style.display = 'none';
+            if (modal) {
+                modal.style.display = 'none';
+                document.removeEventListener('keydown', handleDbModalKeydown);
+                if (lastFocusedDbModalEl) lastFocusedDbModalEl.focus();
+            }
         }
 
         async function fetchUserProfile(user) {
@@ -2511,8 +2535,15 @@
 
         function toggleMongoPasswordVisibility() {
             const input = document.getElementById('custom-mongo-input');
+            const btn = document.getElementById('btn-jobs-mongo-vis');
             if (input) {
-                input.type = input.type === 'password' ? 'text' : 'password';
+                const isMasked = input.type === 'password';
+                input.type = isMasked ? 'text' : 'password';
+                if (btn) {
+                    btn.setAttribute('aria-pressed', isMasked ? 'true' : 'false');
+                    btn.setAttribute('aria-label', isMasked ? 'Hide connection URI' : 'Show connection URI');
+                    btn.textContent = isMasked ? '🙈' : '👁️';
+                }
             }
         }
 

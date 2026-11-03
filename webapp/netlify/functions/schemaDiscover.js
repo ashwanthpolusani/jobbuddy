@@ -6,7 +6,16 @@ const cachedClients = new Map();
 const MAX_CACHED_CLIENTS = 6;
 
 async function connectToDatabase(uri) {
-    if (cachedClients.has(uri)) return cachedClients.get(uri);
+    if (cachedClients.has(uri)) {
+        const existing = cachedClients.get(uri);
+        try {
+            await existing.db().command({ ping: 1 });
+            return existing;
+        } catch (e) {
+            cachedClients.delete(uri);
+            existing.close().catch(() => {});
+        }
+    }
     if (cachedClients.size >= MAX_CACHED_CLIENTS) {
         const defaultUri = process.env.MONGODB_URI;
         for (const [key, client] of cachedClients.entries()) {
@@ -17,7 +26,14 @@ async function connectToDatabase(uri) {
             }
         }
     }
-    const client = new MongoClient(uri, { maxPoolSize: 3, serverSelectionTimeoutMS: 5000 });
+    const client = new MongoClient(uri, {
+        maxPoolSize: 3,
+        minPoolSize: 0,
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000,
+        socketTimeoutMS: 10000,
+        maxIdleTimeMS: 30000
+    });
     await client.connect();
     cachedClients.set(uri, client);
     return client;
@@ -72,6 +88,8 @@ function buildDefaultSchema() {
 }
 
 exports.handler = async (event, context) => {
+    context.callbackWaitsForEmptyEventLoop = false;
+
     if (event.httpMethod === "OPTIONS") {
         return { statusCode: 204, headers: CORS, body: "" };
     }
@@ -86,8 +104,8 @@ exports.handler = async (event, context) => {
         // Auth is optional for schema discovery; unauthenticated guests browse the default stream
     }
 
+    let mongoUri = process.env.MONGODB_URI;
     try {
-        let mongoUri = process.env.MONGODB_URI;
         let isCustomDb = false;
 
         if (userId) {
@@ -98,9 +116,10 @@ exports.handler = async (event, context) => {
             }
         }
 
-        // Direct encrypted header override fallback if passed
+        // Direct encrypted header override fallback if passed (Atlas SRV only)
         const headerCustom = (event.headers || {})["x-mongo-uri"] || (event.headers || {})["X-Mongo-Uri"];
-        if (!isCustomDb && headerCustom && headerCustom.trim()) {
+        const atlasPattern = /^mongodb\+srv:\/\/[a-zA-Z0-9_\-\.%]+:[^@]+@[a-zA-Z0-9_\-\.]+\.mongodb\.net(?:\/.*)?$/;
+        if (!isCustomDb && headerCustom && atlasPattern.test(headerCustom.trim())) {
             mongoUri = headerCustom.trim();
             isCustomDb = true;
         }
@@ -197,6 +216,11 @@ exports.handler = async (event, context) => {
         };
     } catch (err) {
         console.error("schemaDiscover error:", err.message);
+        if (mongoUri && cachedClients.has(mongoUri)) {
+            const dead = cachedClients.get(mongoUri);
+            cachedClients.delete(mongoUri);
+            dead?.close().catch(() => {});
+        }
         return {
             statusCode: 200,
             headers: CORS,

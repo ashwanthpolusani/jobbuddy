@@ -3,6 +3,13 @@
   publish = "."
   functions = "netlify/functions"
 
+[functions]
+  node_bundler = "esbuild"
+
+[[edge_functions]]
+  path = "/api/*"
+  function = "rate-limiter"
+
 [[edge_functions]]
   path = "/.netlify/functions/*"
   function = "rate-limiter"
@@ -15,11 +22,23 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Cross-Origin-Opener-Policy = "same-origin-allow-popups"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://identity.netlify.com https://pagead2.googlesyndication.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://identity.netlify.com https://*.mongodb.net; img-src 'self' data: https:; frame-src 'self' https://identity.netlify.com;"
 
 [[headers]]
   for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
 
 [[headers]]
   for = "/favicon.*"

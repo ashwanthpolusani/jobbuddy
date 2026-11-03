@@ -53,7 +53,7 @@ function sanitizeProfile(row) {
         display_name: row.display_name || "",
         db_mode: row.db_mode || (hasCustom ? "custom" : "inbuilt"),
         has_custom_db: hasCustom,
-        custom_mongo_uri: row.custom_mongo_uri || "",
+        custom_mongo_uri: hasCustom ? "[CONFIGURED]" : "",
         saved_jobs: typeof row.saved_jobs === "string" ? JSON.parse(row.saved_jobs) : (row.saved_jobs || []),
         onboarding_done: Boolean(row.onboarding_done),
         created_at: row.created_at,
@@ -83,6 +83,8 @@ function normalizeMongoAtlasUri(rawUri) {
 }
 
 exports.handler = async (event, context) => {
+    context.callbackWaitsForEmptyEventLoop = false;
+
     // 1. CORS Preflight
     if (event.httpMethod === "OPTIONS") {
         return {
@@ -169,6 +171,8 @@ exports.handler = async (event, context) => {
                     statusCode: 200,
                     headers: {
                         ...CORS,
+                        "Cache-Control": "private, no-cache, no-store, must-revalidate",
+                        "Pragma": "no-cache",
                         "Content-Disposition": 'attachment; filename="rolenaut-profile-export.json"'
                     },
                     body: JSON.stringify(exportData, null, 2)
@@ -177,7 +181,11 @@ exports.handler = async (event, context) => {
 
             return {
                 statusCode: 200,
-                headers: CORS,
+                headers: {
+                    ...CORS,
+                    "Cache-Control": "private, no-cache, no-store, must-revalidate",
+                    "Pragma": "no-cache"
+                },
                 body: JSON.stringify({
                     profile: profileRow ? sanitizeProfile(profileRow) : {
                         user_id: userId,
@@ -255,7 +263,7 @@ exports.handler = async (event, context) => {
 
             let finalSavedJobs;
             if (body.saved_jobs !== undefined && Array.isArray(body.saved_jobs)) {
-                finalSavedJobs = body.saved_jobs;
+                finalSavedJobs = body.saved_jobs.slice(0, 250);
             } else if (existing && existing.saved_jobs) {
                 finalSavedJobs = typeof existing.saved_jobs === "string" ? JSON.parse(existing.saved_jobs) : existing.saved_jobs;
             } else {
@@ -269,18 +277,12 @@ exports.handler = async (event, context) => {
             } else if (body.custom_mongo_uri !== undefined) {
                 let rawUri = String(body.custom_mongo_uri || "").trim();
                 if (rawUri) {
-                    if (!rawUri.startsWith("mongodb://") && !rawUri.startsWith("mongodb+srv://")) {
+                    const atlasPattern = /^mongodb\+srv:\/\/[a-zA-Z0-9_\-\.%]+:[^@]+@[a-zA-Z0-9_\-\.]+\.mongodb\.net(?:\/.*)?$/;
+                    if (!atlasPattern.test(rawUri)) {
                         return {
                             statusCode: 400,
                             headers: CORS,
-                            body: JSON.stringify({ error: "Invalid MongoDB connection string. Must start with mongodb:// or mongodb+srv://" })
-                        };
-                    }
-                    if (rawUri.startsWith("mongodb+srv://") && !/mongodb\+srv:\/\/[^@]+@[^/]+\.mongodb\.net/i.test(rawUri)) {
-                        return {
-                            statusCode: 400,
-                            headers: CORS,
-                            body: JSON.stringify({ error: "Only secure MongoDB Atlas (*.mongodb.net) clusters are allowed." })
+                            body: JSON.stringify({ error: "Only MongoDB Atlas (*.mongodb.net) clusters with SRV connection strings are allowed for security." })
                         };
                     }
                     finalCustomMongoUri = normalizeMongoAtlasUri(rawUri);

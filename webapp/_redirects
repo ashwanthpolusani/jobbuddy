@@ -9,6 +9,7 @@
 /netlify/*              /404.html           404!
 /.env*                  /404.html           404!
 /data/*                 /404.html           404!
+/node_modules/*         /404.html           404!
 
 # Clean static application routes
 /jobs                   /jobs.html          200
@@ -21,14 +22,33 @@
 /resume-guide           /resume-guide.html  200
 /scraper-guide          /scraper-guide.html 200
 
+# Legacy Brand & Bookmark Redirects
+/jobbuddy               /                   301!
+/setup                  /scraper-guide      301!
+/custom-scraper         /scraper-guide      301!
+/landing                /                   301!
+/portals                /jobs               301!
+/tracker                /jobs               301!
+
 # API Rewrite proxies to Netlify Serverless Functions
 /api/jobs               /.netlify/functions/getJobs          200
 /api/site-stats         /.netlify/functions/getSiteStats     200
 /api/user-profile       /.netlify/functions/userProfile       200
 /api/schema-discover    /.netlify/functions/schemaDiscover    200
 
-# Canonical redirects for .html extensions
-/*.html                 /:splat             301!
+# Canonical 301 redirects for .html extensions
+/jobs.html              /jobs               301!
+/about.html             /about              301!
+/onboarding.html        /onboarding         301!
+/profile.html           /profile            301!
+/privacy.html           /privacy            301!
+/terms.html             /terms              301!
+/interview-prep.html    /interview-prep     301!
+/resume-guide.html      /resume-guide       301!
+/scraper-guide.html     /scraper-guide      301!
 
 # Dynamic programmatic routes & filter paths for Job Feed
 /jobs/*                 /jobs.html          200
+
+# Unshadowed Catch-All 404 Fallback
+/*                      /404.html           404

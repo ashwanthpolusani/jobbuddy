@@ -6,16 +6,17 @@
  * extracts and normalises the user object across local dev and Netlify deploys.
  */
 
+const isLocalDev = process.env.NODE_ENV !== "production" && !process.env.NETLIFY;
+
 const CORS = {
     "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-User-Id, X-User-Email",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-User-Id, X-User-Email, X-Mongo-Uri",
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
     "Content-Type": "application/json"
 };
 
 /**
- * Decode a JWT payload without verifying the signature.
- * Signature verification is handled by Netlify edge infrastructure.
+ * Decode a JWT payload. Used in local development environments.
  */
 function decodeJwtPayload(token) {
     try {
@@ -35,7 +36,7 @@ function extractBearerToken(event) {
     if (authHeader.toLowerCase().startsWith("bearer ")) {
         return authHeader.slice(7).trim();
     }
-    // Also support query string parameters ?auth=... or ?token=... (critical for file downloads & GDPR exports)
+    // Also support query string parameters in dev mode
     const query = event.queryStringParameters || {};
     if (query.auth) return query.auth.trim();
     if (query.token) return query.token.trim();
@@ -45,12 +46,11 @@ function extractBearerToken(event) {
 /**
  * Verify the request and return a user object, or throw with a statusCode.
  * Priority:
- * 1. context.clientContext.user — Netlify edge-populated (production)
- * 2. Manual JWT or Dev Token decode — local dev / netlify dev CLI / file export
- * 3. Local dev fallback when x-user-email or query email is provided
+ * 1. context.clientContext.user — Netlify edge-populated & cryptographically verified (production)
+ * 2. Local dev verification when running netlify dev CLI or offline testing
  */
 async function verifyToken(event, context) {
-    // Path 1: Netlify edge-populated client context (production)
+    // Path 1: Netlify edge-verified client context (production standard)
     const clientContext = (context && context.clientContext) || null;
     if (clientContext && clientContext.user) {
         const u = clientContext.user;
@@ -63,57 +63,56 @@ async function verifyToken(event, context) {
         };
     }
 
-    // Path 2: Manual decode for bearer token or query auth token
-    const token = extractBearerToken(event);
-    if (token) {
-        // Dev token support for local development / testing
-        if (token.startsWith("dev_token_")) {
-            try {
-                const email = Buffer.from(token.replace("dev_token_", ""), "base64").toString("utf8");
-                if (email && email.includes("@")) {
-                    const cleanEmail = email.toLowerCase().trim();
+    // Path 2: Local development / test fallback only
+    if (isLocalDev) {
+        const token = extractBearerToken(event);
+        if (token) {
+            if (token.startsWith("dev_token_")) {
+                try {
+                    const email = Buffer.from(token.replace("dev_token_", ""), "base64").toString("utf8");
+                    if (email && email.includes("@")) {
+                        const cleanEmail = email.toLowerCase().trim();
+                        return {
+                            userId: cleanEmail,
+                            email: cleanEmail,
+                            sub: cleanEmail,
+                            name: cleanEmail.split("@")[0]
+                        };
+                    }
+                } catch (e) {}
+            }
+
+            const payload = decodeJwtPayload(token);
+            if (payload) {
+                if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+                    throw { statusCode: 401, message: "Authentication token has expired. Please log in again." };
+                }
+
+                const email = (payload.email || payload.sub || "").toLowerCase().trim();
+                if (email) {
                     return {
-                        userId: cleanEmail,
-                        email: cleanEmail,
-                        sub: cleanEmail,
-                        name: cleanEmail.split("@")[0]
+                        userId: email,
+                        email,
+                        sub: payload.sub || email,
+                        name: payload.user_metadata?.full_name || payload.user_metadata?.name || email.split("@")[0]
                     };
                 }
-            } catch (e) {}
+            }
         }
 
-        const payload = decodeJwtPayload(token);
-        if (payload) {
-            if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-                throw { statusCode: 401, message: "Authentication token has expired. Please log in again." };
-            }
-
-            const email = (payload.email || payload.sub || "").toLowerCase().trim();
-            if (email) {
-                return {
-                    userId: email,
-                    email,
-                    sub: payload.sub || email,
-                    name: payload.user_metadata?.full_name || payload.user_metadata?.name || email.split("@")[0]
-                };
-            }
+        const devEmail = (event.headers || {})["x-user-email"] || (event.headers || {})["X-User-Email"] || (event.queryStringParameters || {}).email;
+        if (devEmail) {
+            const email = devEmail.toLowerCase().trim();
+            return {
+                userId: email,
+                email,
+                sub: (event.headers || {})["x-user-id"] || (event.headers || {})["X-User-Id"] || email,
+                name: email.split("@")[0]
+            };
         }
     }
 
-    // Path 3: Local dev fallback when x-user-email or query email is provided
-    const isLocalDev = process.env.NODE_ENV !== "production" || !process.env.NETLIFY;
-    const devEmail = (event.headers || {})["x-user-email"] || (event.headers || {})["X-User-Email"] || (event.queryStringParameters || {}).email;
-    if (isLocalDev && devEmail) {
-        const email = devEmail.toLowerCase().trim();
-        return {
-            userId: email,
-            email,
-            sub: (event.headers || {})["x-user-id"] || (event.headers || {})["X-User-Id"] || email,
-            name: email.split("@")[0]
-        };
-    }
-
-    throw { statusCode: 401, message: "Authentication required. Please log in." };
+    throw { statusCode: 401, message: "Authentication required. Valid Netlify Identity session token expected." };
 }
 
 /**

@@ -68,13 +68,23 @@ async function connectToDatabase(customUri) {
     uri = normalizeMongoAtlasUri(uri);
 
     if (cachedClients.has(uri)) {
-        return cachedClients.get(uri);
+        const existingClient = cachedClients.get(uri);
+        try {
+            // Quick ping to ensure socket did not drop during warm lambda pause
+            await existingClient.db().command({ ping: 1 });
+            return existingClient;
+        } catch (pingErr) {
+            console.warn("Cached client socket stale; reconnecting:", pingErr.message);
+            cachedClients.delete(uri);
+            existingClient.close().catch(() => {});
+        }
     }
 
     if (cachedClients.size >= MAX_CACHED_CLIENTS) {
         // Evict oldest non-default client
+        const defaultUri = process.env.MONGODB_URI ? normalizeMongoAtlasUri(process.env.MONGODB_URI) : "";
         for (const [key, clientToClose] of cachedClients.entries()) {
-            if (key !== process.env.MONGODB_URI) {
+            if (key !== defaultUri) {
                 clientToClose.close().catch(() => {});
                 cachedClients.delete(key);
                 break;
@@ -83,8 +93,12 @@ async function connectToDatabase(customUri) {
     }
 
     const client = new MongoClient(uri, {
-        maxPoolSize: 5,
-        serverSelectionTimeoutMS: 6000
+        maxPoolSize: 4,
+        minPoolSize: 0,
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000,
+        socketTimeoutMS: 10000,
+        maxIdleTimeMS: 30000
     });
     await client.connect();
     cachedClients.set(uri, client);
@@ -196,20 +210,14 @@ exports.handler = async (event, context) => {
         customUri = normalizeMongoAtlasUri(customUri);
     }
 
-    // SSRF / Host validation: validate customUri if provided
+    // SSRF / Host validation: validate customUri if provided (Strict Atlas SRV only)
     if (customUri) {
-        if (!customUri.startsWith("mongodb://") && !customUri.startsWith("mongodb+srv://")) {
+        const atlasPattern = /^mongodb\+srv:\/\/[a-zA-Z0-9_\-\.%]+:[^@]+@[a-zA-Z0-9_\-\.]+\.mongodb\.net(?:\/.*)?$/;
+        if (!atlasPattern.test(customUri)) {
             return {
                 statusCode: 400,
                 headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": ALLOWED_ORIGIN },
-                body: JSON.stringify({ error: "Invalid MongoDB connection string format." })
-            };
-        }
-        if (customUri.startsWith("mongodb+srv://") && !/mongodb\+srv:\/\/[^@]+@[^/]+\.mongodb\.net/i.test(customUri)) {
-            return {
-                statusCode: 400,
-                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": ALLOWED_ORIGIN },
-                body: JSON.stringify({ error: "Only MongoDB Atlas (*.mongodb.net) clusters are allowed for security." })
+                body: JSON.stringify({ error: "Only MongoDB Atlas (*.mongodb.net) clusters with SRV connection strings are allowed for security." })
             };
         }
     }
@@ -277,7 +285,6 @@ exports.handler = async (event, context) => {
             experience_verdict: 1,
             core_requirements: 1,
             ats_name: 1,
-            content: 1,
             verdict_reason: 1,
             scraped_at: 1,
             first_seen: 1
@@ -367,7 +374,6 @@ exports.handler = async (event, context) => {
                     experience_verdict: j.experience_verdict || null,
                     core_requirements: cleanReqs,
                     ats_name: j.ats_name || 'Direct',
-                    content: j.content || '',
                     verdict_reason: j.verdict_reason || '',
                     scraped_at: j.scraped_at || null,
                     first_seen: j.first_seen || j.scraped_at || null
@@ -382,6 +388,7 @@ exports.handler = async (event, context) => {
                 "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
                 "Vary": "Accept-Encoding, x-mongo-uri, Authorization",
                 "Cache-Control": customUri ? "no-store" : "public, max-age=180, s-maxage=180, stale-while-revalidate=360",
+                "Netlify-CDN-Cache-Control": customUri ? "no-store" : "public, durable, max-age=180, stale-while-revalidate=360",
             },
             body: JSON.stringify({
                 jobs,
@@ -405,6 +412,12 @@ exports.handler = async (event, context) => {
         };
     } catch (error) {
         console.error("getJobs MongoDB query error:", error.message);
+        // Evict dead client so warm lambda containers reconnect instead of poisoning future requests with 503
+        if (activeUri && cachedClients.has(activeUri)) {
+            const deadClient = cachedClients.get(activeUri);
+            cachedClients.delete(activeUri);
+            deadClient?.close().catch(() => {});
+        }
         return {
             statusCode: 503,
             headers: {
