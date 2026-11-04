@@ -142,6 +142,17 @@ function buildQueryFilter({ category, link_type, verdict, location, search }, is
             clauses.push({ experience_verdict: { $nin: ['REJECTED', 'BLOCKED'] } });
         }
 
+        // Strictly enforce full verification: NEVER serve pending or half-verified jobs to the user
+        // All displayed individual openings MUST have passed through all pipeline layers (Stage 2 deep verification)
+        if (!isCustom) {
+            clauses.push({
+                $or: [
+                    { stage2_verified: true },
+                    { stage2_processed_at: { $exists: true, $ne: null } }
+                ]
+            });
+        }
+
         // Functional Category filter
         if (category && category !== "all") {
             clauses.push({ category: category });
