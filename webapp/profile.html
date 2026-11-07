@@ -619,8 +619,11 @@
                     return 'Cluster Host: ' + safeHost + ' / job_aggregator';
                 }
             }
+            if (currentProfile && currentProfile.custom_mongo_cluster) {
+                return 'Cluster Host: ' + currentProfile.custom_mongo_cluster + ' / job_aggregator';
+            }
             if (currentProfile && (currentProfile.has_custom_db || currentProfile.db_mode === 'custom')) {
-                return 'Cluster Host: MongoDB Atlas (Secured in Netlify DB) / job_aggregator';
+                return 'Cluster Host: MongoDB Atlas (Secured in Cloud DB) / job_aggregator';
             }
             return 'Cluster Host: cluster0.mongodb.net / job_aggregator';
         }
@@ -1044,10 +1047,11 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
-                    showToast('Profile and database records erased. Logging out...', 'success');
+                    showToast('Account, authentication credentials, and database records erased. Logging out...', 'success');
                     try {
                         localStorage.clear();
                         sessionStorage.clear();
+                        document.cookie = "nf_jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                     } catch (e) {}
 
                     const auth = window.RolenautAuth || window.JobBuddyAuth;

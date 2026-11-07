@@ -2842,7 +2842,7 @@
                 return;
             }
 
-            const uri = rawUri ? normalizeClientMongoUri(rawUri) : "[CONFIGURED]";
+            const uri = rawUri ? normalizeClientMongoUri(rawUri) : "";
             const btn = document.getElementById('btn-save-custom-db');
             if (btn) {
                 btn.disabled = true;
@@ -2859,20 +2859,29 @@
                 };
                 if (token) headers['Authorization'] = 'Bearer ' + token;
 
-                // Save to Netlify's cloud database via userProfile function
+                const payload = {
+                    db_mode: 'custom',
+                    active_stream: 'custom'
+                };
+                if (uri) {
+                    payload.custom_mongo_uri = uri;
+                }
+
+                // Save to cloud database via userProfile function
                 const res = await fetch('/api/user-profile', {
                     method: 'POST',
                     headers: headers,
-                    body: JSON.stringify({
-                        db_mode: 'custom',
-                        custom_mongo_uri: uri,
-                        active_stream: 'custom'
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 if (!res.ok) {
-                    const errData = await res.json();
+                    const errData = await res.json().catch(() => ({}));
                     throw new Error(errData.error || 'Failed to save');
+                }
+
+                const data = await res.json().catch(() => ({}));
+                if (data && data.profile) {
+                    userProfile = data.profile;
                 }
 
                 if (rawUri) {
@@ -2894,7 +2903,7 @@
             } finally {
                 if (btn) {
                     btn.disabled = false;
-                    btn.textContent = 'Save to Netlify Profile';
+                    btn.textContent = 'Save to Profile';
                 }
             }
         }
@@ -2918,6 +2927,7 @@
                         body: JSON.stringify({
                             db_mode: 'inbuilt',
                             custom_mongo_uri: '',
+                            disconnect_database: true,
                             active_stream: 'curated'
                         })
                     });
@@ -2931,6 +2941,9 @@
             if (userProfile) {
                 userProfile.db_mode = 'inbuilt';
                 userProfile.has_custom_db = false;
+                userProfile.custom_mongo_uri = '';
+                userProfile.custom_mongo_cluster = '';
+                userProfile.active_stream = 'curated';
             }
             const input = document.getElementById('custom-mongo-input');
             if (input) input.value = "";
@@ -3053,7 +3066,8 @@
             }
 
             if (modalDbBadge) {
-                modalDbBadge.textContent = hasCustom ? 'Personal MongoDB Active (Netlify Cloud)' : 'No Database Connected';
+                const clusterName = (userProfile && userProfile.custom_mongo_cluster) || '';
+                modalDbBadge.textContent = hasCustom ? (clusterName ? `Personal MongoDB Active (${clusterName})` : 'Personal MongoDB Active (Cloud DB)') : 'No Database Connected';
                 modalDbBadge.className = hasCustom ? 'ws-status-badge' : 'ws-status-badge neutral';
             }
 

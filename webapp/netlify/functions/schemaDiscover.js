@@ -43,17 +43,24 @@ let netlifyDb = null;
 async function getUserMongoUri(userId) {
     if (!userId) return null;
     if (!netlifyDb) {
-        try { netlifyDb = getDatabase(); } catch (e) { return null; }
-    }
-    try {
-        const rows = await netlifyDb.sql`
-            SELECT custom_mongo_uri, db_mode FROM user_profiles
-            WHERE user_id = ${userId} AND deleted_at IS NULL LIMIT 1
-        `;
-        if (rows && rows.length > 0 && rows[0].db_mode === "custom") {
-            return rows[0].custom_mongo_uri || null;
+        try {
+            const connString = process.env.NETLIFY_DB_URL || process.env.NETLIFY_DATABASE_URL;
+            netlifyDb = connString ? getDatabase({ connectionString: connString }) : getDatabase();
+        } catch (e) {
+            netlifyDb = null;
         }
-    } catch (e) {}
+    }
+    if (netlifyDb) {
+        try {
+            const rows = await netlifyDb.sql`
+                SELECT custom_mongo_uri, db_mode FROM user_profiles
+                WHERE (user_id = ${userId} OR user_id = ${userId.toLowerCase()}) AND deleted_at IS NULL LIMIT 1
+            `;
+            if (rows && rows.length > 0 && rows[0].db_mode === "custom") {
+                return rows[0].custom_mongo_uri || null;
+            }
+        } catch (e) {}
+    }
     return null;
 }
 

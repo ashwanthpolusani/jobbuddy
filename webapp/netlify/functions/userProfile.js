@@ -1,22 +1,20 @@
 const { getDatabase } = require("@netlify/database");
 const { requireAuth, CORS } = require("./verifyToken");
 
-// In-memory fallback for local development or environments without Netlify Database
+// In-memory fallback for local development only when Netlify Database is not configured
 const localMemoryStore = new Map();
 
 let dbInstance = null;
-let dbCheckAttempted = false;
 let tableChecked = false;
 
 function getDb() {
     if (dbInstance) return dbInstance;
-    if (dbCheckAttempted) return null;
-    dbCheckAttempted = true;
     try {
-        const connString = process.env.NETLIFY_DB_URL;
+        const connString = process.env.NETLIFY_DB_URL || process.env.NETLIFY_DATABASE_URL;
         dbInstance = connString ? getDatabase({ connectionString: connString }) : getDatabase();
         return dbInstance;
     } catch (e) {
+        console.warn("Netlify Database connection notice:", e.message);
         return null;
     }
 }
@@ -40,14 +38,37 @@ async function ensureTable(db) {
             CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON user_profiles(user_id);
             CREATE INDEX IF NOT EXISTS idx_user_profiles_deleted ON user_profiles(deleted_at) WHERE deleted_at IS NULL;
         `;
+        // Ensure all columns exist on tables created by earlier schema iterations
+        await db.sql`
+            ALTER TABLE user_profiles
+                ADD COLUMN IF NOT EXISTS display_name VARCHAR(255) DEFAULT '',
+                ADD COLUMN IF NOT EXISTS custom_mongo_uri TEXT DEFAULT '',
+                ADD COLUMN IF NOT EXISTS db_mode VARCHAR(20) DEFAULT 'inbuilt',
+                ADD COLUMN IF NOT EXISTS saved_jobs JSONB DEFAULT '[]'::jsonb,
+                ADD COLUMN IF NOT EXISTS onboarding_done BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
+        `;
         tableChecked = true;
     } catch (e) {
-        tableChecked = true; // schema is maintained via migrations
+        console.warn("Netlify Database ensureTable notice:", e.message);
+        // Do not set tableChecked = true on error, so it can retry once database is awake
     }
+}
+
+function extractClusterHost(rawUri) {
+    if (!rawUri || typeof rawUri !== "string") return "";
+    const match = rawUri.match(/@([^/?#]+)/);
+    return (match && match[1]) ? match[1].split(':')[0] : "";
 }
 
 function sanitizeProfile(row) {
     const hasCustom = Boolean(row.custom_mongo_uri && row.custom_mongo_uri.trim());
+    let savedJobs = [];
+    if (Array.isArray(row.saved_jobs)) {
+        savedJobs = row.saved_jobs;
+    } else if (typeof row.saved_jobs === "string") {
+        try { savedJobs = JSON.parse(row.saved_jobs || "[]"); } catch (e) { savedJobs = []; }
+    }
     return {
         user_id: row.user_id,
         display_name: row.display_name || "",
@@ -55,7 +76,8 @@ function sanitizeProfile(row) {
         active_stream: (row.db_mode === "custom" || (!row.db_mode && hasCustom)) ? "custom" : "curated",
         has_custom_db: hasCustom,
         custom_mongo_uri: hasCustom ? "[CONFIGURED]" : "",
-        saved_jobs: typeof row.saved_jobs === "string" ? JSON.parse(row.saved_jobs) : (row.saved_jobs || []),
+        custom_mongo_cluster: hasCustom ? extractClusterHost(row.custom_mongo_uri) : "",
+        saved_jobs: savedJobs,
         onboarding_done: Boolean(row.onboarding_done),
         created_at: row.created_at,
         updated_at: row.updated_at
@@ -101,6 +123,8 @@ exports.handler = async (event, context) => {
         return authResult;
     }
     const { userId } = authResult;
+    const userEmail = authResult.email || userId;
+    const userSub = authResult.sub || userId;
 
     const db = getDb();
     const query = event.queryStringParameters || {};
@@ -115,25 +139,27 @@ exports.handler = async (event, context) => {
                     await ensureTable(db);
                     const rows = await db.sql`
                         SELECT * FROM user_profiles
-                        WHERE user_id = ${userId} AND deleted_at IS NULL
+                        WHERE (user_id = ${userId} OR user_id = ${userEmail} OR user_id = ${userSub}) AND deleted_at IS NULL
                         LIMIT 1
                     `;
                     if (rows && rows.length > 0) {
                         profileRow = rows[0];
                     }
                 } catch (dbErr) {
-                    console.warn("Netlify Database read fallback:", dbErr.message);
+                    console.warn("Netlify Database read error:", dbErr.message);
                 }
             }
 
             if (!profileRow && localMemoryStore.has(userId)) {
                 profileRow = localMemoryStore.get(userId);
             }
+            if (!profileRow && localMemoryStore.has(userEmail)) {
+                profileRow = localMemoryStore.get(userEmail);
+            }
 
             // GDPR Right to Data Portability / Comprehensive Profile Export
             if (query.export === "true") {
                 const sanitized = profileRow ? sanitizeProfile(profileRow) : null;
-                const userEmail = authResult.email || userId;
                 const exportData = {
                     metadata: {
                         data_controller: "Rolenaut",
@@ -154,6 +180,7 @@ exports.handler = async (event, context) => {
                         active_data_stream: (sanitized && sanitized.db_mode === "custom") ? "Custom MongoDB Scraper Cluster" : "Verified Rolenaut Freshers Stream",
                         db_mode: (sanitized && sanitized.db_mode) || "inbuilt",
                         has_custom_db: Boolean(sanitized && sanitized.has_custom_db),
+                        custom_mongo_cluster: (sanitized && sanitized.custom_mongo_cluster) || "",
                         custom_mongo_uri_status: (profileRow && profileRow.custom_mongo_uri) ? "[CONFIGURED - Encrypted in Netlify Cloud DB]" : "[NOT CONFIGURED]"
                     },
                     saved_items: {
@@ -193,6 +220,7 @@ exports.handler = async (event, context) => {
                         display_name: "",
                         db_mode: "inbuilt",
                         has_custom_db: false,
+                        custom_mongo_cluster: "",
                         saved_jobs: [],
                         onboarding_done: false,
                         created_at: null,
@@ -222,7 +250,7 @@ exports.handler = async (event, context) => {
                     await ensureTable(db);
                     const rows = await db.sql`
                         SELECT * FROM user_profiles
-                        WHERE user_id = ${userId} AND deleted_at IS NULL
+                        WHERE (user_id = ${userId} OR user_id = ${userEmail} OR user_id = ${userSub}) AND deleted_at IS NULL
                         LIMIT 1
                     `;
                     if (rows && rows.length > 0) existing = rows[0];
@@ -232,6 +260,9 @@ exports.handler = async (event, context) => {
             }
             if (!existing && localMemoryStore.has(userId)) {
                 existing = localMemoryStore.get(userId);
+            }
+            if (!existing && localMemoryStore.has(userEmail)) {
+                existing = localMemoryStore.get(userEmail);
             }
 
             // 2. Resolve field values with strict preservation of existing data
@@ -320,7 +351,7 @@ exports.handler = async (event, context) => {
                     `;
                     savedToDb = true;
                 } catch (dbErr) {
-                    console.warn("Netlify Database write fallback:", dbErr.message);
+                    console.error("Netlify Database write error:", dbErr.message);
                 }
             }
 
@@ -337,6 +368,7 @@ exports.handler = async (event, context) => {
                 updated_at: now
             };
             localMemoryStore.set(userId, record);
+            localMemoryStore.set(userEmail, record);
 
             return {
                 statusCode: 200,
@@ -349,27 +381,67 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // ── DELETE: GDPR Account & Data Erasure ───────────────────────────
+        // ── DELETE: GDPR Account & Complete Authentication Erasure ────────
         if (event.httpMethod === "DELETE") {
+            let dbDeleted = false;
+
+            // 1. Delete user profile record from Netlify Database
             if (db) {
                 try {
                     await ensureTable(db);
                     await db.sql`
                         DELETE FROM user_profiles
-                        WHERE user_id = ${userId}
+                        WHERE user_id = ${userId} OR user_id = ${userEmail} OR user_id = ${userSub}
                     `;
+                    dbDeleted = true;
                 } catch (dbErr) {
                     console.warn("Netlify Database delete error:", dbErr.message);
                 }
             }
+
+            // 2. Clear from in-memory fallback
             localMemoryStore.delete(userId);
+            if (userEmail) localMemoryStore.delete(userEmail);
+            if (userSub) localMemoryStore.delete(userSub);
+
+            // 3. Delete user account from Netlify Identity (GoTrue Admin API)
+            let identityDeleted = false;
+            let identityError = null;
+            const clientContext = context && context.clientContext;
+            const identity = clientContext && clientContext.identity;
+
+            if (identity && identity.url && identity.token && userSub) {
+                try {
+                    const deleteUrl = `${identity.url}/admin/users/${userSub}`;
+                    const identityRes = await fetch(deleteUrl, {
+                        method: "DELETE",
+                        headers: {
+                            "Authorization": `Bearer ${identity.token}`,
+                            "Content-Type": "application/json"
+                        }
+                    });
+                    if (identityRes.ok || identityRes.status === 204 || identityRes.status === 200) {
+                        identityDeleted = true;
+                    } else {
+                        const errTxt = await identityRes.text().catch(() => "");
+                        console.warn(`Netlify Identity user deletion status ${identityRes.status}:`, errTxt);
+                        identityError = `GoTrue HTTP ${identityRes.status}`;
+                    }
+                } catch (idErr) {
+                    console.warn("Netlify Identity admin user deletion error:", idErr.message);
+                    identityError = idErr.message;
+                }
+            }
 
             return {
                 statusCode: 200,
                 headers: CORS,
                 body: JSON.stringify({
                     success: true,
-                    message: "All user profile data, settings, and tracker entries have been permanently erased from the database."
+                    database_deleted: dbDeleted,
+                    identity_deleted: identityDeleted,
+                    identity_notice: identityError || (!identity ? "Local dev mode: Identity Admin API is active in production deploys" : undefined),
+                    message: "All user profile data, settings, and authentication records have been permanently erased."
                 })
             };
         }

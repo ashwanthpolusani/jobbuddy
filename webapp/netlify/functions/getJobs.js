@@ -8,7 +8,7 @@ let netlifyDbInstance = null;
 function getNetlifyDb() {
     if (netlifyDbInstance) return netlifyDbInstance;
     try {
-        const connString = process.env.NETLIFY_DB_URL;
+        const connString = process.env.NETLIFY_DB_URL || process.env.NETLIFY_DATABASE_URL;
         netlifyDbInstance = connString ? getDatabase({ connectionString: connString }) : getDatabase();
         return netlifyDbInstance;
     } catch (e) {
@@ -20,19 +20,23 @@ async function resolveUserCustomUri(event, context) {
     try {
         const authUser = await verifyToken(event, context);
         if (!authUser || !authUser.userId) return null;
-        const db = getNetlifyDb();
-        if (!db) return null;
 
-        const dbPromise = db.sql`
-            SELECT custom_mongo_uri, db_mode FROM user_profiles
-            WHERE (user_id = ${authUser.userId} OR user_id = ${authUser.email}) AND deleted_at IS NULL LIMIT 1
-        `;
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Netlify DB timeout")), 1500)
-        );
-        const rows = await Promise.race([dbPromise, timeoutPromise]);
-        if (rows && rows.length > 0 && rows[0].custom_mongo_uri && rows[0].db_mode === "custom") {
-            return rows[0].custom_mongo_uri;
+        // Query Netlify Database (Postgres) for user's profile and custom MongoDB URI
+        const db = getNetlifyDb();
+        if (db) {
+            try {
+                const dbPromise = db.sql`
+                    SELECT custom_mongo_uri, db_mode FROM user_profiles
+                    WHERE (user_id = ${authUser.userId} OR user_id = ${authUser.email} OR user_id = ${authUser.sub}) AND deleted_at IS NULL LIMIT 1
+                `;
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Netlify DB timeout")), 5000)
+                );
+                const rows = await Promise.race([dbPromise, timeoutPromise]);
+                if (rows && rows.length > 0 && rows[0].custom_mongo_uri && rows[0].db_mode === "custom") {
+                    return rows[0].custom_mongo_uri;
+                }
+            } catch (e) {}
         }
     } catch (e) {}
     return null;
