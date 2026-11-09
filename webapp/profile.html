@@ -523,14 +523,14 @@
             if (fb) fb.className = 'inline-feedback';
         }
 
-        async function getAuthToken() {
+        async function getAuthToken(forceRefresh = false) {
             const auth = window.RolenautAuth || window.JobBuddyAuth;
             if (auth) {
-                return await auth.getToken();
+                return await auth.getToken(forceRefresh);
             }
             const user = window.netlifyIdentity && window.netlifyIdentity.currentUser();
             if (!user) return null;
-            return await user.jwt();
+            return await user.jwt(Boolean(forceRefresh));
         }
 
         function normalizeClientMongoUri(rawUri) {
@@ -1030,7 +1030,7 @@
                 }
             };
 
-            let token = await getAuthToken();
+            let token = await getAuthToken(true);
             if (!token) {
                 if (errBox) {
                     errBox.className = 'inline-feedback error';
@@ -1042,10 +1042,21 @@
             }
 
             try {
-                const res = await fetch('/api/user-profile', {
+                let res = await fetch('/api/user-profile', {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+
+                // Proactive retry on 401: if token expired mid-flight, force refresh and retry once
+                if (res.status === 401) {
+                    token = await getAuthToken(true);
+                    if (token) {
+                        res = await fetch('/api/user-profile', {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                    }
+                }
                 if (res.ok) {
                     showToast('Account, authentication credentials, and database records erased. Logging out...', 'success');
                     try {

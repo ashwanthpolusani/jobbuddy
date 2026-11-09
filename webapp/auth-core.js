@@ -63,8 +63,21 @@
         return null;
     }
 
+    function isTokenExpired(tokenStr, bufferSeconds = 60) {
+        if (!tokenStr || typeof tokenStr !== 'string') return true;
+        try {
+            const parts = tokenStr.split('.');
+            if (parts.length !== 3) return true;
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            if (!payload.exp) return false;
+            return (payload.exp * 1000) <= (Date.now() + (bufferSeconds * 1000));
+        } catch (e) {
+            return false;
+        }
+    }
+
     // 2. Retrieve JWT access token with fallback to stored token and proactive refresh
-    async function getAuthToken() {
+    async function getAuthToken(forceRefresh = false) {
         if (isExplicitlyLoggedOut) return null;
 
         // If netlifyIdentity widget is still loading during early boot, wait briefly
@@ -79,15 +92,18 @@
             const current = window.netlifyIdentity.currentUser();
             if (current && typeof current.jwt === 'function') {
                 try {
-                    const t = await current.jwt();
-                    if (t) {
+                    let t = await current.jwt(Boolean(forceRefresh));
+                    if (t && isTokenExpired(t) && !forceRefresh) {
+                        t = await current.jwt(true);
+                    }
+                    if (t && !isTokenExpired(t)) {
                         if (current.token) persistUserCache(current);
                         return t;
                     }
                 } catch (e) {
                     try {
                         const fallback = current.token && current.token.access_token;
-                        if (fallback) return fallback;
+                        if (fallback && !isTokenExpired(fallback)) return fallback;
                     } catch (err) {}
                 }
             }
@@ -97,9 +113,7 @@
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (parsed && parsed.token && parsed.token.access_token) {
-                    const exp = parsed.token.expires_at;
-                    const expMs = exp ? (exp > 1e11 ? exp : exp * 1000) : 0;
-                    const isExpired = expMs > 0 && (Date.now() > expMs);
+                    const isExpired = forceRefresh || isTokenExpired(parsed.token.access_token, 30);
 
                     // If token is expired and refresh_token exists, attempt direct GoTrue refresh
                     if (isExpired && parsed.token.refresh_token) {
@@ -127,7 +141,9 @@
                             console.warn('[RolenautAuth] Direct GoTrue token refresh notice:', refreshErr && refreshErr.message);
                         }
                     }
-                    return parsed.token.access_token;
+                    if (!isTokenExpired(parsed.token.access_token)) {
+                        return parsed.token.access_token;
+                    }
                 }
             }
         } catch (e) {}
@@ -135,7 +151,7 @@
             const rolenautCached = localStorage.getItem('rolenaut_cached_user');
             if (rolenautCached) {
                 const parsed = JSON.parse(rolenautCached);
-                if (parsed && parsed.token && parsed.token.access_token) {
+                if (parsed && parsed.token && parsed.token.access_token && !isTokenExpired(parsed.token.access_token)) {
                     return parsed.token.access_token;
                 }
             }
