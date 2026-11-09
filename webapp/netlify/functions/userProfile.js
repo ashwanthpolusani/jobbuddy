@@ -11,10 +11,17 @@ function getDb() {
     if (dbInstance) return dbInstance;
     try {
         const connString = process.env.NETLIFY_DB_URL || process.env.NETLIFY_DATABASE_URL;
-        dbInstance = connString ? getDatabase({ connectionString: connString }) : getDatabase();
+        if (connString) {
+            dbInstance = getDatabase({ connectionString: connString });
+            console.log("[userProfile] Netlify Database client initialized with connection string.");
+        } else {
+            dbInstance = getDatabase();
+            console.log("[userProfile] Netlify Database client initialized with zero-config.");
+        }
         return dbInstance;
     } catch (e) {
-        console.warn("Netlify Database connection notice:", e.message);
+        console.warn("[userProfile] Netlify Database connection notice:", e.message);
+        console.warn("[userProfile] TIP: In Netlify Functions, set NETLIFY_DB_URL in Site configuration > Environment variables with your read-write connection string.");
         return null;
     }
 }
@@ -128,6 +135,7 @@ exports.handler = async (event, context) => {
 
     const db = getDb();
     const query = event.queryStringParameters || {};
+    console.log(`[userProfile] ${event.httpMethod} for user: ${userEmail} | DB ready: ${Boolean(db)}`);
 
     try {
         // ── GET: Read profile or export data ──────────────────────────────
@@ -144,9 +152,12 @@ exports.handler = async (event, context) => {
                     `;
                     if (rows && rows.length > 0) {
                         profileRow = rows[0];
+                        console.log(`[userProfile] GET: Found PostgreSQL profile for ${userEmail} (mode: ${profileRow.db_mode}, has_custom: ${Boolean(profileRow.custom_mongo_uri)})`);
+                    } else {
+                        console.log(`[userProfile] GET: No PostgreSQL profile row for ${userEmail}`);
                     }
                 } catch (dbErr) {
-                    console.warn("Netlify Database read error:", dbErr.message);
+                    console.error("[userProfile] GET Netlify Database read error:", dbErr.message);
                 }
             }
 
@@ -350,9 +361,12 @@ exports.handler = async (event, context) => {
                             updated_at = NOW()
                     `;
                     savedToDb = true;
+                    console.log(`[userProfile] POST: Successfully saved profile to Netlify DB for ${userEmail} (mode: ${finalDbMode}, hasCustomUri: ${Boolean(finalCustomMongoUri)})`);
                 } catch (dbErr) {
-                    console.error("Netlify Database write error:", dbErr.message);
+                    console.error("[userProfile] POST Netlify Database write error:", dbErr.message);
                 }
+            } else {
+                console.warn(`[userProfile] POST: Netlify Database not connected. Profile saved to temporary memory store for ${userEmail}`);
             }
 
             // Sync in-memory fallback
@@ -394,8 +408,9 @@ exports.handler = async (event, context) => {
                         WHERE user_id = ${userId} OR user_id = ${userEmail} OR user_id = ${userSub}
                     `;
                     dbDeleted = true;
+                    console.log(`[userProfile] DELETE: Erased records from Netlify DB for ${userEmail}`);
                 } catch (dbErr) {
-                    console.warn("Netlify Database delete error:", dbErr.message);
+                    console.error("[userProfile] DELETE Netlify DB error:", dbErr.message);
                 }
             }
 
@@ -420,15 +435,16 @@ exports.handler = async (event, context) => {
                             "Content-Type": "application/json"
                         }
                     });
+                    console.log(`[userProfile] DELETE GoTrue Admin API status: ${identityRes.status} for sub ${userSub}`);
                     if (identityRes.ok || identityRes.status === 204 || identityRes.status === 200) {
                         identityDeleted = true;
                     } else {
                         const errTxt = await identityRes.text().catch(() => "");
-                        console.warn(`Netlify Identity user deletion status ${identityRes.status}:`, errTxt);
+                        console.warn(`[userProfile] GoTrue Admin user deletion failed HTTP ${identityRes.status}:`, errTxt);
                         identityError = `GoTrue HTTP ${identityRes.status}`;
                     }
                 } catch (idErr) {
-                    console.warn("Netlify Identity admin user deletion error:", idErr.message);
+                    console.error("[userProfile] GoTrue Admin delete error:", idErr.message);
                     identityError = idErr.message;
                 }
             }
